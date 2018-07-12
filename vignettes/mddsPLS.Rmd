@@ -1,5 +1,5 @@
 ---
-title: "Multi Data-Driven sparse PLS (mdd-sPLS)"
+title: "Mono and Multi-block Data-Driven sparse PLS (dd-sPLS)"
 author: "Hadrien LORENZO"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -16,7 +16,7 @@ bibliography: bib.bib
 We have worked on the Liver Toxicity dataset, see @bushel2007simultaneous. This data set contains the expression measure of 3116 genes and 10 clinical measurements for 64 subjects (rats) that were exposed to non-toxic, moderately toxic or severely toxic doses of acetaminophen in a controlled experiment. Therefore the structure is :
 $$\mathbf{X}\in\mathbb{R}^{64\times3116},\mathbf{Y}\in\mathbb{R}^{64\times10}$$
 ```{r, fig.show='hold',message=FALSE}
-library(mddsPLS)
+library(ddsPLS)
 library(doParallel)
 library(viridisLite)
 library(RColorBrewer)
