@@ -32,7 +32,7 @@
 #' \url{http://mixomics.org/methods/pls-da/}.
 #'
 #' @references{
-#'   \insertRef{bushel2007simultaneous}{mddsPLS}
+#'   \insertRef{bushel2007simultaneous}{ddsPLS}
 #' }
 #'
 #' @importFrom Rdpack reprompt
@@ -65,7 +65,7 @@
 #' \url{http://www.imm.dtu.dk/~lhc}.
 #'
 #' @references{
-#'   \insertRef{clemmensen2007method}{mddsPLS}
+#'   \insertRef{clemmensen2007method}{ddsPLS}
 #' }
 #'
 "penicilliumYES"
