@@ -285,7 +285,7 @@ plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=FALSE,legend_names=NULL,
     if(res_perf_mdd$mod!="reg"){
       legend(pos_legend,
              legend = c(paste(legend_names,paste(" (",TAB," indiv.)",sep=""),sep=""),
-                        "Mean of errors"),
+                        "Mean good classif rate"),
              col = c(colors,1),lty = c(rep(1,length(colors)),3),
              lwd=c(rep(2,length(colors),1.5)))
     }else{
