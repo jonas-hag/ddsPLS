@@ -102,7 +102,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   cl <- makeCluster(min(NCORES,nrow(paras)))
   registerDoParallel(cl)
   ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
-                    .combine = rbind,.packages = c("mddsPLS","MASS")) %dopar% {
+                    .combine = rbind,.packages = c("ddsPLS","MASS")) %dopar% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
                       paras_here <- paras[paras_here_pos,,drop=F]
                       if(mode=="reg"){
