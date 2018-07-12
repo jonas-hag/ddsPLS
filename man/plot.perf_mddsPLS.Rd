@@ -4,7 +4,7 @@
 \alias{plot.perf_mddsPLS}
 \title{Function to plot cross-validation performance results.}
 \usage{
-\method{plot}{perf_mddsPLS}(res_perf_mdd, plot_mean = F,
+\method{plot}{perf_mddsPLS}(res_perf_mdd, plot_mean = FALSE,
   legend_names = NULL, pos_legend = "bottomleft")
 }
 \arguments{
@@ -26,14 +26,17 @@ That function must be applied to a perf_mddsPLS object. Extra parameters are
 data("penicilliumYES")
 X <- penicilliumYES$X
 X <- scale(X[,which(apply(X,2,sd)>0)])
-Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
+Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
+function(tt){rep(tt,12)})))
+res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,
+mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
 plot(res_cv_class)
 
 # Regression example :
 data("liver.toxicity")
 X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
-res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1, mode = "reg")
+res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
+ mode = "reg")
 plot(res_cv_reg)
 }

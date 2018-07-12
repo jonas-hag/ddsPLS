@@ -46,7 +46,7 @@
 #'  the Clemmemsen et al "Sparse Discriminant Analysis" paper.
 #'
 #'@usage
-#'\code{data(penicilliumYES)}
+#'data(penicilliumYES)
 #'
 #' @format This data set contains the following matrices:
 #' \describe{

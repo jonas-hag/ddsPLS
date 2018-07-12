@@ -28,7 +28,7 @@ model. Default is FALSE.}
 }}
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", errMin_imput = 1e-09,
-  maxIter_imput = 50, verbose = F)
+  maxIter_imput = 50, verbose = FALSE)
 }
 \value{
 A list containing the following objects:
@@ -49,13 +49,13 @@ data("penicilliumYES")
 X <- penicilliumYES$X
 X <- scale(X[,which(apply(X,2,sd)>0)])
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = T)
+mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 
 # Regression example :
 data("liver.toxicity")
 X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
-mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = T)
+mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 }
 \seealso{
 \code{\link{predict.mddsPLS}}

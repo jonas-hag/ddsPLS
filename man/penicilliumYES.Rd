@@ -17,7 +17,7 @@
 \url{http://www.imm.dtu.dk/~lhc}.
 }
 \usage{
-\code{data(penicilliumYES)}
+data(penicilliumYES)
 }
 \description{
 The data set \code{penicilliumYES} has \emph{36} rows and \emph{3754} columns. The variables

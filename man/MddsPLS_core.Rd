@@ -22,7 +22,7 @@ build in the model.}
 model. Default is FALSE.}
 }}
 \usage{
-MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", verbose = F)
+MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", verbose = FALSE)
 }
 \value{
 A list containing the following objects:

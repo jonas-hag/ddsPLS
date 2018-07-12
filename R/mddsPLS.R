@@ -45,7 +45,7 @@
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
-MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=F){
+MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -152,7 +152,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=F){
   if(mode=="reg"){
     B <- list()
     for(k in 1:K){
-      beta_k <- u[(k-1)*R+1:R,,drop=F]
+      beta_k <- u[(k-1)*R+1:R,,drop=FALSE]
       B[[k]] <- u_t_r[[k]]%*%beta_k
       for(r in 1:R){
         B[[k]][,r] <- B[[k]][,r]*alphas[r]
@@ -165,7 +165,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=F){
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
-    sds <- apply(dataf[,-1,drop=F],2,sd)
+    sds <- apply(dataf[,-1,drop=FALSE],2,sd)
     if(any(sds==0)){
       pos_sd0 <- as.numeric(which(sds==0))
       if(length(pos_sd0)==length(sds)){
@@ -242,16 +242,16 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=F){
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = T)
+#' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 #'
 #' # Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = T)
+#' mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
-                    verbose=F){
+                    verbose=FALSE){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -265,7 +265,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   n <- nrow(Y)
   q <- ncol(Y)
   has_converged <- maxIter_imput
-  id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = T)})
+  id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = TRUE)})
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
@@ -273,7 +273,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     ## If ther are some missing samples
     for(k in 1:K){## ## Imputation to mean
       if(length(id_na[[k]])>0){
-        mu_k <- colMeans(Xs[[k]],na.rm = T)
+        mu_k <- colMeans(Xs[[k]],na.rm = TRUE)
         for(k_ik in 1:length(id_na[[k]])){
           Xs[[k]][id_na[[k]][k_ik],] <- mu_k
         }
@@ -295,13 +295,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
-              Xs_i <- mod_0$s[-i_k,,drop=F]
-              newX_i <- mod_0$s[i_k,,drop=F]
+              Xs_i <- mod_0$s[-i_k,,drop=FALSE]
+              newX_i <- mod_0$s[i_k,,drop=FALSE]
               ## ## ## Look for selected variables
               Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))!=0)
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
-                Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=F]
+                Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
                 model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda)
                 mod_i_k <- list(mod=model_here,R=R,mode=mode,maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
@@ -385,7 +385,7 @@ predict.mddsPLS  <- function(mod_0,newX){
         for(k_id in 1:length(pos_no_ok)){
           vars_k_id <- pos_vars_Y_here[[k_id]]
           if(length(vars_k_id)>0){
-            vars_Y_here[,C_pos+(0:(length(vars_k_id)-1))] <- mod_0$Xs[[pos_no_ok[k_id]]][,vars_k_id,drop=F]
+            vars_Y_here[,C_pos+(0:(length(vars_k_id)-1))] <- mod_0$Xs[[pos_no_ok[k_id]]][,vars_k_id,drop=FALSE]
             C_pos <- C_pos + length(vars_k_id)
           }
         }
@@ -503,7 +503,7 @@ predict.mddsPLS  <- function(mod_0,newX){
   else{
     newY <- matrix(NA,n_new,q)
     for(i_new in 1:n_new){
-      newY[i_new,] <- predict(mod_0,lapply(newX,function(nx,ix){nx[ix,,drop=F]},i_new))
+      newY[i_new,] <- predict(mod_0,lapply(newX,function(nx,ix){nx[ix,,drop=FALSE]},i_new))
     }
   }
   newY

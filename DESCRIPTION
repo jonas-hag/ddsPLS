@@ -5,13 +5,12 @@ Description: That package permits to build mdd-sPLS models. Multi-blocks with
     high-dimensionnal settings are particularly sensible to this.
 Authors@R: person("Hadrien","Lorenzo", role = c("aut", "cre"),
                      email = "hadrien.lorenzo.2015@gmail.com")
-License: What license it uses
+License: MIT
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 RoxygenNote: 6.0.1
-Imports: RColorBrewer, viridisLite, doParallel
+Imports: Rdpack, RColorBrewer, viridisLite, doParallel, MASS
 RdMacros: Rdpack
-Suggests: knitr,
-    rmarkdown
+Suggests: knitr, rmarkdown
 VignetteBuilder: knitr

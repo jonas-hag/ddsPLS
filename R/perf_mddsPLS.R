@@ -44,14 +44,17 @@
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
-#' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
+#' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
+#' function(tt){rep(tt,12)})))
+#' res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,
+#' mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
 #'
 #' # Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1, mode = "reg")
+#' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
+#'  mode = "reg")
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,kfolds="loo",
                          mode="reg",fold_fixed=NULL,maxIter_imput=5,errMin_imput=1e-9,NCORES=1){
   ## Xs shaping
@@ -104,7 +107,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
                     .combine = rbind,.packages = c("ddsPLS","MASS")) %dopar% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
-                      paras_here <- paras[paras_here_pos,,drop=F]
+                      paras_here <- paras[paras_here_pos,,drop=FALSE]
                       if(mode=="reg"){
                         errors <- matrix(NA,nrow(paras_here),q)
                         select_y <- matrix(0,nrow(paras_here),q)
@@ -124,12 +127,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         X_train <- Xs
                         X_test <- Xs
                         for(k in 1:K){
-                          X_train[[k]] <- X_train[[k]][pos_train,,drop=F]
-                          X_test[[k]] <- X_test[[k]][-pos_train,,drop=F]
+                          X_train[[k]] <- X_train[[k]][pos_train,,drop=FALSE]
+                          X_test[[k]] <- X_test[[k]][-pos_train,,drop=FALSE]
                         }
                         if(mode=="reg"){
-                          Y_train <- Y[pos_train,,drop=F]
-                          Y_test <- Y[-pos_train,,drop=F]
+                          Y_train <- Y[pos_train,,drop=FALSE]
+                          Y_test <- Y[-pos_train,,drop=FALSE]
                         }
                         else{
                           Y_train <- Y[pos_train]
@@ -171,15 +174,15 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     lambda <- paras_out[i,2]
     pos_in_errors <- intersect(which(ERRORS[,1]==R),which(ERRORS[,2]==lambda))
     if(mode=="reg"){
-      ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=F]^2))
-      FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=F])
+      ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2))
+      FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
     }else{
       err_char <- ERRORS[pos_in_errors,1:(q)+3]
       err_char_spl <- do.call(rbind,strsplit(as.character(levels(err_char)[err_char]),
-                                             split = "/",fixed = T))
+                                             split = "/",fixed = TRUE))
       colnames(err_char_spl) <- c("pred","obse")
       ERRORS_OUT[i,] <- abs(diag(table(err_char_spl[,1],err_char_spl[,2]))-table(err_char_spl[,2]))
-      FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=F])
+      FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=FALSE])
     }
   }
   out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
@@ -205,17 +208,20 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
-#' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
+#' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
+#' function(tt){rep(tt,12)})))
+#' res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=10,R = 2,
+#' mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
 #' plot(res_cv_class)
 #'
 #' # Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1, mode = "reg")
+#' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
+#'  mode = "reg")
 #' plot(res_cv_reg)
-plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=F,legend_names=NULL,
+plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=FALSE,legend_names=NULL,
                               pos_legend="bottomleft"){
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
@@ -244,8 +250,8 @@ plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=F,legend_names=NULL,
     ylab1<-"MSEP"
     ylab2<-"Occurences per variable"
     ylim1 <- range(abs(RMSEP[,3:ncol(RMSEP)]))^2
-    y1 <- RMSEP[order(RMSEP[,2,drop=F]),3:ncol(RMSEP),drop=F]^2
-    y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=F]),3:ncol(RMSEP),drop=F]^2)
+    y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2
+    y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2)
     main1 <- "MSEP versus regularization coefficient\n dd-sPLS"
     main2 <- "Occurences per variable versus regularization coefficient\n dd-sPLS"
     par(mar=c(5,5,7,5),mfrow=c(2,1))
@@ -254,12 +260,12 @@ plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=F,legend_names=NULL,
     ylab1<-"#Good Classif Rate"
     ylab2<-"Occurences per class"
     ylim1<- c(0,1)
-    y1 <- RMSEP[order(RMSEP[,2,drop=F]),3:ncol(RMSEP),drop=F]
+    y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]
     TAB <- table(res_perf_mdd$Y)
     for(r in 1:nlevels(res_perf_mdd$Y)){
       y1[,r] <- 1-y1[,r]/TAB[r]
     }
-    y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=F]),3:ncol(RMSEP),drop=F])/sum(TAB)
+    y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
     main1 <- "Good classification rate versus regularization coefficient\n dd-sPLS"
     main2 <- "Occurences per class versus regularization coefficient\n dd-sPLS"
     par(mar=c(5,5,6,5),mfrow=c(1,1))
