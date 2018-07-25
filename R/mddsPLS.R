@@ -99,9 +99,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   }
   ## Solve optimization problem
   #### Inside problems
-  u_t_r <- list()
+  u_t_r = u_t_r_0 <- list()
   t_r <- list()
   z_r <- list()
+  BETA_r <- list()
   for(k in 1:K){
     if(norm(Ms[[k]])==0){
       svd_k <- list(v=matrix(0,
@@ -111,7 +112,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     else{
       svd_k <- svd(Ms[[k]],nu = 0,nv = R)
     }
-    u_t_r[[k]] <- svd_k$v
+    u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
     if(k==1){
       for(r in 1:R){
         t_r[[r]] <- matrix(NA,n,K)
@@ -126,38 +127,87 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   t <- matrix(NA,n,R)
   v <- matrix(0,q,R)
 
-  # t_all <- do.call(cbind,t_r)
-  t_all <- do.call(cbind,t_r)
   z_all <- do.call(cbind,z_r)
-  svd_all <- svd(z_all,nu=R,nv=R)#svd(t_all,nu=R,nv=R)
+  svd_all <- svd(z_all,nu=R,nv=R)
   u <- svd_all$v
   v0 <- svd_all$u
-  # v <- crossprod(Y,v0)
-  # for(r in 1:R){
-  #   v[,r] <- v[,r]/sqrt(sum(v[,r]^2))
-  # }
-  v <- v0#
-  s <- Y%*%v0#Y%*%v
+  if(T){
+    # if(R>1 & K>1){
+    #   BETA_t <- list()
+    #   for(k in 1:K){
+    #     BETA_t[[k]] <- matrix(NA,R,1)
+    #   }
+    #   for(r in  1:R){
+    #     svd_beta_r <- svd(z_r[[r]],nu = 0,nv = 1)
+    #     BETA_r[[r]] <- svd_beta_r$v
+    #     for(k in 1:K){
+    #       BETA_t[[k]][r] <- BETA_r[[r]][k]
+    #     }
+    #   }
+    #   iter_order <- 1
+    #   order_beta_t_0 = order_beta_t <- matrix(rep(1:R,K),nrow = K,byrow = T)
+    #   flag_k <- rep(T,K)
+    #   while(any(flag_k)){
+    #     ## Find order of betas
+    #     for(k in 1:K){
+    #       order_beta_t[k,] <- order(abs(BETA_t[[k]]),decreasing = T)
+    #       browser()
+    #       if(sum(abs(order_beta_t[k,]-order_beta_t_0[k,]))!=0){
+    #         flag_k[k] <- T
+    #         for(r in 1:R){
+    #           z_r[[r]][,k] <- z_r[[order_beta_t[k,r]]][,k]
+    #
+    #         }
+    #       }
+    #       else{
+    #         flag_k[k] <- F
+    #       }
+    #     }
+    #     crit <- 0
+    #     if(any(flag_k)){
+    #       for(r in  1:R){
+    #         svd_beta_r <- svd(z_r[[r]],nu = 0,nv = 1)
+    #         BETA_r[[r]] <- svd_beta_r$v
+    #         for(k in 1:K){
+    #           BETA_t[[k]][r] <- BETA_r[[r]][k]
+    #         }
+    #         lambdas <- apply(z_r[[r]],2,function(zz){sum(zz^2)})
+    #         crit <- crit + sum(BETA_r[[r]]^2*lambdas)
+    #       }
+    #     }
+    #     print(crit)
+    #     order_beta_t_0 <- order_beta_t
+    #
+    #   }
+    # }
+  }
+  v <- v0
+  s <- Y%*%v0
+  t_all <- do.call(cbind,t_r)
   t <-  t_all%*%u
+  svd_frak <- svd(crossprod(t,s),nu = R,nv = R)
+  u_frak <- svd_frak$u
+  v_frak <- svd_frak$v
+  t_frak <- t%*%u_frak
+  s_frak <- s%*%v_frak
   alphas <- rep(0,R)
   for(r in 1:R){
-    n_t_2<-sum(diag(crossprod(t[,r])))
+    n_t_2<-sum(diag(crossprod(t_frak[,r])))#t[,r])))
     if(n_t_2!=0){
-      alphas[r] <- sum(diag(crossprod(s[,r],t[,r])))/n_t_2
+      alphas[r] <- sum(diag(crossprod(s_frak[,r],t_frak[,r])))/n_t_2#sum(diag(crossprod(s[,r],t[,r])))/n_t_2
     }else{
       alphas[r] <- 0
     }
   }
-
   if(mode=="reg"){
     B <- list()
     for(k in 1:K){
       beta_k <- u[(k-1)*R+1:R,,drop=FALSE]
-      B[[k]] <- u_t_r[[k]]%*%beta_k
+      B[[k]] <- u_t_r[[k]]%*%beta_k%*%u_frak
       for(r in 1:R){
         B[[k]][,r] <- B[[k]][,r]*alphas[r]
       }
-      B[[k]]  <- tcrossprod(B[[k]],v)
+      B[[k]]  <- tcrossprod(B[[k]],v%*%v_frak)
     }
   }
   else{
