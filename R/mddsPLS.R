@@ -240,7 +240,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     cat(paste("        @ (",paste(apply(v,2,function(u){length(which(abs(u)>1e-9))}),
                                   collapse = ","),") variable(s)",sep=""));cat("\n")
   }
-  list(u=u_t_r,v=v,ts=t_r,beta_comb=u,t=t,s=s,B=B,mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,
+  list(u=u_t_r,v=v,ts=t_r,beta_comb=u,t=t,s=s,t_frak=t_frak,s_frak=s_frak,B=B,mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,
        sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda)
 }
 
@@ -361,21 +361,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           }
           mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
           if(sum(abs(mod$s))*sum(abs(mod_0$s))!=0){
-            err_cr <- rep(0,K)
-            for(k in 1:K){
-              err_cr[k] <- min(abs(diag(crossprod(mod$u[[k]],mod_0$u[[k]]))))
+            err <- 0
+            for(r in 1:R){
+              n_new <- sqrt(sum(mod$t_frak[,r]^2))
+              n_0 <- sqrt(sum(mod_0$t_frak[,r]^2))
+              err <- err + abs(1-as.numeric(abs(diag(crossprod(mod$t_frak[,r],mod_0$t_frak[,r]))))/(n_new*n_0))
             }
-            which_0 <- which(err_cr==0)
-            if(length(which_0)>0){
-              if(length(which_0)!=length(err_cr)){
-                err <- 1-min(err_cr[-which_0])
-              }else{
-                err <- 0
-              }
-            }
-            else{
-              err <- 1-min(err_cr)
-            }
+            print(err)
           }
           else{
             err <- 0
