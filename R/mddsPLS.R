@@ -102,7 +102,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
   z_r <- list()
-  BETA_r <- list()
+  # BETA_r <- list()
   for(k in 1:K){
     if(norm(Ms[[k]])==0){
       svd_k <- list(v=matrix(0,
@@ -330,7 +330,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     if(K>1){
-      Xs_init <- Xs
+      # Xs_init <- Xs
       mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
       if(sum(abs(as.vector(mod_0$s)))!=0){
         Mat_na <- matrix(0,n,K)
@@ -545,7 +545,10 @@ predict.mddsPLS  <- function(mod_0,newX){
   else{
     newY <- matrix(NA,n_new,q)
     for(i_new in 1:n_new){
-      newY[i_new,] <- predict(mod_0,lapply(newX,function(nx,ix){nx[ix,,drop=FALSE]},i_new))
+      newY[i_new,] <- predict(mod_0,lapply(newX,
+                                           function(nx,ix){
+                                             nx[ix,,drop=FALSE]
+                                             },i_new))
     }
   }
   newY

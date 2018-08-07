@@ -1,5 +1,5 @@
 ---
-title: "Mono and Multi-block Data-Driven sparse PLS (dd-sPLS)"
+title: "Mono and Multi-block Data-Driven sparse PLS (mdd-sPLS)"
 author: "Hadrien LORENZO"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
