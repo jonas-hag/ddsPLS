@@ -3,7 +3,7 @@ from setuptools import setup
 setup(name='mddspls',
       version='0.1',
       description='The multi data driven sparse pls package',
-      url='http://github.com/hlorenzo/mddspls',
+      url='http://github.com/hlorenzo/ddspls',
       author='Hadrien Lorenzo',
       author_email='hadrien.lorenzo.2015@gmail.com',
       license='MIT',
