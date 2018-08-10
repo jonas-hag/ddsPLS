@@ -31,11 +31,7 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", errMin_imput = 1e-09,
   maxIter_imput = 50, verbose = FALSE)
 }
 \value{
-A list containing the following objects:
-\describe{
-  \item{mod}{A mddsPLS object, see
-   }
-}
+A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
 }
 \description{
 This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-

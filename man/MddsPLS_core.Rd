@@ -32,16 +32,15 @@ A list containing the following objects:
   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
    scores per axis per block.}
-  \item{t}{A \emph{nXR} matrix, the final score of the \emph{X} part.}
-  \item{s}{A \emph{nXR} matrix, the score of the \emph{Y} part.}
+  \item{(t,s)}{Two \emph{nXR} matrices, scores of the \emph{X} and \emph{Y} parts.}
+  \item{(t_frak,s_frak)}{Two \emph{nXR} matrices, final scores of the \emph{X} and \emph{Y} part.
+   They correspond to \emph{PLS} scores of \emph{(t,s)} scores and so \emph{t_frak^T s_frak} is diagonal,
+   \emph{t_frak}, respectively \emph{s_frak}, carries the same information as \emph{t}, respectively \emph{s}.}
   \item{B}{A list of length \emph{K}. Each element is a \emph{p_kXq} matrix : the
    regression matrix per block.}
-  \item{mu_x_s}{A list of length \emph{K}. Each element is a \emph{p_k} vector : the
-   mean variables per block.}
-  \item{sd_x_s}{A list of length \emph{K}. Each element is a \emph{p_k} vector : the
-   standard deviation variables per block.}
-  \item{mu_y}{A vector of length \emph{q} : the mean variables for \emph{Y} part.}
-  \item{sd_y}{A vector of length \emph{q} : the standard deviation variables for \emph{Y} part.}
+  \item{(mu_x_s,sd_x_s)}{Two lists of length \emph{K}. Each element is a \emph{p_k} vector : the
+   mean and standard deviation variables per block.}
+  \item{(mu_y,sd_y)}{Two vectors of length \emph{q} : the mean and the standard deviation variables for \emph{Y} part.}
   \item{R}{Given as an input.}
   \item{q}{A non negatvie integer : the number of variables of \emph{Y} matrix. }
   \item{Ms}{A list of length \emph{K}. Each element is a \emph{qXp_k} matrix : the

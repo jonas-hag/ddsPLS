@@ -21,7 +21,6 @@
 #' model. Default is FALSE.}
 #' }
 #'
-#'
 #' @return A list containing the following objects:
 #' \describe{
 #'   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
@@ -29,16 +28,15 @@
 #'   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
 #'   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
 #'    scores per axis per block.}
-#'   \item{t}{A \emph{nXR} matrix, the final score of the \emph{X} part.}
-#'   \item{s}{A \emph{nXR} matrix, the score of the \emph{Y} part.}
+#'   \item{(t,s)}{Two \emph{nXR} matrices, scores of the \emph{X} and \emph{Y} parts.}
+#'   \item{(t_frak,s_frak)}{Two \emph{nXR} matrices, final scores of the \emph{X} and \emph{Y} part.
+#'    They correspond to \emph{PLS} scores of \emph{(t,s)} scores and so \emph{t_frak^T s_frak} is diagonal,
+#'    \emph{t_frak}, respectively \emph{s_frak}, carries the same information as \emph{t}, respectively \emph{s}.}
 #'   \item{B}{A list of length \emph{K}. Each element is a \emph{p_kXq} matrix : the
 #'    regression matrix per block.}
-#'   \item{mu_x_s}{A list of length \emph{K}. Each element is a \emph{p_k} vector : the
-#'    mean variables per block.}
-#'   \item{sd_x_s}{A list of length \emph{K}. Each element is a \emph{p_k} vector : the
-#'    standard deviation variables per block.}
-#'   \item{mu_y}{A vector of length \emph{q} : the mean variables for \emph{Y} part.}
-#'   \item{sd_y}{A vector of length \emph{q} : the standard deviation variables for \emph{Y} part.}
+#'   \item{(mu_x_s,sd_x_s)}{Two lists of length \emph{K}. Each element is a \emph{p_k} vector : the
+#'    mean and standard deviation variables per block.}
+#'   \item{(mu_y,sd_y)}{Two vectors of length \emph{q} : the mean and the standard deviation variables for \emph{Y} part.}
 #'   \item{R}{Given as an input.}
 #'   \item{q}{A non negatvie integer : the number of variables of \emph{Y} matrix. }
 #'   \item{Ms}{A list of length \emph{K}. Each element is a \emph{qXp_k} matrix : the
@@ -131,56 +129,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   svd_all <- svd(z_all,nu=R,nv=R)
   u <- svd_all$v
   v0 <- svd_all$u
-  if(T){
-    # if(R>1 & K>1){
-    #   BETA_t <- list()
-    #   for(k in 1:K){
-    #     BETA_t[[k]] <- matrix(NA,R,1)
-    #   }
-    #   for(r in  1:R){
-    #     svd_beta_r <- svd(z_r[[r]],nu = 0,nv = 1)
-    #     BETA_r[[r]] <- svd_beta_r$v
-    #     for(k in 1:K){
-    #       BETA_t[[k]][r] <- BETA_r[[r]][k]
-    #     }
-    #   }
-    #   iter_order <- 1
-    #   order_beta_t_0 = order_beta_t <- matrix(rep(1:R,K),nrow = K,byrow = T)
-    #   flag_k <- rep(T,K)
-    #   while(any(flag_k)){
-    #     ## Find order of betas
-    #     for(k in 1:K){
-    #       order_beta_t[k,] <- order(abs(BETA_t[[k]]),decreasing = T)
-    #       browser()
-    #       if(sum(abs(order_beta_t[k,]-order_beta_t_0[k,]))!=0){
-    #         flag_k[k] <- T
-    #         for(r in 1:R){
-    #           z_r[[r]][,k] <- z_r[[order_beta_t[k,r]]][,k]
-    #
-    #         }
-    #       }
-    #       else{
-    #         flag_k[k] <- F
-    #       }
-    #     }
-    #     crit <- 0
-    #     if(any(flag_k)){
-    #       for(r in  1:R){
-    #         svd_beta_r <- svd(z_r[[r]],nu = 0,nv = 1)
-    #         BETA_r[[r]] <- svd_beta_r$v
-    #         for(k in 1:K){
-    #           BETA_t[[k]][r] <- BETA_r[[r]][k]
-    #         }
-    #         lambdas <- apply(z_r[[r]],2,function(zz){sum(zz^2)})
-    #         crit <- crit + sum(BETA_r[[r]]^2*lambdas)
-    #       }
-    #     }
-    #     print(crit)
-    #     order_beta_t_0 <- order_beta_t
-    #
-    #   }
-    # }
-  }
   v <- v0
   s <- Y%*%v0
   t_all <- do.call(cbind,t_r)
@@ -276,29 +224,44 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' model. Default is FALSE.}
 #' }
 #'
-#' @return A list containing the following objects:
-#' \describe{
-#'   \item{mod}{A mddsPLS object, see
-#'    }
-#' }
+#' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
 #'
 #' @export
 #'
-#' @seealso \code{\link{predict.mddsPLS}}
+#' @seealso \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}
 #'
 #' @examples
-#' # Classification example :
+#' # Single-block example :
+#' ## Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 #' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 #'
-#' # Regression example :
+#' ## Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#'
+#' # Multi-block example :
+#' ## Classification example :
+#' data("penicilliumYES")
+#' X <- penicilliumYES$X
+#' X <- scale(X[,which(apply(X,2,sd)>0)])
+#' Xs <- list(X[,1:1000],X[,-(1:1000)])
+#' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
+#' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
+#' mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
+#'
+#' ## Regression example :
+#' data("liver.toxicity")
+#' X <- scale(liver.toxicity$gene)
+#' Xs <- list(X[,1:1910],X[,-(1:1910)])
+#' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
+#' Y <- scale(liver.toxicity$clinic)
+#' mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
@@ -360,14 +323,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
             }
           }
           mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
-          if(sum(abs(mod$s))*sum(abs(mod_0$s))!=0){
+          if(sum(abs(mod$t_frak))*sum(abs(mod_0$t_frak))!=0){
             err <- 0
             for(r in 1:R){
               n_new <- sqrt(sum(mod$t_frak[,r]^2))
               n_0 <- sqrt(sum(mod_0$t_frak[,r]^2))
               err <- err + abs(1-as.numeric(abs(diag(crossprod(mod$t_frak[,r],mod_0$t_frak[,r]))))/(n_new*n_0))
             }
-            print(err)
+            browser()
           }
           else{
             err <- 0
@@ -396,12 +359,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param mod_0 A mdd-sPLS object, output from the mddsPLS function.
 #' @param newX A data-set where individuals are described by the same as for mod_0
 #'
-#' @return Predicted values for those individuals
+#' @return A matrix of estimated \emph{Y_test} values.
 #' @export
 #'
 #' @examples
 #' mod_0 <- mddsPLS(X,Y)
-#' Y_est <- predict(mod_0,X)
+#' Y_test <- predict(mod_0,X)
 predict.mddsPLS  <- function(mod_0,newX){
   fill_X_test <- function(mod_0,X_test){
     lambda <- mod_0$lambda
@@ -473,6 +436,11 @@ predict.mddsPLS  <- function(mod_0,newX){
   is.multi <- is.list(newX)&!(is.data.frame(newX))
   if(!is.multi){
     newX <- list(newX)
+  }
+  for(k in 1:length(newX)){
+    if(is.data.frame(newX[[k]])){
+      newX[[k]] <- as.matrix(newX[[k]])
+    }
   }
   n_new <- nrow(newX[[1]])
   mod <- mod_0$mod

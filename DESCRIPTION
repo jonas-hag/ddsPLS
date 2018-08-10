@@ -1,5 +1,5 @@
 Package: ddsPLS
-Version: 0.0.0.9000
+Version: 0.1.0
 Title: Multi-Data-Driven sparse PLS robust to missing samples
 Description: That package permits to build mdd-sPLS models. Multi-blocks with 
     high-dimensionnal settings are particularly sensible to this.
