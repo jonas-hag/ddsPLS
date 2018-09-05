@@ -12,6 +12,9 @@
 
 \item{plot_mean}{logical. Whether or not to plot the mean curve.}
 
+\item{legend_names}{vector of characters. Each element is the name of one of
+the q response variables.}
+
 \item{pos_legend}{character. One of "bottomleft", "topright",....}
 }
 \value{
@@ -22,6 +25,7 @@ That function must be applied to a perf_mddsPLS object. Extra parameters are
  avalaible to control the plot quality.
 }
 \examples{
+## Not run:
 # Classification example :
 data("penicilliumYES")
 X <- penicilliumYES$X
@@ -39,4 +43,5 @@ Y <- scale(liver.toxicity$clinic)
 res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
  mode = "reg")
 plot(res_cv_reg)
+## End(**Not run**)
 }

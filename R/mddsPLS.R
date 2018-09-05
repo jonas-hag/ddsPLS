@@ -231,6 +231,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' @seealso \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}
 #'
 #' @examples
+#' ## Not run:
 #' # Single-block example :
 #' ## Classification example :
 #' data("penicilliumYES")
@@ -253,7 +254,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' Xs <- list(X[,1:1000],X[,-(1:1000)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
+#' mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.95,R = 2,mode = "clas",verbose = TRUE)
 #'
 #' ## Regression example :
 #' data("liver.toxicity")
@@ -262,6 +263,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#' ## End(**Not run**)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
@@ -316,7 +318,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
                 model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda)
-                mod_i_k <- list(mod=model_here,R=R,mode=mode,maxIter_imput=maxIter_imput)
+                mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 Xs[[k]][i_k,Var_selected_k] <- predict(mod_i_k,newX_i)
               }
@@ -330,7 +332,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               n_0 <- sqrt(sum(mod_0$t_frak[,r]^2))
               err <- err + abs(1-as.numeric(abs(diag(crossprod(mod$t_frak[,r],mod_0$t_frak[,r]))))/(n_new*n_0))
             }
-            browser()
           }
           else{
             err <- 0
@@ -363,8 +364,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @export
 #'
 #' @examples
+#' ## Not run:
+#' data("liver.toxicity")
+#' X <- scale(liver.toxicity$gene)
+#' Y <- scale(liver.toxicity$clinic)
 #' mod_0 <- mddsPLS(X,Y)
 #' Y_test <- predict(mod_0,X)
+#' ## End(**Not run**)
 predict.mddsPLS  <- function(mod_0,newX){
   fill_X_test <- function(mod_0,X_test){
     lambda <- mod_0$lambda

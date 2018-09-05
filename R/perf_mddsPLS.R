@@ -36,10 +36,10 @@
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #'
 #' @return A result of the perf function
-#' @import doParallel
 #' @export
 #'
 #' @examples
+#' ## Not run:
 #' # Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
@@ -55,6 +55,7 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
 #'  mode = "reg")
+#'  ## End(**Not run**)
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,kfolds="loo",
                          mode="reg",fold_fixed=NULL,maxIter_imput=5,errMin_imput=1e-9,NCORES=1){
   ## Xs shaping
@@ -102,8 +103,11 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   }else{
     decoupe <- replicate(nrow(paras)/NCORES + 1, sample(1:NCORES))[1:nrow(paras)]
   }
-  cl <- makeCluster(min(NCORES,nrow(paras)))
-  registerDoParallel(cl)
+  NCORES_w <- min(NCORES,nrow(paras))
+  if(NCORES_w!=1){
+    cl <- parallel::makeCluster(NCORES_w)
+    doParallel::registerDoParallel(cl)
+  }
   ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
                     .combine = rbind,.packages = c("ddsPLS","MASS")) %dopar% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
@@ -159,7 +163,10 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       }
                       cbind(paras_here,errors,select_y,has_converged,time_build)
                     }
-  stopCluster(cl)
+  if(NCORES_w!=1){
+    parallel::stopCluster(cl)
+  }
+
   paras_out <- expand.grid(R,Lambdas)
   ERRORS_OUT <- matrix(NA,nrow(paras_out),q)
   if(mode=="reg"){
@@ -199,11 +206,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
 #' @param res_perf_mdd The perf_mddsPLS object.
 #' @param plot_mean logical. Whether or not to plot the mean curve.
 #' @param pos_legend character. One of "bottomleft", "topright",....
+#' @param legend_names vector of characters. Each element is the name of one of
+#'  the q response variables.
 #'
 #' @return The plot visualisation
 #' @export
 #'
 #' @examples
+#' ## Not run:
 #' # Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
@@ -221,6 +231,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
 #' res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=10,R = 1,
 #'  mode = "reg")
 #' plot(res_cv_reg)
+#' ## End(**Not run**)
 plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=FALSE,legend_names=NULL,
                               pos_legend="bottomleft"){
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
@@ -242,9 +253,11 @@ plot.perf_mddsPLS <- function(res_perf_mdd,plot_mean=FALSE,legend_names=NULL,
   if(q<3){
     colors <- 1:q
   }else if(q>8){
-    colors <- viridis(n=q)
+    colors <- RColorBrewer::brewer.pal(8, "Dark2")
+    pal <- colorRampPalette(colors)
+    colors <- pal(q)
   }else{
-    colors <- brewer.pal(q, "Dark2")
+    colors <- RColorBrewer::brewer.pal(q, "Dark2")
   }
   if(res_perf_mdd$mod=="reg"){
     ylab1<-"MSEP"
