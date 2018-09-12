@@ -2,24 +2,12 @@
 #'
 #' This function should not be used directly by the user.
 #'
-#' @format A list containing the following objects:
-#' \describe{
-#'   \item{Xs}{A data-frame of a matrix or a list of data-frames or matrices of
-#' \emph{n} rows each, the number of individuals. Some rows must be missing. The
-#' different matrices can have different numbers of columns. The length of Xs is
-#' denoted by \emph{K}.}
-#'   \item{Y}{A matrix of n rows of a vector of length n detailing the
-#' response matrix. No missing values are allowed in that matrix.}
-#'   \item{lambda}{A real \eqn{[0,1]} where 1 means just perfect correlations
-#' will be used and 0 no regularization is used.}
-#'   \item{R}{A strictly positive integer detailing the number of components to
-#' build in the model.}
-#'   \item{mode}{A character chain. Possibilities are "\emph{reg}", which implies
-#'  regression problem or anything else which means clustering is considered.
-#'  Default is "\emph{reg}".}
-#'   \item{verbose}{Logical. If TRUE, the function cats specificities about the
-#' model. Default is FALSE.}
-#' }
+#' @param Xs A data-frame of a matrix or a list of data-frames or matrices of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
+#' @param Y A matrix of n rows of a vector of length n detailing the response matrix. No missing values are allowed in that matrix.
+#' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
+#' @param R A strictly positive integer detailing the number of components to build in the model.
+#' @param mode A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".
+#' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #'
 #' @return A list containing the following objects:
 #' \describe{
@@ -52,7 +40,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   ps <- lapply(Xs,ncol)
   ## Standardize Xs
   mu_x_s <- lapply(Xs,colMeans)
-  sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)})
+  sd_x_s <- lapply(Xs,function(X){apply(X,2,stats::sd)})
   Xs <- lapply(Xs,scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
   if(length(unlist(pos_0))>0){
@@ -69,10 +57,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   }
   else{
     Y_df <- data.frame(Y)
-    Y <- scale(model.matrix( ~ Y - 1, data=Y_df))
+    Y <- scale(stats:: model.matrix( ~ Y - 1, data=Y_df))
   }
   mu_y <- colMeans(Y)
-  sd_y <- apply(Y,2,sd)
+  sd_y <- apply(Y,2,stats::sd)
   for(q_j in 1:length(sd_y)){
     if(sd_y[q_j]!=0){
       Y[,q_j] <- scale(Y[,q_j])
@@ -163,7 +151,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
-    sds <- apply(dataf[,-1,drop=FALSE],2,sd)
+    sds <- apply(dataf[,-1,drop=FALSE],2,stats::sd)
     if(any(sds==0)){
       pos_sd0 <- as.numeric(which(sds==0))
       if(length(pos_sd0)==length(sds)){
@@ -200,29 +188,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
 #' \eqn{X} and \eqn{Y} datasets.
 #'
-#' @format A list containing the following objects:
-#' \describe{
-#'   \item{Xs}{A data-frame of a matrix or a list of data-frames or matrices of
-#' \emph{n} rows each, the number of individuals. Some rows must be missing. The
-#' different matrices can have different numbers of columns. The length of Xs is
-#' denoted by \emph{K}.}
-#'   \item{Y}{A matrix of \emph{n} rows of a vector of length \emph{n} detailing the
-#' response matrix. No missing values are allowed in that matrix.}
-#'   \item{lambda}{A real \eqn{[0,1]} where 1 means just perfect correlations
-#' will be used and 0 no regularization is used.}
-#'   \item{R}{A strictly positive integer detailing the number of components to
-#' build in the model.}
-#'   \item{mode}{A character chain. Possibilities are "\emph{reg}", which implies
-#'  regression problem or anything else which means clustering is considered.
-#'  Default is "\emph{reg}".}
-#'   \item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the
-#' Koh-Lanta algorithm. Default is \eqn{1e-9}.}
-#'   \item{maxIter_imput}{Positive integer. Maximal number of iterations in the
-#' Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is
-#'  considered. Default is \eqn{5}.}
-#'   \item{verbose}{Logical. If TRUE, the function cats specificities about the
-#' model. Default is FALSE.}
-#' }
+#' @param Xs A data-frame of a matrix or a list of data-frames or matrices of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
+#' @param Y A matrix of \emph{n} rows of a vector of length \emph{n} detailing the response matrix. No missing values are allowed in that matrix.
+#' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
+#' @param R A strictly positive integer detailing the number of components to build in the model.
+#' @param mode A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".
+#' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
+#' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
+#' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
 #'
@@ -236,7 +209,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' ## Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
-#' X <- scale(X[,which(apply(X,2,sd)>0)])
+#' X <- scale(X[,which(apply(X,2,stats::sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 #' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 #'
@@ -250,7 +223,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' ## Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
-#' X <- scale(X[,which(apply(X,2,sd)>0)])
+#' X <- scale(X[,which(apply(X,2,stats::sd)>0)])
 #' Xs <- list(X[,1:1000],X[,-(1:1000)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
@@ -320,7 +293,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                 model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda)
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
-                Xs[[k]][i_k,Var_selected_k] <- predict(mod_i_k,newX_i)
+                Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
               }
             }
           }
@@ -353,179 +326,3 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   class(out) <- "mddsPLS"
   out
 }
-
-
-#' The predict function of a mdd-sPLS model
-#'
-#' @param mod_0 A mdd-sPLS object, output from the mddsPLS function.
-#' @param newX A data-set where individuals are described by the same as for mod_0
-#'
-#' @return A matrix of estimated \emph{Y_test} values.
-#' @export
-#'
-#' @examples
-#' ## Not run:
-#' data("liver.toxicity")
-#' X <- scale(liver.toxicity$gene)
-#' Y <- scale(liver.toxicity$clinic)
-#' mod_0 <- mddsPLS(X,Y)
-#' Y_test <- predict(mod_0,X)
-#' ## End(**Not run**)
-predict.mddsPLS  <- function(mod_0,newX){
-  fill_X_test <- function(mod_0,X_test){
-    lambda <- mod_0$lambda
-    R <- mod_0$mod$R
-    id_na_test <- unlist(lapply(X_test,function(x){anyNA(x)}))
-    mod <- mod_0$mod
-    if(any(id_na_test)){
-      ## Create covariable matrix train
-      pos_ok <- which(!id_na_test)
-      t_X_here <- do.call(cbind,lapply(1:R,function(ii,ti){
-        ti[[ii]][,pos_ok]
-      },mod$ts))
-      u_X_here <- mod$u[pos_ok]
-      mu_x_here <- mod$mu_x_s[pos_ok]
-      sd_x_0 <- mod$sd_x_s[pos_ok]
-      ## Create to be predicted matrix train
-      pos_no_ok <- (1:K)[-pos_ok]
-      pos_vars_Y_here <- lapply(mod$u[pos_no_ok],function(u){which(rowSums(abs(u))!=0)})
-      if(sum(unlist(pos_vars_Y_here))!=0){
-        nvars_Y_here_TOTAL <- length(unlist(pos_vars_Y_here))
-        vars_Y_here <- matrix(0,nrow(t_X_here),nvars_Y_here_TOTAL)
-        C_pos <- 1
-        for(k_id in 1:length(pos_no_ok)){
-          vars_k_id <- pos_vars_Y_here[[k_id]]
-          if(length(vars_k_id)>0){
-            vars_Y_here[,C_pos+(0:(length(vars_k_id)-1))] <- mod_0$Xs[[pos_no_ok[k_id]]][,vars_k_id,drop=FALSE]
-            C_pos <- C_pos + length(vars_k_id)
-          }
-        }
-      }
-      else{
-        vars_Y_here <- matrix(0,nrow(t_X_here),1)
-      }
-      ## Generate model
-      model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,R = R,maxIter_imput = mod_0$maxIter_imput)
-      ## Create test dataset
-      n_test <- nrow(X_test[[1]])
-      t_X_test <- matrix(NA,n_test,ncol(t_X_here))
-      K_h <- sum(1-id_na_test)
-      for(r_j in 1:R){
-        for(k_j in 1:K_h){
-          kk <- pos_ok[k_j]
-          pos_col <- (r_j-1)*K_h+k_j
-          xx <- X_test[[kk]]
-          for(id_xx in 1:n_test){
-            xx[id_xx,] <- xx[id_xx,]-mu_x_here[[k_j]]
-            xx[id_xx,which(sd_x_0[[k_j]]!=0)] <-
-              xx[id_xx,which(sd_x_0[[k_j]]!=0)]/sd_x_0[[k_j]][which(sd_x_0[[k_j]]!=0)]
-          }
-          t_X_test[,pos_col] <- xx%*%u_X_here[[k_j]][,r_j]
-        }
-      }
-      ## Estimate missing values
-      res <- predict(model_impute_test,t_X_test)
-      ## Put results inside Xs
-      C_pos <- 1
-      for(k_id in 1:length(pos_no_ok)){
-        vars_k_id <- pos_vars_Y_here[[k_id]]
-        X_test[[pos_no_ok[k_id]]] <- matrix(mod$mu_x_s[[pos_no_ok[k_id]]],nrow = 1)
-        if(length(vars_k_id)>0){
-          X_test[[pos_no_ok[k_id]]][1,vars_k_id] <- res[C_pos+(0:(length(vars_k_id)-1))]
-          C_pos <- C_pos + length(vars_k_id)
-        }
-      }
-    }
-    X_test
-  }
-
-  is.multi <- is.list(newX)&!(is.data.frame(newX))
-  if(!is.multi){
-    newX <- list(newX)
-  }
-  for(k in 1:length(newX)){
-    if(is.data.frame(newX[[k]])){
-      newX[[k]] <- as.matrix(newX[[k]])
-    }
-  }
-  n_new <- nrow(newX[[1]])
-  mod <- mod_0$mod
-  q <- mod$q
-  if(n_new==1){
-    K <- length(newX)
-    id_na_test <- unlist(lapply(newX,function(x){anyNA(x)}))
-    if(any(id_na_test)){
-      if(K>1 & mod_0$maxIter_imput>0){
-        newX <- fill_X_test(mod_0,newX)
-      }
-      else{
-        for(k in 1:K){
-          if(id_na_test[k]){
-            newX[[k]][1,] <- mod_0$mod$mu_x_s[[k]]
-          }
-        }
-      }
-    }
-    mode <- mod_0$mode
-    Y_0 <- mod_0$Y_0
-    mu_x_s <- mod$mu_x_s
-    sd_x_s <- mod$sd_x_s
-    mu_y <- mod$mu_y
-    sd_y <- mod$sd_y
-    R <- mod$R
-    K <- length(mu_x_s)
-    for(k in 1:K){
-      for(i in 1:n_new){
-        newX[[k]][i,]<-(newX[[k]][i,]-mu_x_s[[k]])
-        ok_sd <- which(sd_x_s[[k]]!=0)
-        newX[[k]][i,ok_sd] <- newX[[k]][i,ok_sd]/sd_x_s[[k]][ok_sd]
-      }
-    }
-    if(mode=="reg"){
-      newY <- matrix(0,n_new,q)
-      for(k in 1:K){
-        newY <- newY + newX[[k]]%*%mod$B[[k]]
-      }
-      for(i in 1:n_new){
-        newY[i,]<-newY[i,]*sd_y+mu_y
-      }
-    }
-    else{
-      t_r_new <- list()
-      for(k in 1:K){
-        if(k==1){
-          for(r in 1:R){
-            t_r_new[[r]] <- matrix(NA,n_new,K)
-          }
-        }
-        for(r in 1:R){
-          t_r_new[[r]][,k] <- newX[[k]]%*%mod_0$mod$u[[k]][,r]
-        }
-      }
-      df_new <- data.frame(do.call(cbind,t_r_new)%*%mod_0$mod$beta_comb)
-      colnames(df_new) <- paste("X",2:(ncol(df_new)+1),sep="")
-      if(is.null(mod_0$mod$B)){
-        newY <- list(class=sample(levels(mod_0$Y_0),size = 1,
-                                  prob = table(mod_0$Y_0)/sum(table(mod_0$Y_0))))
-      }
-      else if(!is.null(mod_0$mod$B$sds)){
-        pos_sds_0 <- 1+which(mod_0$mod$B$sds)
-        newY <- predict(mod_0$mod$B,df_new[,c(1,pos_sds_0)])
-      }else{
-        newY <- predict(mod_0$mod$B,df_new)
-      }
-    }
-  }
-  else{
-    newY <- matrix(NA,n_new,q)
-    for(i_new in 1:n_new){
-      newY[i_new,] <- predict(mod_0,lapply(newX,
-                                           function(nx,ix){
-                                             nx[ix,,drop=FALSE]
-                                             },i_new))
-    }
-  }
-  newY
-}
-
-

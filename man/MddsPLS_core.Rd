@@ -3,26 +3,22 @@
 \name{MddsPLS_core}
 \alias{MddsPLS_core}
 \title{The core function of the Multi-Data-Driven sparse PLS function}
-\format{A list containing the following objects:
-\describe{
-  \item{Xs}{A data-frame of a matrix or a list of data-frames or matrices of
-\emph{n} rows each, the number of individuals. Some rows must be missing. The
-different matrices can have different numbers of columns. The length of Xs is
-denoted by \emph{K}.}
-  \item{Y}{A matrix of n rows of a vector of length n detailing the
-response matrix. No missing values are allowed in that matrix.}
-  \item{lambda}{A real \eqn{[0,1]} where 1 means just perfect correlations
-will be used and 0 no regularization is used.}
-  \item{R}{A strictly positive integer detailing the number of components to
-build in the model.}
-  \item{mode}{A character chain. Possibilities are "\emph{reg}", which implies
- regression problem or anything else which means clustering is considered.
- Default is "\emph{reg}".}
-  \item{verbose}{Logical. If TRUE, the function cats specificities about the
-model. Default is FALSE.}
-}}
 \usage{
-MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", verbose = FALSE)
+MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg",
+  verbose = FALSE)
+}
+\arguments{
+\item{Xs}{A data-frame of a matrix or a list of data-frames or matrices of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
+
+\item{Y}{A matrix of n rows of a vector of length n detailing the response matrix. No missing values are allowed in that matrix.}
+
+\item{lambda}{A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.}
+
+\item{R}{A strictly positive integer detailing the number of components to build in the model.}
+
+\item{mode}{A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".}
+
+\item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
 }
 \value{
 A list containing the following objects:
