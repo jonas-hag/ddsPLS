@@ -34,7 +34,6 @@ must be built on. The coefficient lambda regularizes the quality of proximity to
 \eqn{X} and \eqn{Y} datasets.
 }
 \examples{
-## Not run:
 # Single-block example :
 ## Classification example :
 data("penicilliumYES")
@@ -66,7 +65,6 @@ Xs <- list(X[,1:1910],X[,-(1:1910)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- scale(liver.toxicity$clinic)
 mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
-## End(**Not run**)
 }
 \seealso{
 \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}

@@ -62,7 +62,6 @@ the cross-validation process is made on the given set
 of parameters.
 }
 \examples{
-## Not run:
 library(doParallel)
 # Classification example :
 data("penicilliumYES")
@@ -79,5 +78,4 @@ X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
 #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
 # mode = "reg")
-## End(**Not run**)
 }

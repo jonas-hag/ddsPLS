@@ -20,11 +20,9 @@ A matrix of estimated \emph{Y_test} values.
 The predict function of a mdd-sPLS model
 }
 \examples{
-## Not run:
 data("liver.toxicity")
 X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
 mod_0 <- mddsPLS(X,Y)
 Y_test <- predict(mod_0,X)
-## End(**Not run**)
 }
