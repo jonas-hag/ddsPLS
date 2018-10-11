@@ -4,10 +4,7 @@
 #' the cross-validation process is made on the given set
 #' of parameters.
 #'
-#' @param Xs A data-frame of a matrix or a list of data-frames or matrices of
-#' $n$ rows each, the number of individuals. Some rows must be missing. The
-#' different matrices can have different numbers of columns.
-#' @param Y A matrix of n rows of a vector of length n detailing the
+#' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
 #' response matrix. No missing values are allowed in that matrix.
 #' @param lambda_min A real in \eqn{[0,1]}. The minimum value considered.
 #'  Default is \eqn{0}.
