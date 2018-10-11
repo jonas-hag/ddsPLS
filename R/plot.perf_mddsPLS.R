@@ -37,7 +37,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
 
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
-    cc <- t(na.omit(abs(crossprod(X_all,scale(res_perf_mdd$Y))/(nrow(res_perf_mdd$Y)-1))))
+    cc <- abs(crossprod(scale(res_perf_mdd$Y),X_all)/(nrow(res_perf_mdd$Y)-1))
+    col_na <- which(is.na(colSums(cc)))
+    if(length(col_na)>0){
+      cc <- cc[,-col_na,drop=F]
+    }
   }
   else{
     Y_df <- data.frame(res_perf_mdd$Y)
