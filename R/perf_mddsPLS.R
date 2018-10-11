@@ -171,6 +171,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   }
 
   paras_out <- expand.grid(R,Lambdas)
+  colnames(paras_out) <- c("R","Lambdas")
   ERRORS_OUT <- matrix(NA,nrow(paras_out),q)
   if(mode=="reg"){
     FREQ_OUT <- matrix(NA,nrow(paras_out),q)

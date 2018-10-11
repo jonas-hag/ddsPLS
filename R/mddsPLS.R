@@ -176,12 +176,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   V_super <- Z%*%beta_all
   for(r in 1:R){
     beta_list[[r]] <- beta_all[K*(r-1)+1:K,,drop=F]
-    norm_v_r <- sqrt(sum(V_super[,r]^2))
-    if(norm_v_r>0){
-      V_super[,r] <- V_super[,r]/norm_v_r
-    }
   }
-  v <- V_super
+  v = V_super <- svd_Z$u
   for(k in 1:K){
     U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
     for(r in 1:R){
@@ -194,24 +190,19 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 
   ## -------------------------- ######################### -----------------
   S_super <- Y%*%V_super
-  svd_ort <- svd(crossprod(S_super,T_super),nu = R,nv = R)
-  u_ort <- svd_ort$u
-  v_ort <- svd_ort$v
-  Delta_ort <- svd_ort$d
+  T_S <- crossprod(T_super,S_super)
+  T_T <- crossprod(T_super)
+  # svd_ort <- svd(S_T,nu = R,nv = R)
+  svd_ort_T_super <- svd(T_T,nu = R,nv = R)
+  u_ort <- svd_ort_T_super$u
+  v_ort <- svd_ort_T_super$v
+  Delta_ort <- svd_ort_T_super$d
   t_ort <- T_super%*%u_ort
   s_ort <- S_super%*%v_ort
-  # A <- rep(0,R)
-  # for(r in 1:R){
-  #   n_t_2<-sum(diag(crossprod(t_ort[,r])))#t[,r])))
-  #   if(n_t_2!=0){
-  #     A[r] <- sum(diag(crossprod(s_ort[,r],t_ort[,r])))/n_t_2#sum(diag(crossprod(s[,r],t[,r])))/n_t_2
-  #   }else{
-  #     A[r] <- 0
-  #   }
-  # }
+
   D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
   diag(D_0_inv) <- 1/Delta_ort
-  B_0 <- v_ort%*%tcrossprod(D_0_inv,u_ort)%*%crossprod(S_super)
+  B_0 <- v_ort%*%tcrossprod(D_0_inv,u_ort)%*%T_S
 
   A <- matrix(0,R,R)
   for(r in 1:R){
@@ -227,17 +218,16 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     B <- list()
     count <- 1
     for(k in 1:K){
-      # D_A <- A
-      # if(length(A)!=1){D_A <- diag(D_A)}
-      # B_k <- tcrossprod(U_t_super[[k]]%*%B_0,V_super)
+      B_k <- tcrossprod(U_t_super[[k]]%*%B_0,V_super)
+      if(anyNA(B_k)){
+        B_k <- matrix(0,nrow(B_k),ncol(B_k))
+      }
+
+      # B_k <-  U_t_super[[k]]%*%u_ort%*%A%*%t(v%*%v_ort)
       # if(anyNA(B_k)){
       #   B_k <- matrix(0,nrow(B_k),ncol(B_k))
       # }
 
-      B_k <-  U_t_super[[k]]%*%u_ort%*%A%*%t(v%*%v_ort)
-      if(anyNA(B_k)){
-        B_k <- matrix(0,nrow(B_k),ncol(B_k))
-      }
       B[[k]] <- B_k
     }
   }

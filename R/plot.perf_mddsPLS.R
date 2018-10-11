@@ -37,7 +37,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
 
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
-    cc <- abs(crossprod(scale(res_perf_mdd$Y),X_all)/(nrow(res_perf_mdd$Y)-1))
+    cc <- t(na.omit(abs(crossprod(X_all,scale(res_perf_mdd$Y))/(nrow(res_perf_mdd$Y)-1))))
   }
   else{
     Y_df <- data.frame(res_perf_mdd$Y)
@@ -147,7 +147,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
             main=main2)
     pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
     pos_y[length(pos_y)] <- min(max(pos_y),length(ranges_y))
-    graphics::axis(side = 3,at=ranges_y[pos_y],labels=card_ranges_y[pos_y], col="blue",col.axis="blue")
+    graphics::axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
     graphics::mtext("", side = 3, line = 3, col = "blue")
   }
 }
