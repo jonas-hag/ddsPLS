@@ -1,5 +1,5 @@
 Package: ddsPLS
-Version: 1.0.0
+Version: 1.0.1
 Title: Multi-Data-Driven Sparse PLS Robust to Missing Samples
 Description: Allows to build Multi-Data-Driven Sparse PLS models. Multi-blocks with 
     high-dimensional settings are particularly sensible to this.
@@ -11,7 +11,7 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 RoxygenNote: 6.1.0
-Imports: RColorBrewer,MASS,graphics,stats,utils,Rdpack,doParallel,foreach,parallel,iterators
+Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel
 RdMacros: Rdpack
 Suggests: knitr,rmarkdown
 Depends: R (>= 2.10)
