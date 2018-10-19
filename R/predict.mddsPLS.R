@@ -49,7 +49,7 @@ predict.mddsPLS  <- function(object,newdata,...){
         }
       }
       else{
-        vars_Y_here <- matrix(0,nrow(t_X_here),1)
+        vars_Y_here <- matrix(0,nrow(t_X_here),R)
       }
       ## Generate model
       model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,R = R,maxIter_imput = mod_0$maxIter_imput)

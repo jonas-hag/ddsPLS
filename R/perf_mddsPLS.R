@@ -106,12 +106,19 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   }else{
     decoupe <- replicate(nrow(paras)/NCORES + 1, sample(1:NCORES))[1:nrow(paras)]
   }
+
   NCORES_w <- min(NCORES,nrow(paras))
   if(NCORES_w!=1){
+    unregister <- function() {
+      env <- foreach:::.foreachGlobals
+      rm(list=ls(name=env), pos=env)
+    }
+    unregister()
     cl <- parallel::makeCluster(NCORES_w)
     doParallel::registerDoParallel(cl)
   }
   pos_decoupe <- NULL
+  options(warn=-1)
   ERRORS <- foreach::foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
                     .combine = rbind,.packages = c("ddsPLS","MASS")) %dopar% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
@@ -170,6 +177,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   if(NCORES_w!=1){
     parallel::stopCluster(cl)
   }
+  options(warn=0)
 
   paras_out <- expand.grid(R,Lambdas)
   colnames(paras_out) <- c("R","Lambdas")
