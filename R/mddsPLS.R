@@ -196,7 +196,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
   # u_ort <- svd_ort_T_super$u
   v_ort <- svd_ort_T_super$v
-  Delta_ort <- svd_ort_T_super$d
+  Delta_ort <- svd_ort_T_super$d^2
   t_ort <- T_super%*%v_ort
   if(ncol(S_super)!=nrow(v_ort)){
     browser()

@@ -12,11 +12,11 @@ bibliography: bib.bib
 
 Control the number of $\lambda$ parameters to test in the cross-validation processes
 ```{r}
-n_lambda <- 3
+n_lambda <- 1
 ```
 Control the number of cores to use in the cross-validation processes. If equals $1$, then no parallel computation structure is deployed
 ```{r}
-NCORES <- 7
+NCORES <- 1
 ```
 
 
