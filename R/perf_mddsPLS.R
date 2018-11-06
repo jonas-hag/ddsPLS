@@ -107,19 +107,26 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     decoupe <- replicate(nrow(paras)/NCORES + 1, sample(1:NCORES))[1:nrow(paras)]
   }
   NCORES_w <- min(NCORES,nrow(paras))
-  if(NCORES_w!=1){
-    unregister <- function() {
-      env <- foreach::.foreachGlobals
-      rm(list=ls(name=env), pos=env)
-    }
-    unregister()
+  # if(NCORES_w!=1){
+  #   unregister <- function() {
+  #     env <- foreach:::.foreachGlobals
+  #     rm(list=ls(name=env), pos=env)
+  #   }
+  #   unregister()
+  #   cl <- parallel::makeCluster(NCORES_w)
+  #   doParallel::registerDoParallel(cl)
+  # }
+  `%my_do%` <- ifelse(NCORES_w==1,{
+    out<-`%dopar%`
     cl <- parallel::makeCluster(NCORES_w)
     doParallel::registerDoParallel(cl)
-  }
+    out
+    },
+    `%do%`)
   pos_decoupe <- NULL
   options(warn=-1)
   ERRORS <- foreach::foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
-                    .combine = rbind,.packages = c("ddsPLS","MASS")) %dopar% {
+                    .combine = rbind,.packages = c("ddsPLS","MASS")) %my_do% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
                       paras_here <- paras[paras_here_pos,,drop=FALSE]
                       if(mode=="reg"){
