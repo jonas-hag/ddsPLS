@@ -80,11 +80,11 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     q_out <- nlevels(Y)
   }
   ## CV design
-  if(kfolds=="loo"){
+  if(kfolds=="loo" & is.null(fold_fixed)){
     kfolds <- n
     fold <- 1:n
   }
-  else if(kfolds=="fixed"){
+  else if(!is.null(fold_fixed)){
     fold <- fold_fixed
   }
   else{
@@ -106,11 +106,10 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   }else{
     decoupe <- replicate(nrow(paras)/NCORES + 1, sample(1:NCORES))[1:nrow(paras)]
   }
-
   NCORES_w <- min(NCORES,nrow(paras))
   if(NCORES_w!=1){
     unregister <- function() {
-      env <- foreach:::.foreachGlobals
+      env <- foreach::.foreachGlobals
       rm(list=ls(name=env), pos=env)
     }
     unregister()
@@ -159,6 +158,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         time_build[i] <- as.numeric((Sys.time()-t1))
                         has_converged[i] <- mod_0$has_converged
                         Y_est <- predict.mddsPLS(mod_0,X_test)
+                        Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
@@ -166,8 +166,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           select_y[i,v_no_null] <- 1
                         }
                         else{
-                          errors[i] <- paste(as.character(Y_est$class),
-                                             as.character(Y_test),sep="/")
+                          errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")#length(which(Y_est!=as.numeric(Y_test)))#
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
                           select_y[i,v_no_null] <- 1
                         }
@@ -178,7 +177,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     parallel::stopCluster(cl)
   }
   options(warn=0)
-
   paras_out <- expand.grid(R,Lambdas)
   colnames(paras_out) <- c("R","Lambdas")
   ERRORS_OUT <- matrix(NA,nrow(paras_out),q)
@@ -198,10 +196,16 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
     }else{
       err_char <- ERRORS[pos_in_errors,1:(q)+3]
-      err_char_spl <- do.call(rbind,strsplit(as.character(levels(err_char)[err_char]),
-                                             split = "/",fixed = TRUE))
-      colnames(err_char_spl) <- c("pred","obse")
-      ERRORS_OUT[i,] <- abs(diag(table(err_char_spl[,1],err_char_spl[,2]))-table(err_char_spl[,2]))
+      mat_errors <- matrix(NA,length(fold),2)
+      lev_Y <- levels(Y)
+      for(ii in 1:max(fold)){
+        i_fold_ii <- which(fold==ii)
+        hihi <- unlist(strsplit(as.character(err_char[ii]),split = " ",fixed = TRUE))
+        for(jj in 1:length(hihi)){
+          mat_errors[i_fold_ii[jj],] <- unlist(strsplit(hihi[jj],split = "/",fixed = TRUE))
+        }
+      }
+      ERRORS_OUT[i,] <- abs(diag(table(mat_errors[,1],mat_errors[,2]))-table(mat_errors[,2]))
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=FALSE])
     }
   }

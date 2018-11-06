@@ -39,7 +39,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   if(res_perf_mdd$mode=="reg"){
     cc <- matrix(NA,nrow = ncol(Y),ncol = ncol(X_all))
     for(j in 1:ncol(X_all)){
-      cc[,j] <- abs(cor(res_perf_mdd$Y,X_all[,j],use = "pairwise.complete.obs"))
+      cc[,j] <- abs(stats::cor(res_perf_mdd$Y,X_all[,j],use = "pairwise.complete.obs"))
     }
     # cc <- abs(crossprod(scale(res_perf_mdd$Y),X_all)/(nrow(res_perf_mdd$Y)-1))
     col_na <- which(is.na(colSums(cc)))

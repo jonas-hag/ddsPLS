@@ -13,6 +13,8 @@
 #' \describe{
 #'   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
 #'    weights per block per axis.}
+#'   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
+#'    weights per block per axis scaled on the super description of the dataset.}
 #'   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
 #'   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
 #'    scores per axis per block.}
@@ -185,9 +187,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     }
     T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
   }
-
-
-
   ## -------------------------- ######################### -----------------
   S_super <- Y%*%V_super
   T_S <- crossprod(T_super,S_super)
@@ -198,9 +197,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   v_ort <- svd_ort_T_super$v
   Delta_ort <- svd_ort_T_super$d^2
   t_ort <- T_super%*%v_ort
-  if(ncol(S_super)!=nrow(v_ort)){
-    browser()
-  }
   s_ort <- S_super%*%v_ort
 
   D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
@@ -256,8 +252,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     cat(paste("        @ (",paste(apply(v,2,function(u){length(which(abs(u)>1e-9))}),
                                   collapse = ","),") variable(s)",sep=""));cat("\n")
   }
-  list(u=u_t_r,v=v,ts=t_r,beta_comb=u,t=t,s=s,t_ort=t_ort,s_ort=s_ort,B=B,mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,
-       sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda)
+  list(u=u_t_r,u_t_super=U_t_super,v=v,ts=t_r,beta_comb=u,t=t,s=s,t_ort=t_ort,s_ort=s_ort,B=B,
+       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda)
 }
 
 
@@ -390,7 +386,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           else{
             err <- 0
           }
-          print(err)
           if(iter>=maxIter_imput){
             has_converged <- 0
           }
