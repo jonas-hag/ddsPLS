@@ -107,16 +107,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     decoupe <- replicate(nrow(paras)/NCORES + 1, sample(1:NCORES))[1:nrow(paras)]
   }
   NCORES_w <- min(NCORES,nrow(paras))
-  # if(NCORES_w!=1){
-  #   unregister <- function() {
-  #     env <- foreach:::.foreachGlobals
-  #     rm(list=ls(name=env), pos=env)
-  #   }
-  #   unregister()
-  #   cl <- parallel::makeCluster(NCORES_w)
-  #   doParallel::registerDoParallel(cl)
-  # }
-  library(doParallel)
   `%my_do%` <- ifelse(NCORES_w!=1,{
     out<-`%dopar%`
     cl <- parallel::makeCluster(NCORES_w)
