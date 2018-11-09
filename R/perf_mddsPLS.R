@@ -116,13 +116,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   #   cl <- parallel::makeCluster(NCORES_w)
   #   doParallel::registerDoParallel(cl)
   # }
-  `%my_do%` <- ifelse(NCORES_w==1,{
+  library(doParallel)
+  `%my_do%` <- ifelse(NCORES_w!=1,{
     out<-`%dopar%`
     cl <- parallel::makeCluster(NCORES_w)
     doParallel::registerDoParallel(cl)
-    out
-    },
-    `%do%`)
+    out},{
+    out <- `%do%`
+    out})
   pos_decoupe <- NULL
   options(warn=-1)
   ERRORS <- foreach::foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
@@ -165,7 +166,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         time_build[i] <- as.numeric((Sys.time()-t1))
                         has_converged[i] <- mod_0$has_converged
                         Y_est <- predict.mddsPLS(mod_0,X_test)
-                        Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
@@ -173,6 +173,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           select_y[i,v_no_null] <- 1
                         }
                         else{
+                          Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                           errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")#length(which(Y_est!=as.numeric(Y_test)))#
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
                           select_y[i,v_no_null] <- 1
