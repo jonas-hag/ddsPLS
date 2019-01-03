@@ -60,6 +60,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   else{
     Y_df <- data.frame(Y)
     Y <- scale(stats:: model.matrix( ~ Y - 1, data=Y_df))
+    if(length(table(Y))<=2){
+      Y <- Y[,1,drop=F]
+    }
   }
   mu_y <- colMeans(Y)
   sd_y <- apply(Y,2,stats::sd)
@@ -409,3 +412,4 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   class(out) <- "mddsPLS"
   out
 }
+
