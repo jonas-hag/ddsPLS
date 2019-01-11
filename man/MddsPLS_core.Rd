@@ -4,7 +4,7 @@
 \alias{MddsPLS_core}
 \title{The core function of the Multi-Data-Driven sparse PLS function}
 \usage{
-MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg",
+MddsPLS_core(Xs, Y, lambda = 0, alpha = 1, R = 1, mode = "reg",
   verbose = FALSE)
 }
 \arguments{

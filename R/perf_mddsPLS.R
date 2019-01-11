@@ -59,7 +59,7 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
 #' # mode = "reg")
-perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,kfolds="loo",
+perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,alpha=alpha,R=1,kfolds="loo",
                          mode="reg",fold_fixed=NULL,maxIter_imput=20,errMin_imput=1e-9,NCORES=1){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
@@ -93,7 +93,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   ## Get highest Lambda
   if(is.null(lambdas)){
     if(is.null(lambda_max)){
-      MMss0 <- mddsPLS(Xs,Y,lambda = 0,R = 1,mode = mode,maxIter_imput = 0)$mod$Ms
+      MMss0 <- mddsPLS(Xs,Y,lambda = 0,alpha=alpha,R = 1,mode = mode,maxIter_imput = 0)$mod$Ms
       lambda_max <- max(unlist(lapply(MMss0,
                                       function(Mi){max(abs(Mi))})))
     }
@@ -150,7 +150,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           Y_train <- Y[pos_train]
                           Y_test <- Y[-pos_train]
                         }
-                        mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
+                        mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,alpha=alpha,
                                          R = R,mode = mode,errMin_imput = errMin_imput,
                                          maxIter_imput = maxIter_imput)
                         time_build[i] <- as.numeric((Sys.time()-t1))

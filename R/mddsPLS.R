@@ -327,7 +327,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,alpha=1,R=1,mode="reg",verbose=FALSE){
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
-mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
+mddsPLS <- function(Xs,Y,lambda=0,alpha=1,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
@@ -346,7 +346,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = TRUE)})
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,alpha=alpha,R=R,mode=mode,verbose=verbose)
   }else{
     ## If ther are some missing samples
     for(k in 1:K){## ## Imputation to mean
@@ -359,7 +359,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     if(K>1){
       # Xs_init <- Xs
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,alpha=alpha,R=R,mode=mode)
       if(sum(abs(as.vector(mod_0$s)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -387,7 +387,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
+          mod <- MddsPLS_core(Xs,Y,lambda=lambda,alpha=alpha,R=R,mode=mode)
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
@@ -412,7 +412,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         }
       }
     }
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,alpha=alpha,R=R,mode=mode,verbose=verbose)
   }
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,
               maxIter_imput=maxIter_imput,has_converged=has_converged)
