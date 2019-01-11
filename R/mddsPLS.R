@@ -33,7 +33,7 @@
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
-MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
+MddsPLS_core <- function(Xs,Y,lambda=0,alpha=1,R=1,mode="reg",verbose=FALSE){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -75,7 +75,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   if(length(lambda_in)==1){
     lambda_in <- rep(lambda_in,K)
   }
+  var_var_x <- list()
+  for(k in 1:K){
+    var_var_x[[k]] <- -log(apply(do.call(rbind,lapply(1:n,function(i,X){
+      Xi <- X[-i,];apply(Xi,MARGIN = 2,sd)}
+      ,Xs[[k]])),2,sd))
+    var_var_x[[k]] <- var_var_x[[k]]/max(var_var_x[[k]])
+  }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
+    for(j_k in 1:ncol(Xs[[k]])){
+      Xs[[k]][,j_k] <- Xs[[k]][,j_k]*(1+alpha*(var_var_x[[k]][j_k]-1) )
+    }
     M0 <- crossprod(Y,Xs[[k]])/(n-1)
     M <- abs(M0) - l[k]
     M[which(M<0)] <- 0
