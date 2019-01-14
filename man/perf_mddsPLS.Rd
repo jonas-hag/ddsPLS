@@ -5,9 +5,9 @@
 \title{Function to compute cross-validation performances.}
 \usage{
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
-  lambdas = NULL, R = 1, kfolds = "loo", mode = "reg",
-  fold_fixed = NULL, maxIter_imput = 20, errMin_imput = 1e-09,
-  NCORES = 1)
+  lambdas = NULL, alpha = alpha, R = 1, kfolds = "loo",
+  mode = "reg", fold_fixed = NULL, maxIter_imput = 20,
+  errMin_imput = 1e-09, NCORES = 1)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,

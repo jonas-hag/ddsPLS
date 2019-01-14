@@ -4,7 +4,7 @@
 \alias{mddsPLS}
 \title{Multi-Data-Driven sparse PLS function}
 \usage{
-mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg",
+mddsPLS(Xs, Y, lambda = 0, alpha = 1, R = 1, mode = "reg",
   errMin_imput = 1e-09, maxIter_imput = 50, verbose = FALSE)
 }
 \arguments{

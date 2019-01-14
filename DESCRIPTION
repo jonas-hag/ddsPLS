@@ -15,8 +15,14 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 RoxygenNote: 6.1.0
-Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel
+Imports:
+        RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel
 RdMacros: Rdpack
 Suggests: knitr,rmarkdown
 Depends: R (>= 2.10)
 VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2019-01-11 17:42:05 UTC; hl1
+Author: Hadrien Lorenzo [aut, cre],
+  Jerome Saracco [aut],
+  Rodolphe Thiebaut [aut]
