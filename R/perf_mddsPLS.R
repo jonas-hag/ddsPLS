@@ -207,8 +207,13 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=FALSE])
     }
   }
-  out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
-              Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],mode=mode,Xs=Xs,Y=Y)
+  if(mode=="reg"){
+    out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
+                Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],mode=mode,Xs=Xs,Y=Y)
+  }else{
+    out <- list(ERROR=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
+                Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],mode=mode,Xs=Xs,Y=Y)
+  }
   class(out) <- "perf_mddsPLS"
   out
 }
