@@ -199,7 +199,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
       for(ii in 1:max(fold)){
         i_fold_ii <- which(fold==ii)
         hihi <- unlist(strsplit(as.character(err_char[ii]),split = " ",fixed = TRUE))
-        for(jj in 1:length(hihi)){
+        for(jj in 1:length (i_fold_ii)){#(hihi)){
           mat_errors[i_fold_ii[jj],] <- unlist(strsplit(hihi[jj],split = "/",fixed = TRUE))
         }
       }
