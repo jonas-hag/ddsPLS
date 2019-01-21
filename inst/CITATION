@@ -5,4 +5,5 @@ bibentry(bibtype = "Article",
                     person("Rodolphe", "Thiebaut")),
          year = "2019",
          note = "arXiv:1901.04380",
+         journal = "arXiv",
          url = "http://arxiv.org/abs/1901.04380")
