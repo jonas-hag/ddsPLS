@@ -370,7 +370,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda)
+                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda,R=R)
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
