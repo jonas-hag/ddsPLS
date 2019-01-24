@@ -89,7 +89,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   a<-lapply(object$mod$u,function(u){apply(u,2,function(u){length(which(abs(u)>1e-9))})})
   cat("    For each block of X, are selected in order of component:");cat("\n")
   for(k in 1:K){
-    cat(paste("        @ (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
+    cat(paste("        ",names_X_block[k],"   (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
   }
   cat("    For the Y block, are selected in order of component:");cat("\n")
   cat(paste("        @ (",paste(apply(object$mod$v,2,function(u){length(which(abs(u)>1e-9))}),
