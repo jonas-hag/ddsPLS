@@ -83,11 +83,9 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   if(kfolds=="loo" & is.null(fold_fixed)){
     kfolds <- n
     fold <- 1:n
-  }
-  else if(!is.null(fold_fixed)){
+  }else if(!is.null(fold_fixed)){
     fold <- fold_fixed
-  }
-  else{
+  }else{
     fold <- replicate(n/kfolds+1,sample(1:kfolds))[1:n]
   }
   ## Get highest Lambda
@@ -123,8 +121,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       if(mode=="reg"){
                         errors <- matrix(NA,nrow(paras_here),q)
                         select_y <- matrix(0,nrow(paras_here),q)
-                      }
-                      else{
+                      }else{
                         errors <- rep(NA,nrow(paras_here))
                         select_y <- matrix(0,nrow(paras_here),nlevels(Y))
                       }
@@ -145,8 +142,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(mode=="reg"){
                           Y_train <- Y[pos_train,,drop=FALSE]
                           Y_test <- Y[-pos_train,,drop=FALSE]
-                        }
-                        else{
+                        }else{
                           Y_train <- Y[pos_train]
                           Y_test <- Y[-pos_train]
                         }
