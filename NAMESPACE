@@ -2,8 +2,11 @@
 
 S3method(plot,perf_mddsPLS)
 S3method(predict,mddsPLS)
+S3method(summary,mddsPLS)
 export(mddsPLS)
 export(perf_mddsPLS)
 import(foreach)
 importFrom(Rdpack,reprompt)
+importFrom(eulerr,euler)
+importFrom(graphics,plot)
 importFrom(stats,predict)
