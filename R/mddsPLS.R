@@ -83,7 +83,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   },Xs,Y,lambda_in,n)
   if(verbose){
     N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))!=0))})))
-    cat(paste("At most ",N_max," variable(s) can be selected",sep=""));cat("\n")
+    cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   }
   ## Solve optimization problem
   #### Inside problems
@@ -429,7 +429,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
   }
-  out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,
+  out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged)
   class(out) <- "mddsPLS"
   out
