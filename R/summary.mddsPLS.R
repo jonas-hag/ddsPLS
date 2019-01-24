@@ -29,6 +29,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
                              ...)
 {
   K <- length(object$Xs);    sent_K <- paste("Number of blocks:",K)
+  R <- object$mod$R;    sent_R <- paste("Number of dimensions:",R)
   lambda <- object$lambda;    sent_lambda <- paste("Regularization coefficient (lambda):",lambda)
   n <- nrow(object$Xs[[1]]);    sent_n <- paste("Number of individuals:",n)
   ps <- unlist(lapply(object$Xs,ncol))
@@ -63,11 +64,22 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   has_con <- object$has_converged!=0;if(has_con){sent_con <- ""}else{sent_con <- " not"}
   sent_con <- paste("Algorithm of imputation has",sent_con," converged",sep="")
 
+  df_num_var_sel <- data.frame(matrix(NA,K,R))
+  rownames(df_num_var_sel) <- names_X_block
+  colnames(df_num_var_sel) <- paste("Dim.",1:R)
+  for(r in 1:R){
+    for(k in 1:K){
+      df_num_var_sel[k,r] <- length(which(abs(object$mod$u[[k]][,r])>1e-9))
+    }
+  }
+
+
   cat("=====================================================");cat("\n")
   cat("              ddsPLS object description    ");cat("\n")
   cat("=====================================================");cat("\n")
   cat("\n")
   cat(sent_K);cat("\n")
+  cat(sent_R);cat("\n")
   cat(sent_lambda);cat("\n")
   cat(sent_n);cat("\n")
   cat(sent_q);cat("\n")
@@ -88,9 +100,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   a<-lapply(object$mod$u,function(u){apply(u,2,function(u){length(which(abs(u)>1e-9))})})
   cat("    For each block of X, are selected in order of component:");cat("\n")
-  for(k in 1:K){
-    cat(paste("        ",names_X_block[k],"   (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
-  }
+  print(df_num_var_sel)
   cat("    For the Y block, are selected in order of component:");cat("\n")
   cat(paste("        @ (",paste(apply(object$mod$v,2,function(u){length(which(abs(u)>1e-9))}),
                                 collapse = ","),") variable(s)",sep=""));cat("\n")
