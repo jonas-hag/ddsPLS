@@ -115,7 +115,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   pos_decoupe <- NULL
   options(warn=-1)
   ERRORS <- foreach::foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
-                    .combine = rbind,.packages = c("ddsPLS","MASS")) %my_do% {
+                    .combine = rbind,.packages = c("ddsPLS","MASS")) %do%{#%my_do% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
                       paras_here <- paras[paras_here_pos,,drop=FALSE]
                       if(mode=="reg"){
@@ -157,8 +157,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           errors[i,] <- sqrt(colMeans(errors_here^2))
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
                           select_y[i,v_no_null] <- 1
-                        }
-                        else{
+                        }else{
                           Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                           errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)

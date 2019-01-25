@@ -86,6 +86,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   }
   ## Solve optimization problem
+  R <- min(R,min(unlist(lapply(Ms,dim))))
   #### Inside problems
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
@@ -100,6 +101,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     }
     else{
       svd_k <- svd(Ms[[k]],nu = 0,nv = R)
+      if(length(svd_k$d)==1){
+        svd_k$d <- c(svd_k$d,rep(0,R-1))
+      }
       flag_zero <- F
       for(r in 1:R){
         if(flag_zero){
@@ -193,51 +197,49 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     beta_list[[k]] <- beta_all[R*(k-1)+1:R,,drop=F]
   }
   v = V_super <- svd_Z$u
-  flag_zero <- F
-  for(r in 1:R){
-    if(flag_zero){
-      v <- cbind(v,0)
-    }else if(svd_Z$d[r]==0){
-      v[,r] <- 0
-      flag_zero <- T
+  if(length(svd_Z$d)<R){
+    svd_Z$d <- c(svd_Z$d,rep(0,R-length(svd_Z$d)))
+    v <- cbind(v,matrix(0,nrow=nrow(v),ncol=R-length(svd_Z$d)))
+  }
+  result = tryCatch({
+    T_super <- matrix(0,nrow=n,ncol=R)
+    for(k in 1:K){
+      # U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
+      # for(r in 1:R){
+      #   U_t_super[[k]] <- U_t_super[[k]] + u_t_r[[k]][,r,drop=F]%*%beta_list[[r]][k,,drop=F]
+      # }
+      U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
+      T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
     }
-  }
-  T_super <- matrix(0,nrow=n,ncol=R)
-  for(k in 1:K){
-    # U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
-    # for(r in 1:R){
-    #   U_t_super[[k]] <- U_t_super[[k]] + u_t_r[[k]][,r,drop=F]%*%beta_list[[r]][k,,drop=F]
-    # }
-    U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
-    T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
-  }
-  ## -------------------------- ######################### -----------------
-  S_super <- Y%*%V_super
-  T_S <- crossprod(T_super,S_super)
-  T_T <- crossprod(T_super)
-  # svd_ort <- svd(S_T,nu = R,nv = R)
-  svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
-  # u_ort <- svd_ort_T_super$u
-  v_ort <- svd_ort_T_super$v
-  Delta_ort <- svd_ort_T_super$d^2
-  if(sum(Delta_ort)!=0){
-    t_ort <- T_super%*%v_ort
-    s_ort <- S_super%*%v_ort
-    D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
-    diag(D_0_inv) <- 1/Delta_ort
-    B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
-    A <- matrix(0,R,R)
-    for(r in 1:R){
-      A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
+    ## -------------------------- ######################### -----------------
+    S_super <- Y%*%V_super
+    T_S <- crossprod(T_super,S_super)
+    T_T <- crossprod(T_super)
+    # svd_ort <- svd(S_T,nu = R,nv = R)
+    svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
+    # u_ort <- svd_ort_T_super$u
+    v_ort <- svd_ort_T_super$v
+    Delta_ort <- svd_ort_T_super$d^2
+    if(sum(Delta_ort)!=0){
+      t_ort <- T_super%*%v_ort
+      s_ort <- S_super%*%v_ort
+      D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
+      diag(D_0_inv) <- 1/Delta_ort
+      B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
+      A <- matrix(0,R,R)
+      for(r in 1:R){
+        A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
+      }
+    }else{
+      t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
+      B_0 <- matrix(0,nrow = R,ncol=R)
+      A <- matrix(0,R,R)
+      V_super <- matrix(0,q,R)
     }
-  }else{
-    t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
-    B_0 <- matrix(0,nrow = R,ncol=R)
-    A <- matrix(0,R,R)
-    V_super <- matrix(0,q,R)
-  }
 
-
+  }, error = function(e) {
+    browser()
+  })
 
   u <- beta_all#beta# deprecated
   s <- S_super
@@ -252,8 +254,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
       }
       B[[k]] <- B_k
     }
-  }
-  else{
+  }else{
     dataf <- data.frame(cbind(Y_0,t));colnames(dataf)[1]<-"Y"
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
