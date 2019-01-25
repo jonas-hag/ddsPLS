@@ -46,23 +46,27 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     if(length(col_na)>0){
       cc <- cc[,-col_na,drop=F]
     }
-  }
-  else{
+  }else{
     Y_df <- data.frame(res_perf_mdd$Y)
     colnames(Y_df) <- "Y"
     Y <- scale(stats::model.matrix( ~ Y - 1, data=Y_df))
     cc <- abs(crossprod(Y,X_all)/(nrow(Y)-1))
   }
-  ranges <- apply(cc,2,max)
+  ranges_0 <- sort(apply(cc,2,max))
   l_lambdas <- length(unique(res_perf_mdd$RMSEP[,2]))
   if(ncol(cc)>1){
     if(l_lambdas>1){
-      ranges <- sort(ranges[intersect(which(ranges>=min(res_perf_mdd$RMSEP[,2])),
-                                      which(ranges<=max(res_perf_mdd$RMSEP[,2])))])
-      card_ranges <- rev(0:(length(ranges)-1))
+      # ranges <- sort(ranges_0)
+      l_in_min <- ranges_0>=min(res_perf_mdd$RMSEP[,2])
+      l_in_max <- ranges_0<=max(res_perf_mdd$RMSEP[,2])
+      inter_in <- l_in_min&l_in_max
+      l_in <- length(ranges_0)-which(inter_in)
+      ranges <- ranges_0[length(ranges_0)-l_in]
+      card_ranges <- l_in
     }else{
-      ranges <- sort(ranges[which(ranges>=min(res_perf_mdd$RMSEP[,2]))])
-      card_ranges <- rev(0:(length(ranges)-1))
+      l_in_min <- which(ranges_0>=min(res_perf_mdd$RMSEP[,2]))
+      ranges <- ranges_0[l_in_min]
+      card_ranges <- rev(0:(length(ranges_0)-1))
     }
   }else{
     card_ranges <- 1
@@ -88,9 +92,9 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     ylim1 <- range(abs(RMSEP[,3:ncol(RMSEP)]))^2
     y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2
     y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2)
-    main1 <- "MSEP versus regularization coefficient\n mdd-sPLS"
-    main2 <- "Occurences per variable versus regularization coefficient\n mdd-sPLS"
-    graphics::par(mar=c(5,5,7,5),mfrow=c(2,1))
+    main1 <- "MSEP versus regularization coefficient mdd-sPLS"
+    main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
+    graphics::par(mar=c(3,3,5,3),mfrow=c(2,1))
   }
   else{
     ylab1<-"#Good Classif Rate"
@@ -102,9 +106,9 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       y1[,r] <- 1-y1[,r]/TAB[r]
     }
     y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
-    main1 <- "Good classification rate versus regularization coefficient\n mdd-sPLS"
-    main2 <- "Occurences per class versus regularization coefficient\n mdd-sPLS"
-    graphics::par(mar=c(5,5,6,5),mfrow=c(1,1))
+    main1 <- "Good classification rate versus regularization coefficient mdd-sPLS"
+    main2 <- "Occurences per class versus regularization coefficient mdd-sPLS"
+    graphics::par(mar=c(3,3,5,3),mfrow=c(1,1))
   }
   graphics::matplot(sort(RMSEP[,2]),y1,type="l",lwd=4,lty=1,
                     ylim=ylim1,col=colors,
@@ -125,9 +129,10 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                        col = c(colors,1),lty = c(rep(1,length(colors)),3),
                        lwd=c(rep(2,length(colors),1.5)))
     }else{
-      graphics::legend(pos_legend,legend = legend_names,col = colors,lty = 1,lwd=2)
+      graphics::legend(pos_legend,legend = legend_names,col = colors,lty = 1,lwd=1)
     }
   }
+
   if(plot_mean){
     graphics::points(sort(RMSEP[,2]),y_mean,type="l",lty=3)
     graphics::points(sort(RMSEP[,2]),y_mean,type="l",col=grDevices::adjustcolor("black",alpha.f = 0.2),lty=1,lwd=4)
@@ -135,16 +140,24 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   y_card <- card_ranges*diff(range(y1))/diff(range(card_ranges))
   y_card <- y_card - min(y_card) + min(y1)
   graphics::par(new = TRUE)
-  graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
-                 ylab = "", xlab = "", col = grDevices::adjustcolor("red",0), lty = 1,lwd=5)
-  graphics::axis(side = 3,at=ranges,labels=card_ranges, col="red",col.axis="red")
+  # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
+  # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
+  # lty = 1,lwd=5)
+  graphics::axis(side = 3,at=ranges,labels=card_ranges, col="red",
+                 col.axis="red")
   graphics::mtext("", side = 3, line = 3, col = "red")
   if(res_perf_mdd$mod=="reg"){
-    ranges_y <- apply(cc,1,max)
+    ranges_y_0 <- sort(apply(cc,1,max))
     if(l_lambdas>1){
-      ranges_y <- sort(ranges_y[intersect(which(ranges_y>=min(res_perf_mdd$RMSEP[,2])),
-                                          which(ranges_y<=max(res_perf_mdd$RMSEP[,2])))])
-      card_ranges_y <- rev(0:(length(ranges_y)-1))
+      # ranges_y <- sort(ranges_y[intersect(which(ranges_y>=min(res_perf_mdd$RMSEP[,2])),
+                                          # which(ranges_y<=max(res_perf_mdd$RMSEP[,2])))])
+      # card_ranges_y <- rev(0:(length(ranges_y)-1))
+      l_in_min <- ranges_y_0>=min(res_perf_mdd$RMSEP[,2])
+      l_in_max <- ranges_y_0<=max(res_perf_mdd$RMSEP[,2])
+      inter_in <- l_in_min&l_in_max
+      l_in <- length(ranges_y_0)-which(inter_in)
+      ranges_y <- ranges_y_0[length(ranges_y_0)-l_in]
+      card_ranges_y <- l_in
     }else{
       ranges_y <- sort(ranges_y[which(ranges_y>=min(res_perf_mdd$RMSEP[,2]))])
       card_ranges_y <- rev(0:(length(ranges_y)-1))
