@@ -5,9 +5,9 @@
 \title{Function to compute cross-validation performances.}
 \usage{
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
-  lambdas = NULL, R = 1, kfolds = "loo", mode = "reg",
-  fold_fixed = NULL, maxIter_imput = 20, errMin_imput = 1e-09,
-  NCORES = 1)
+  lambdas = NULL, R = 1, L0s = NULL, kfolds = "loo",
+  mode = "reg", fold_fixed = NULL, maxIter_imput = 20,
+  errMin_imput = 1e-09, NCORES = 1)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,
@@ -32,6 +32,9 @@ perf process. Default is \eqn{NULL}, when that parameter is not taken into accou
 
 \item{R}{A strictly positive integer detailing the number of components to
 build in the model.}
+
+\item{L0s}{A vector of non null positive integers. The values tested by the
+perf process. Default is \eqn{NULL} and is then not taken nto account.}
 
 \item{kfolds}{character or integer. If equals to "loo" then a \emph{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly

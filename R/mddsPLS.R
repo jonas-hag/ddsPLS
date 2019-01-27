@@ -119,7 +119,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
   z_r <- list()
   z_t <- list()
   # BETA_r <- list()
+  print(" ")
+  print(K)
   for(k in 1:K){
+    cat(k)
     if(norm(Ms[[k]])==0){
       svd_k <- list(v=matrix(0,
                              nrow = ncol(Ms[[k]]),

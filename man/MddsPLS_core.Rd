@@ -4,7 +4,7 @@
 \alias{MddsPLS_core}
 \title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
-MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg",
+MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
   verbose = FALSE)
 }
 \arguments{
@@ -17,6 +17,8 @@ MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg",
 \item{R}{A strictly positive integer detailing the number of components to build in the model.}
 
 \item{mode}{A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".}
+
+\item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
 }

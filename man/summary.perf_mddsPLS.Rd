@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.perf_mddsPLS.R
 \name{summary.perf_mddsPLS}
 \alias{summary.perf_mddsPLS}
-\title{The summary method of the \emph{perf_mddsPLS} function which is the cross-validation fucntion.}
+\title{The summary method of the \emph{perf_mddsPLS} function.}
 \usage{
 \method{summary}{perf_mddsPLS}(object, plot_res_cv = T, ...)
 }

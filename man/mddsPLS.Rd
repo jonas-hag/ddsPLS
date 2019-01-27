@@ -4,7 +4,7 @@
 \alias{mddsPLS}
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
-mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg",
+mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
   errMin_imput = 1e-09, maxIter_imput = 50, verbose = FALSE)
 }
 \arguments{
@@ -17,6 +17,8 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg",
 \item{R}{A strictly positive integer detailing the number of components to build in the model.}
 
 \item{mode}{A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".}
+
+\item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
 \item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
