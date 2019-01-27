@@ -18,6 +18,8 @@
 #' @param n_lambda A strictly positive integer. Default to \eqn{1}.
 #' @param lambdas A vector of reals in \eqn{[0,1]}. The values tested by the
 #' perf process. Default is \eqn{NULL}, when that parameter is not taken into account.
+#' @param L0s A vector of non null positive integers. The values tested by the
+#' perf process. Default is \eqn{NULL} and is then not taken nto account.
 #' @param R A strictly positive integer detailing the number of components to
 #' build in the model.
 #' @param kfolds character or integer. If equals to "loo" then a \emph{leave-one-out}
@@ -61,8 +63,10 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
 #' # mode = "reg")
-perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,kfolds="loo",
-                         mode="reg",fold_fixed=NULL,maxIter_imput=20,errMin_imput=1e-9,NCORES=1){
+perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,
+                         L0s=NULL,
+                         kfolds="loo",mode="reg",fold_fixed=NULL,
+                         maxIter_imput=20,errMin_imput=1e-9,NCORES=1){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -91,7 +95,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     fold <- replicate(n/kfolds+1,sample(1:kfolds))[1:n]
   }
   ## Get highest Lambda
-  if(is.null(lambdas)){
+  if(is.null(lambdas)&is.null(L0s)){
     if(is.null(lambda_max)){
       MMss0 <- mddsPLS(Xs,Y,lambda = 0,R = 1,mode = mode,maxIter_imput = 0)$mod$Ms
       lambda_max <- max(unlist(lapply(MMss0,
@@ -99,8 +103,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
     Lambdas <- seq(lambda_min,lambda_max,length.out = n_lambda)
   }else{Lambdas <- lambdas}
-  ## Write paras
-  paras <- expand.grid(R,Lambdas,1:max(fold))
+  if(!is.null(L0s)){
+    ## Write paras
+    paras <- expand.grid(R,L0s,1:max(fold))
+  }else{
+
+    ## Write paras
+    paras <- expand.grid(R,Lambdas,1:max(fold))
+  }
   if(NCORES>nrow(paras)){
     decoupe <- 1:nrow(paras)
   }else{
@@ -131,7 +141,11 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       time_build <- rep(0,nrow(paras_here))
                       for(i in 1:nrow(paras_here)){
                         R <- paras_here[i,1]
-                        lambda <- paras_here[i,2]
+                        if(!is.null(L0s)){
+                          L0 <- paras_here[i,2]
+                        }else{
+                          lambda <- paras_here[i,2]
+                        }
                         i_fold <- paras_here[i,3]
                         pos_train <- which(fold!=i_fold)
                         t1 <- Sys.time()
@@ -148,9 +162,17 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           Y_train <- Y[pos_train]
                           Y_test <- Y[-pos_train]
                         }
-                        mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
-                                         R = R,mode = mode,errMin_imput = errMin_imput,
-                                         maxIter_imput = maxIter_imput)
+                        if(!is.null(L0s)){
+                          mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,
+                                           R = R,mode = mode,errMin_imput = errMin_imput,
+                                           maxIter_imput = maxIter_imput)
+
+                        }else{
+                          mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
+                                           R = R,mode = mode,errMin_imput = errMin_imput,
+                                           maxIter_imput = maxIter_imput)
+
+                        }
                         time_build[i] <- as.numeric((Sys.time()-t1))
                         has_converged[i] <- mod_0$has_converged
                         Y_est <- predict.mddsPLS(mod_0,X_test)
@@ -172,8 +194,13 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     parallel::stopCluster(cl)
   }
   options(warn=0)
-  paras_out <- expand.grid(R,Lambdas)
-  colnames(paras_out) <- c("R","Lambdas")
+  if(!is.null(L0s)){
+    paras_out <- expand.grid(R,L0s)
+    colnames(paras_out) <- c("R","L0s")
+  }else{
+    paras_out <- expand.grid(R,Lambdas)
+    colnames(paras_out) <- c("R","Lambdas")
+  }
   ERRORS_OUT <- matrix(NA,nrow(paras_out),q)
   if(mode=="reg"){
     FREQ_OUT <- matrix(NA,nrow(paras_out),q)
@@ -184,8 +211,13 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   }
   for(i in 1:nrow(paras_out)){
     R <- paras_out[i,1]
-    lambda <- paras_out[i,2]
-    pos_in_errors <- intersect(which(ERRORS[,1]==R),which(ERRORS[,2]==lambda))
+    if(!is.null(L0s)){
+      L0 <- paras_out[i,2]
+      pos_in_errors <- intersect(which(ERRORS[,1]==R),which(ERRORS[,2]==L0))
+    }else{
+      lambda <- paras_out[i,2]
+      pos_in_errors <- intersect(which(ERRORS[,1]==R),which(ERRORS[,2]==lambda))
+    }
     if(mode=="reg"){
       ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2))
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])

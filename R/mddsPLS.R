@@ -6,6 +6,7 @@
 #' @param Y A matrix of n rows of a vector of length n detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
+#' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mode A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #'
@@ -33,7 +34,7 @@
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
-MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
+MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -74,6 +75,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
   lambda_in <- lambda
   if(length(lambda_in)==1){
     lambda_in <- rep(lambda_in,K)
+  }
+  if(!is.null(L0)){
+    ps <- unlist(lapply(Xs,ncol))
+    sum_ps <- sum(ps);cum_ps <- cumsum(c(0,ps))
+    all_maxs <- rep(NA,sum_ps)
+    for(k in 1:K){
+      ii <- cum_ps[k]
+      all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+    }
+    lambda_L0 <- sort(all_maxs,decreasing = T)[min(sum_ps,1+L0)]
+    lambda_in <- lambda_L0
   }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
     M0 <- crossprod(Y,Xs[[k]])/(n-1)
@@ -314,6 +326,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' @param Y A matrix of \emph{n} rows of a vector of length \emph{n} detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
+#' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mode A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
@@ -361,7 +374,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 #' summary(mddsPLS_model_reg)
-mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
+mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
   if(lambda<0|lambda>1){
@@ -407,7 +420,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   }
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
   }else{
     ## If ther are some missing samples
     for(k in 1:K){## ## Imputation to mean
@@ -420,7 +433,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     if(K>1){
       # Xs_init <- Xs
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0)
       if(sum(abs(as.vector(mod_0$s)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -441,14 +454,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda,R=R)
+                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda,R=R,L0=L0)
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode)
+          mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0)
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
@@ -473,7 +486,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         }
       }
     }
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0)
   }
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged)

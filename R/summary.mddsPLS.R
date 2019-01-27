@@ -32,7 +32,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
 {
   K <- length(object$Xs);    sent_K <- paste("Number of blocks:",K)
   R <- object$mod$R;    sent_R <- paste("Number of dimensions:",R)
-  lambda <- object$lambda;    sent_lambda <- paste("Regularization coefficient (lambda):",lambda)
+  lambda <- object$lambda;    sent_lambda <- paste("Regularization coefficient:",lambda)
   n <- nrow(object$Xs[[1]]);    sent_n <- paste("Number of individuals:",n)
   ps <- unlist(lapply(object$Xs,ncol))
   na_x <- unlist(lapply(object$id_na,function(oo){if(length(oo)==0){out <- 0}else{out <- length(oo)};out}))

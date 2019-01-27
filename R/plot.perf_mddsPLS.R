@@ -38,6 +38,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                               pos_legend="bottomleft",...){
   res_perf_mdd <- x
   names(res_perf_mdd)[1] <- "RMSEP"
+  is_L0 <- names(x$RMSEP)[2]
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
     cc <- matrix(NA,nrow = ncol(res_perf_mdd$Y),ncol = ncol(X_all))
@@ -57,22 +58,24 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   }
   ranges_0 <- sort(apply(cc,2,max))
   l_lambdas <- length(unique(res_perf_mdd$RMSEP[,2]))
-  if(ncol(cc)>1){
-    if(l_lambdas>1){
-      # ranges <- sort(ranges_0)
-      l_in_min <- ranges_0>=min(res_perf_mdd$RMSEP[,2])
-      l_in_max <- ranges_0<=max(res_perf_mdd$RMSEP[,2])
-      inter_in <- l_in_min&l_in_max
-      l_in <- length(ranges_0)-which(inter_in)
-      ranges <- ranges_0[length(ranges_0)-l_in]
-      card_ranges <- l_in
+  if(is_L0!="L0s"){
+    if(ncol(cc)>1){
+      if(l_lambdas>1){
+        # ranges <- sort(ranges_0)
+        l_in_min <- ranges_0>=min(res_perf_mdd$RMSEP[,2])
+        l_in_max <- ranges_0<=max(res_perf_mdd$RMSEP[,2])
+        inter_in <- l_in_min&l_in_max
+        l_in <- length(ranges_0)-which(inter_in)
+        ranges <- ranges_0[length(ranges_0)-l_in]
+        card_ranges <- l_in
+      }else{
+        l_in_min <- which(ranges_0>=min(res_perf_mdd$RMSEP[,2]))
+        ranges <- ranges_0[l_in_min]
+        card_ranges <- rev(0:(length(ranges_0)-1))
+      }
     }else{
-      l_in_min <- which(ranges_0>=min(res_perf_mdd$RMSEP[,2]))
-      ranges <- ranges_0[l_in_min]
-      card_ranges <- rev(0:(length(ranges_0)-1))
+      card_ranges <- 1
     }
-  }else{
-    card_ranges <- 1
   }
   ERRORS <- res_perf_mdd
   FREQ <- ERRORS$FREQ
@@ -140,40 +143,47 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     graphics::points(sort(RMSEP[,2]),y_mean,type="l",lty=3)
     graphics::points(sort(RMSEP[,2]),y_mean,type="l",col=grDevices::adjustcolor("black",alpha.f = 0.2),lty=1,lwd=4)
   }
-  y_card <- card_ranges*diff(range(y1))/diff(range(card_ranges))
-  y_card <- y_card - min(y_card) + min(y1)
-  graphics::par(new = TRUE)
-  # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
-  # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
-  # lty = 1,lwd=5)
-  graphics::axis(side = 3,at=ranges,labels=card_ranges, col="red",
-                 col.axis="red")
-  graphics::mtext("", side = 3, line = 3, col = "red")
+  if(is_L0!="L0s"){
+    y_card <- card_ranges*diff(range(y1))/diff(range(card_ranges))
+    y_card <- y_card - min(y_card) + min(y1)
+    graphics::par(new = TRUE)
+    # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
+    # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
+    # lty = 1,lwd=5)
+    graphics::axis(side = 3,at=ranges,labels=card_ranges, col="red",
+                   col.axis="red")
+    graphics::mtext("", side = 3, line = 3, col = "red")
+  }
   if(res_perf_mdd$mod=="reg"){
-    ranges_y_0 <- sort(apply(cc,1,max))
-    if(l_lambdas>1){
-      # ranges_y <- sort(ranges_y[intersect(which(ranges_y>=min(res_perf_mdd$RMSEP[,2])),
-                                          # which(ranges_y<=max(res_perf_mdd$RMSEP[,2])))])
-      # card_ranges_y <- rev(0:(length(ranges_y)-1))
-      l_in_min <- ranges_y_0>=min(res_perf_mdd$RMSEP[,2])
-      l_in_max <- ranges_y_0<=max(res_perf_mdd$RMSEP[,2])
-      inter_in <- l_in_min&l_in_max
-      l_in <- length(ranges_y_0)-which(inter_in)
-      ranges_y <- ranges_y_0[length(ranges_y_0)-l_in]
-      card_ranges_y <- l_in
-    }else{
-      ranges_y <- sort(ranges_y[which(ranges_y>=min(res_perf_mdd$RMSEP[,2]))])
-      card_ranges_y <- rev(0:(length(ranges_y)-1))
+    if(is_L0!="L0s"){
+      ranges_y_0 <- sort(apply(cc,1,max))
+      if(l_lambdas>1){
+        # ranges_y <- sort(ranges_y[intersect(which(ranges_y>=min(res_perf_mdd$RMSEP[,2])),
+        # which(ranges_y<=max(res_perf_mdd$RMSEP[,2])))])
+        # card_ranges_y <- rev(0:(length(ranges_y)-1))
+        l_in_min <- ranges_y_0>=min(res_perf_mdd$RMSEP[,2])
+        l_in_max <- ranges_y_0<=max(res_perf_mdd$RMSEP[,2])
+        inter_in <- l_in_min&l_in_max
+        l_in <- length(ranges_y_0)-which(inter_in)
+        ranges_y <- ranges_y_0[length(ranges_y_0)-l_in]
+        card_ranges_y <- l_in
+      }else{
+        ranges_y <- sort(ranges_y[which(ranges_y>=min(res_perf_mdd$RMSEP[,2]))])
+        card_ranges_y <- rev(0:(length(ranges_y)-1))
+      }
     }
 
     graphics::matplot(FREQ[order(FREQ[2]),2],
-                      FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,type="l",lwd=4,col=colors,lty=1,
+                      FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,
+                      type="l",lwd=4,col=colors,lty=1,
                       xlab=expression(lambda),
                       ylab=ylab2,
                       main=main2)
-    pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
-    pos_y[length(pos_y)] <- min(max(pos_y),length(ranges_y))
-    graphics::axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
-    graphics::mtext("", side = 3, line = 3, col = "blue")
+    if(is_L0!="L0s"){
+      pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
+      pos_y[length(pos_y)] <- min(max(pos_y),length(ranges_y))
+      graphics::axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
+      graphics::mtext("", side = 3, line = 3, col = "blue")
+    }
   }
 }

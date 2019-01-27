@@ -27,8 +27,9 @@
 #' # mode = "reg",kfolds=5)
 #' # summary(object)
 summary.perf_mddsPLS <- function (object,plot_res_cv=T,
-                             ...)
+                                  ...)
 {
+  is_L0 <- names(object$RMSEP)[2]
   K <- length(object$Xs);    sent_K <- paste("Number of blocks:",K)
   n <- nrow(object$Xs[[1]]);    sent_n <- paste("Number of individuals:",n)
   kfolds <- object$kfolds
@@ -75,7 +76,7 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
   unik_paras <- RMSEP[,1:2]
   MAT_FINAL_RES <- data.frame(matrix(NA,nrow(unik_paras),5))
   MAT_FINAL_RES[,1:2] <- as.matrix(unik_paras)
-  names(MAT_FINAL_RES) <- c("R","lambda","Error","Nb of convergences/nb of fold","Mean(sd) time of computation")
+  names(MAT_FINAL_RES) <- c("R","lambda","Error","Nb of convergences VS nb of fold","Mean(sd) time of computation")
   MAT_FINAL_RES$Error <- RMSEP$ERRORS_OUT
   Rs <- unique(unik_paras$R)
   ls <- unique(unik_paras$Lambdas)
@@ -86,14 +87,16 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
     ## Convergence
     num_conv <- Conv$has_converged[id]
     num_conv <- paste(sum(num_conv!=0),kfolds,sep="/")
-    MAT_FINAL_RES$`Nb of convergences/nb of fold`[i] <- num_conv
+    MAT_FINAL_RES$`Nb of convergences VS nb of fold`[i] <- num_conv
     ## Time of computation
     time_i <- time$time_build[id]
     MAT_FINAL_RES$`Mean(sd) time of computation`[i] <- paste(signif(mean(time_i),2),
                                                              "(",signif(sd(time_i),2),")",sep="")
     ##
   }
-
+  if(is_L0=="L0s"){
+    names(MAT_FINAL_RES)[2] <- "L0"
+  }
   cat("======================================================");cat("\n")
   cat("      Cross-Validation ddsPLS object description      ");cat("\n")
   cat("======================================================");cat("\n")
