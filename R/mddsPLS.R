@@ -1,4 +1,4 @@
-#' The core function of the Multi-Data-Driven sparse PLS function
+#' The core function of the Multi-Data-Driven sparse PLS function.
 #'
 #' This function should not be used directly by the user.
 #'
@@ -303,7 +303,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 }
 
 
-#' Multi-Data-Driven sparse PLS function
+#' Multi-Data-Driven sparse PLS function.
 #'
 #' This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-
 #' ber of components \eqn{R}, the user fixes the number of components the model

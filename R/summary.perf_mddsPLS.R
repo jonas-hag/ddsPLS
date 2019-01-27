@@ -1,4 +1,4 @@
-#' The summary S3 method of the per_mddsPLS function which is the cross-validation fucntion
+#' The summary method of the \emph{perf_mddsPLS} function which is the cross-validation fucntion.
 #'
 #' This function is easy to use and gives information about the dataset and the model.
 #'
