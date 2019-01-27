@@ -86,7 +86,21 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   }
   ## Solve optimization problem
-  R <- min(R,min(unlist(lapply(Ms,dim))))
+  tete <- min(R,min(unlist(lapply(Ms,dim))))
+  if(R<1){
+    stop("Choose R superior to 1",
+         call. = FALSE)
+  }
+  if(tete!=R){
+    warning(paste("R modified to ",tete," due to dimension consraints",sep=""),
+            call. = FALSE)
+    R <- tete
+  }
+  if(floor(R)!=ceiling(R)){
+    R <- floor(R)
+    warning(paste("R not integer and estimated to ",R,sep=""),
+            call. = FALSE)
+  }
   #### Inside problems
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
@@ -350,6 +364,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
+  if(lambda<0|lambda>1){
+    stop("Choose lambda regularization parameter between 0 and 1",
+         call. = FALSE)
+  }
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -387,7 +405,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     stop(paste(mess1,mess2,mess3,mess4),
          call. = FALSE)
   }
-
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)
