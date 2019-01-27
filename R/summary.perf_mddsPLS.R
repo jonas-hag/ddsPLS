@@ -11,6 +11,8 @@
 #'
 #' @export
 #'
+#' @seealso  \code{\link{perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
+#'
 #' @examples
 #' library(ddsPLS)
 #' data("liver.toxicity")

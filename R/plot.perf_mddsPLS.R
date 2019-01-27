@@ -10,6 +10,9 @@
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation
+#'
+#' @seealso  \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}
+#'
 #' @export
 #'
 #' @examples

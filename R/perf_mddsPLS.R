@@ -40,6 +40,8 @@
 #'
 #' @import foreach
 #'
+#' @seealso  \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}, \code{\link{mddsPLS}}, \code{\link{predict.mddsPLS}},
+#'
 #' @export
 #'
 #' @examples

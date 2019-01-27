@@ -30,3 +30,6 @@ Xs <- list(x1=X1,x2=X2,aaaa=X3,X4)
 # mode = "reg",kfolds=5)
 # summary(object)
 }
+\seealso{
+\code{\link{perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
+}

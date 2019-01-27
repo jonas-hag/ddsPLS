@@ -31,3 +31,6 @@ Xs <- list(x1=X1,x2=X2,aaaa=X3,X4)
 # object <- mddsPLS(Xs = Xs,Y = Y[,1],lambda=0.1,R = 1, mode = "reg",verbose = TRUE)
 # summary(object,plot_present_indiv = T)
 }
+\seealso{
+\code{\link{mddsPLS}}
+}

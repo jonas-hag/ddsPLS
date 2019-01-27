@@ -45,3 +45,6 @@ Y <- scale(liver.toxicity$clinic)
 # mode = "reg")
 #plot(res_cv_reg)
 }
+\seealso{
+\code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}
+}

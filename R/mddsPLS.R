@@ -309,7 +309,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #'
 #' @export
 #'
-#' @seealso \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}
+#' @seealso \code{\link{summary.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
 #'
 #' @examples
 #' # Single-block example :
@@ -319,12 +319,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' X <- scale(X[,which(apply(X,2,stats::sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 #' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
+#' summary(mddsPLS_model_class)
 #'
 #' ## Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#' summary(mddsPLS_model_reg)
 #'
 #' # Multi-block example :
 #' ## Classification example :
@@ -335,6 +337,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 #' mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.95,R = 2,mode = "clas",verbose = TRUE)
+#' summary(mddsPLS_model_class)
 #'
 #' ## Regression example :
 #' data("liver.toxicity")
@@ -343,6 +346,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",verbose=FALSE){
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- scale(liver.toxicity$clinic)
 #' mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#' summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
@@ -360,6 +364,30 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   q <- ncol(Y)
   has_converged <- maxIter_imput
   id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = TRUE)})
+  any_na_no_all <- lapply(Xs,function(x){
+    oo <- which(is.na(x),arr.ind = TRUE)[,1]
+    pi <- ncol(x)
+    table_o <- table(oo)
+    toto <- which(table_o!=pi)
+    out <- NA
+    if(length(toto)!=0){
+      out <- names(table_o)[toto]
+    }
+    as.numeric(out)
+  })
+  if(length(na.omit(unlist(any_na_no_all)))!=0){
+    which.block <- which(unlist(lapply(any_na_no_all,function(oo){length(na.omit(oo))!=0})))
+    mess1 <- "Block(s) with values missing not for all the variables:\n"
+    mess2 <- paste("(",paste(which.block,collapse=","),")\n",sep="",collapse=",")
+    mess3 <- "Corresponding individuals for each block:\n"
+    ouou <- paste(unlist(lapply(which.block,function(i){paste(
+      "(",paste(any_na_no_all[[i]],collapse=",",sep=""),
+      ")",sep="")})),collapse=",")
+    mess4 <- paste(ouou,"\n",sep="",collapse="")
+    stop(paste(mess1,mess2,mess3,mess4),
+         call. = FALSE)
+  }
+
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose)

@@ -11,6 +11,8 @@
 #' @importFrom eulerr euler
 #' @importFrom graphics plot
 #'
+#' @seealso  \code{\link{mddsPLS}}
+#'
 #' @export
 #'
 #' @examples

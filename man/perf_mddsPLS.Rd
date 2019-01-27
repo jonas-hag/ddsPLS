@@ -80,3 +80,6 @@ Y <- scale(liver.toxicity$clinic)
 #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
 # mode = "reg")
 }
+\seealso{
+\code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}, \code{\link{mddsPLS}}, \code{\link{predict.mddsPLS}},
+}
