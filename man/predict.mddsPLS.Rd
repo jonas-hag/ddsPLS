@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.mddsPLS.R
 \name{predict.mddsPLS}
 \alias{predict.mddsPLS}
-\title{The predict function of a mdd-sPLS model}
+\title{The predict function of a mdd-sPLS model.}
 \usage{
 \method{predict}{mddsPLS}(object, newdata, ...)
 }
@@ -17,7 +17,7 @@
 A matrix of estimated \emph{Y_test} values.
 }
 \description{
-The predict function of a mdd-sPLS model
+The predict function of a mdd-sPLS model.
 }
 \examples{
 data("liver.toxicity")

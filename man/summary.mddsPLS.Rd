@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.mddsPLS.R
 \name{summary.mddsPLS}
 \alias{summary.mddsPLS}
-\title{The summary S3 method of the mddsPLS function}
+\title{The summary method of the \emph{mddsPLS} function.}
 \usage{
 \method{summary}{mddsPLS}(object, plot_present_indiv = TRUE, ...)
 }

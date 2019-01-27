@@ -2,7 +2,7 @@
 % Please edit documentation in R/mddsPLS.R
 \name{MddsPLS_core}
 \alias{MddsPLS_core}
-\title{The core function of the Multi-Data-Driven sparse PLS function}
+\title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
 MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg",
   verbose = FALSE)

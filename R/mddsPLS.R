@@ -393,8 +393,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     as.numeric(out)
   })
-  if(length(na.omit(unlist(any_na_no_all)))!=0){
-    which.block <- which(unlist(lapply(any_na_no_all,function(oo){length(na.omit(oo))!=0})))
+  if(length(stats::na.omit(unlist(any_na_no_all)))!=0){
+    which.block <- which(unlist(lapply(any_na_no_all,function(oo){length(stats::na.omit(oo))!=0})))
     mess1 <- "Block(s) with values missing not for all the variables:\n"
     mess2 <- paste("(",paste(which.block,collapse=","),")\n",sep="",collapse=",")
     mess3 <- "Corresponding individuals for each block:\n"

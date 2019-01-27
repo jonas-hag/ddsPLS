@@ -1,4 +1,4 @@
-#' The predict function of a mdd-sPLS model.
+#' The predict method associated to the \emph{mddsPLS} class.
 #'
 #' @param object A mdd-sPLS object, output from the mddsPLS function.
 #' @param newdata A data-set where individuals are described by the same as for mod_0
