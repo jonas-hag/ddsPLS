@@ -311,7 +311,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
                                   collapse = ","),") variable(s)",sep=""));cat("\n")
   }
   list(u=u_t_r,u_t_super=U_t_super,v=v,ts=t_r,beta_comb=u,t=t,s=s,t_ort=t_ort,s_ort=s_ort,B=B,
-       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda)
+       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda_in[1])
 }
 
 
@@ -454,14 +454,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda,R=R,L0=L0)
+                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,R=R,L0=NULL)
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0)
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=NULL)
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
