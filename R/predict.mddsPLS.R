@@ -19,6 +19,7 @@
 predict.mddsPLS  <- function(object,newdata,...){
   mod_0 <- object
   newX <- newdata
+  L0 <- object$L0
   fill_X_test <- function(mod_0,X_test){
     lambda <- mod_0$lambda
     R <- mod_0$mod$R

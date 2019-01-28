@@ -85,7 +85,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
       all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
     }
     lambda_L0 <- sort(all_maxs,decreasing = T)[min(sum_ps,1+L0)]
-    lambda_in <- lambda_L0
+    lambda_in <- rep(lambda_L0,K)
   }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
     M0 <- crossprod(Y,Xs[[k]])/(n-1)
@@ -119,10 +119,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
   z_r <- list()
   z_t <- list()
   # BETA_r <- list()
-  print(" ")
-  print(K)
   for(k in 1:K){
-    cat(k)
     if(norm(Ms[[k]])==0){
       svd_k <- list(v=matrix(0,
                              nrow = ncol(Ms[[k]]),
@@ -267,7 +264,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
     }
 
   }, error = function(e) {
-    browser()
+    print("Please contact mddsPLS maintainers")
   })
 
   u <- beta_all#beta# deprecated
@@ -492,7 +489,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0)
   }
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
-              maxIter_imput=maxIter_imput,has_converged=has_converged)
+              maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
   class(out) <- "mddsPLS"
   out
 }
