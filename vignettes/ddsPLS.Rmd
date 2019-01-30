@@ -39,7 +39,7 @@ The supervizion part is described by the $\mathbf{Y}\in\mathbb{R}^{n\times q}$ m
 
 In the $\mathbf{X}_s$ and $\mathbf{Y}$ data sets, the same numbers of individuals are described, $n$ and each of them are on the same line.
 
-<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> A single individual **must not be missing in the all** $\mathbf{X}$ matrices and **no missing value is allowed** in the $\mathbf{Y}$ part.
+<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **A single individual must not be missing i** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
 
 # Introduction
 
@@ -118,6 +118,8 @@ Are also plotted vertical lines representing:
 
   * The global minimum,
   * The minimum of the **Mean MSEP**.
+  
+The two panels building this plot are headed with numbers. Red for the error curves and blue for the $\mathbf{Y}$ variable occurence curves. It represents the number of variables selected in the $\mathbf{Y}$ and in the $\mathbf{Y}$ respectively for the model built on the matrices given to the function.
 
 #### Summary Method
 
