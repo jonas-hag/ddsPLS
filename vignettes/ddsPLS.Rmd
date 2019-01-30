@@ -37,9 +37,9 @@ In the other cases, the number of variables in each matrix can be different. In 
 
 The supervizion part is described by the $\mathbf{Y}\in\mathbb{R}^{n\times q}$ matrix. In case of regression it can be a *vector* for univariate case ($q=1$) or a *matrix* or even a *data.frame*. In multi-variate regression, $q>1$, it can be a *matrix* or a *data.frame*. In case on classification, $\mathbf{Y}$ must be unidimensionnal but it can be a *vector* or a *matrix* or even a *data.frame*. The argument *mode* permits to choose between regression mode, then use *reg*, and classification mode, then use something else.
 
-In the $\mathbf{X}_s$ and $\mathbf{Y}$ data sets, the same numbers of individuals are described, $n$ and each of them are on the same line.
+In the $\mathbf{X}_s$ and $\mathbf{Y}$ data sets, the same numbers of individuals are described, $n$ and each of them are on the same row
 
-<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **A single individual must not be missing i** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
+<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **No individual can be missing in all the $\mathbf{X}$ matrices and no missing entry is allowed in the $\mathbf{Y}$ dataset** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
 
 # Introduction
 
@@ -52,8 +52,15 @@ Only two parameters must to be fixed by the user :
  * **$\lambda$** which is the regularization coefficient, $\lambda\in[0,1]$. It can be directly interpreted as the minimum of correlation value under which an interaction between a variable of a block $\mathbf{X}$ and one of the $\mathbf{Y}$ variables is not taken into account.
  
 Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using **doParallel** package, see [@doparalelManual]. This is transparent for the user, which hase just to fix the number of *cpus* to be used. The corresponding parameter is denoted as **NCORES**. If it equals $1$, then no parallelization structure is deployed.
+
+Cross-validation is at the core of the method and the following figure explains, for a $T$-blocks data-set how can be spred the missing values and how is split in $train$ and $test$ parts.
+
+![Structure of a $T$-blocks data set for $train$ (resp. $test$) part, denoted by **o**
+(resp. **b**) symbol. Missing values are symbolized by hatched areas.](missing_structure.png)
  
-Load the **ddsPLS** package
+ 
+
+To load the **ddsPLS** package:
 ```{r, fig.show='hold',message=FALSE}
 library(ddsPLS)
 ```
@@ -188,7 +195,24 @@ load(file="res_cv_class.RData")
 plot(res_cv_class,legend_names = levels(Y),pos_legend="bottomleft")
 ```
 
+Both of the vertical lines set the position of the sparsest models giving the maximum accuracy glogally, right one, and in mean, left one.
 
+The best suited model is chosen for $\lambda\approx0.957$. As the top ruller explains, that model selects $4$ different variables. 
+
+In the following we have performed another cross-validation but the $\lambda$ paramter is not given as an input of the method. In fact we have decided to give a parameter $L_0$ corresponding to the maximum number of variables to be selected in the final model.
+
+```{r}
+NCORES <- 7
+res_cv_class_L0 <- perf_mddsPLS(X,Y,R = 2,L0s = 1:4,
+                             mode = "clas",NCORES = NCORES,
+                             fold_fixed = rep(1:12,3))
+
+plot(res_cv_class_L0,legend_names = levels(Y),pos_legend="bottomleft")
+```
+
+This synthaxe is particularly well suited when the number of samples is low and so the $(X_j,Y_j)$ are sensible to down-sampling.
+
+It is now clear that the best model is reached for $L_0=3$.
 
 # Multi-block
 
