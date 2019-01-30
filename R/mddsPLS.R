@@ -57,6 +57,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
     if(!(is.matrix(Y)|is.data.frame(Y))){
       Y <- as.matrix(Y)
     }
+    if(is.data.frame(Y)){
+      Y <- as.matrix(Y)
+    }
   }
   else{
     Y_df <- data.frame(Y)
@@ -129,15 +132,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
       svd_k <- svd(Ms[[k]],nu = 0,nv = R)
       if(length(svd_k$d)==1){
         svd_k$d <- c(svd_k$d,rep(0,R-1))
-      }
-      flag_zero <- F
-      for(r in 1:R){
-        if(flag_zero){
-          svd_k$v <- cbind(svd_k$v,0)
-        }else if(svd_k$d[r]==0){
-          svd_k$v[,r] <- 0
-          flag_zero <- T
-        }
       }
     }
     u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
@@ -227,46 +221,45 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
     svd_Z$d <- c(svd_Z$d,rep(0,R-length(svd_Z$d)))
     v <- cbind(v,matrix(0,nrow=nrow(v),ncol=R-length(svd_Z$d)))
   }
-  result = tryCatch({
-    T_super <- matrix(0,nrow=n,ncol=R)
-    for(k in 1:K){
-      # U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
-      # for(r in 1:R){
-      #   U_t_super[[k]] <- U_t_super[[k]] + u_t_r[[k]][,r,drop=F]%*%beta_list[[r]][k,,drop=F]
-      # }
-      U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
-      T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
-    }
-    ## -------------------------- ######################### -----------------
-    S_super <- Y%*%V_super
-    T_S <- crossprod(T_super,S_super)
-    T_T <- crossprod(T_super)
-    # svd_ort <- svd(S_T,nu = R,nv = R)
-    svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
-    # u_ort <- svd_ort_T_super$u
-    v_ort <- svd_ort_T_super$v
-    Delta_ort <- svd_ort_T_super$d^2
-    if(sum(Delta_ort)!=0){
-      t_ort <- T_super%*%v_ort
-      s_ort <- S_super%*%v_ort
-      D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
-      diag(D_0_inv) <- 1/Delta_ort
-      B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
-      A <- matrix(0,R,R)
-      for(r in 1:R){
-        A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
-      }
+  T_super <- matrix(0,nrow=n,ncol=R)
+  for(k in 1:K){
+    # U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
+    # for(r in 1:R){
+    #   U_t_super[[k]] <- U_t_super[[k]] + u_t_r[[k]][,r,drop=F]%*%beta_list[[r]][k,,drop=F]
+    # }
+    U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
+    T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
+  }
+  ## -------------------------- ######################### -----------------
+  S_super <- Y%*%V_super
+  T_S <- crossprod(T_super,S_super)
+  T_T <- crossprod(T_super)
+  # svd_ort <- svd(S_T,nu = R,nv = R)
+  svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
+  # u_ort <- svd_ort_T_super$u
+  v_ort <- svd_ort_T_super$v
+  Delta_ort <- svd_ort_T_super$d^2
+  if(sum(Delta_ort)!=0){
+    t_ort <- T_super%*%v_ort
+    s_ort <- S_super%*%v_ort
+    D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
+    del_0 <- which(Delta_ort<1e-10)
+    if(length(del_0)>0){
+      diag(D_0_inv)[-del_0] <- 1/Delta_ort[-del_0]
     }else{
-      t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
-      B_0 <- matrix(0,nrow = R,ncol=R)
-      A <- matrix(0,R,R)
-      V_super <- matrix(0,q,R)
+      diag(D_0_inv) <- 1/Delta_ort
     }
-
-  }, error = function(e) {
-    print("Please contact mddsPLS maintainers")
-  })
-
+    B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
+    A <- matrix(0,R,R)
+    for(r in 1:R){
+      A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
+    }
+  }else{
+    t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
+    B_0 <- matrix(0,nrow = R,ncol=R)
+    A <- matrix(0,R,R)
+    V_super <- matrix(0,q,R)
+  }
   u <- beta_all#beta# deprecated
   s <- S_super
   t <- T_super

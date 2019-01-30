@@ -179,6 +179,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
+                          if(max(errors[i,])>100) browser()
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
                           select_y[i,v_no_null] <- 1
                         }else{
@@ -188,7 +189,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           select_y[i,v_no_null] <- 1
                         }
                       }
-                      cbind(paras_here,errors,select_y,has_converged,time_build)
+                      out <- cbind(paras_here,errors,select_y,has_converged,time_build)
                     }
   if(NCORES_w!=1){
     parallel::stopCluster(cl)
@@ -201,12 +202,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     paras_out <- expand.grid(R,Lambdas)
     colnames(paras_out) <- c("R","Lambdas")
   }
-  ERRORS_OUT <- matrix(NA,nrow(paras_out),q)
+  ERRORS_OUT  <- matrix(NA,nrow(paras_out),q)
+  SDEP_OUT  <- matrix(0,nrow(paras_out),q)
   if(mode=="reg"){
     FREQ_OUT <- matrix(NA,nrow(paras_out),q)
   }
   else{
     ERRORS_OUT <- matrix(NA,nrow(paras_out),nlevels(Y))
+    SDEP_OUT  <- matrix(0,nrow(paras_out),nlevels(Y))
     FREQ_OUT <- matrix(NA,nrow(paras_out),nlevels(Y))
   }
   for(i in 1:nrow(paras_out)){
@@ -220,6 +223,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
     if(mode=="reg"){
       ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2))
+      SDEP_OUT[i,] <- apply(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2,2,sd)
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
     }else{
       err_char <- ERRORS[pos_in_errors,1:(q)+3]
@@ -237,11 +241,13 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
   }
   if(mode=="reg"){
-    out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
+    out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),SDEP=cbind(paras_out,SDEP_OUT),
+                FREQ=cbind(paras_out,FREQ_OUT),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
   }else{
-    out <- list(ERROR=cbind(paras_out,ERRORS_OUT),FREQ=cbind(paras_out,FREQ_OUT),
+    out <- list(ERROR=cbind(paras_out,ERRORS_OUT),SDEP=cbind(paras_out,SDEP_OUT),
+                FREQ=cbind(paras_out,FREQ_OUT),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
   }

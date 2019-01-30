@@ -20,6 +20,7 @@ predict.mddsPLS  <- function(object,newdata,...){
   mod_0 <- object
   newX <- newdata
   object$L0 <- NULL
+  #### FUNCTION
   fill_X_test <- function(mod_0,X_test){
     lambda <- mod_0$lambda
     R <- mod_0$mod$R
@@ -53,7 +54,8 @@ predict.mddsPLS  <- function(object,newdata,...){
         vars_Y_here <- matrix(0,nrow(t_X_here),R)
       }
       ## Generate model
-      model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,R = R,maxIter_imput = mod_0$maxIter_imput)
+      model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,
+                                   R = R,maxIter_imput = mod_0$maxIter_imput)
       ## Create test dataset
       n_test <- nrow(X_test[[1]])
       t_X_test <- matrix(NA,n_test,ncol(t_X_here))
@@ -65,8 +67,13 @@ predict.mddsPLS  <- function(object,newdata,...){
           xx <- X_test[[kk]]
           for(id_xx in 1:n_test){
             xx[id_xx,] <- xx[id_xx,]-mu_x_here[[k_j]]
-            xx[id_xx,which(sd_x_0[[k_j]]!=0)] <-
-              xx[id_xx,which(sd_x_0[[k_j]]!=0)]/sd_x_0[[k_j]][which(sd_x_0[[k_j]]!=0)]
+            pos_sd_no_nul <- which(sd_x_0[[k_j]]>1e-10)
+            if(length(pos_sd_no_nul)!=0){
+              xx[id_xx,pos_sd_no_nul] <-
+                xx[id_xx,pos_sd_no_nul]/sd_x_0[[k_j]][pos_sd_no_nul]
+            }else{
+              xx[id_xx,] <- 0
+            }
           }
           t_X_test[,pos_col] <- xx%*%u_X_here[[k_j]][,r_j]
         }
@@ -86,7 +93,7 @@ predict.mddsPLS  <- function(object,newdata,...){
     }
     X_test
   }
-
+  #### END FUNCTION
   is.multi <- is.list(newX)&!(is.data.frame(newX))
   if(!is.multi){
     newX <- list(newX)
