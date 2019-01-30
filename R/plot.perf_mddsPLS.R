@@ -176,8 +176,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     }
   }
   if(res_perf_mdd$mod!="reg"){
-    pos_all <- max(which(y_mean==max(y_mean)))
-    pos_one <- max(which(y1==max(y1),arr.ind = T)[,1])
+    pos_all <- min(which(y_mean==max(y_mean)))
+    pos_one <- min(which(y1==max(y1),arr.ind = T)[,1])
     abline(v=c(lam_plot[pos_all],
                lam_plot[pos_one]),lty=4,lwd=2)
   }else{
