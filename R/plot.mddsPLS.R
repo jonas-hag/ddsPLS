@@ -5,7 +5,7 @@
 #'
 #' @param x The perf_mddsPLS object.
 #' @param weights logical. Whether to plot the weight values. If \emph{FALSE} then the variates are plotted. Initialized to \emph{TRUE}.
-#' @param super_weights logical. Taken into account if \emph{weights} is \emph{TRUE}. If \emph{TRUE} barplots are fille with **Super-Weights**.
+#' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of **weights** of with général **X** and **Y** components else.
 #' @param block vector of intergers. If equals \emph{NULL} then all the components are plotted. Which components must be plotted. Initialized to \emph{NULL}.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param pos_legend Initialized to "topright"
@@ -26,8 +26,8 @@
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
 #' function(tt){rep(tt,12)})))
-#' x <- mddsPLS(Xs = X,Y = Y,R = 1, mode = "reg",lambda=0.8)
-#' #plot(res_cv_class)
+#' x <- mddsPLS(Xs = X,Y = Y,R = 1, mode = "clas",lambda=0.8)
+#' plot(x)
 #'
 #' # Regression example :
 #' data("liver.toxicity")
@@ -36,18 +36,22 @@
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
 #' # mode = "reg")
 #' #plot(res_cv_reg)
-plot.mddsPLS <- function(x,weights=TRUE,block=NULL,mar_left=2,
+plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,block=NULL,mar_left=2,
                          pos_legend="topright",legend_names=NULL,
                          ...){
-  if(is.nul(legend_names) & is.null(names(x$Xs))){
-    legend_names <- paste("Block",block,sep=" ")
-  }
+  browser()
   R <- x$mod$R
-  K <- length(viz)
+  K <- length(x$Xs)
   if(is.null(block)){
     block <- 1:K
   }
-  l_bl <- K
+  if(is.null(legend_names) & is.null(names(x$Xs))){
+    legend_names <- paste("Block",block,sep=" ")
+  }
+  if(is.null(block)){
+    block <- 1:K
+  }
+  l_bl <- K+1
   if(l_bl<3){
     colors <- 1:l_bl
   }else if(l_bl>8){
@@ -58,15 +62,16 @@ plot.mddsPLS <- function(x,weights=TRUE,block=NULL,mar_left=2,
   }
   if(weights){
     viz <- x$mod$u
-    if(super_weights){
+    viz_y <- x$mod$v
+    if(super){
       viz <- x$mod$u_t_super
     }
     toplot <- list()
-    if(!super_weights){
-      par(mfrow=c(length(block),R),
+    if(!super){
+      par(mfrow=c(length(block),R+1),
           mar=c(5,4+mar_left,4,2)+0.1)
     }else{
-      par(mfrow=c(1,R),
+      par(mfrow=c(1,R+1),
           mar=c(5,4+mar_left,4,2)+0.1)
     }
     for(i_k in 1:length(block)){
@@ -82,14 +87,20 @@ plot.mddsPLS <- function(x,weights=TRUE,block=NULL,mar_left=2,
           toplot[[k]][[r]] <- toplot[[k]][[r]][order(abs(toplot[[k]][[r]]),
                                                      decreasing = T)]
 
-          if(!super_weights){
+          if(!super){
             barplot(toplot[[k]][[r]],horiz = T,las=2,col=colors[k],xlim = c(-1,1),
                     main=paste(legend_names[i_k],", component ",R,sep=""))
           }
         }
+        y_como <- viz_y[,r]
+        names(y_como) <- colnames(x$mod$)[pos_no_nul]
+        toplot[[k]][[r]] <- toplot[[k]][[r]][order(abs(toplot[[k]][[r]]),
+                                                   decreasing = T)]
+        barplot(toplot[[k]][[r]],horiz = T,las=2,col=colors[k],xlim = c(-1,1),
+                main=paste(legend_names[i_k],", component ",R,sep=""))
       }
     }
-    if(super_weights){
+    if(super){
       for(r in 1:R){
         plotR <- NULL
         cols <- NULL
@@ -101,7 +112,6 @@ plot.mddsPLS <- function(x,weights=TRUE,block=NULL,mar_left=2,
         barplot(plotR[oo],horiz = T,las=2,col=cols[oo])
       }
     }
-
     legend(pos_legend,legend = legend_names,fill = colors[block])
   }else{
     viz <- x$mod$ts
