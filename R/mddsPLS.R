@@ -8,6 +8,7 @@
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mode A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".
+#' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #'
 #' @return A list containing the following objects:
@@ -34,7 +35,7 @@
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
-MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
+MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_na=NULL){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -85,7 +86,15 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE){
     all_maxs <- rep(NA,sum_ps)
     for(k in 1:K){
       ii <- cum_ps[k]
-      all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      if(is.null(id_na)){
+        all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      }else{
+        if(length(id_na[[k]])>0){
+          all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
+        }else{
+          all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+        }
+      }
     }
     lambda_L0 <- sort(all_maxs,decreasing = T)[min(sum_ps,1+L0)]
     lambda_in <- rep(lambda_L0,K)
@@ -426,7 +435,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     if(K>1){
       # Xs_init <- Xs
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,id_na=id_na)
       if(sum(abs(as.vector(mod_0$s)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){

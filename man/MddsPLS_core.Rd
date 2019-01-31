@@ -5,7 +5,7 @@
 \title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
 MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  verbose = FALSE)
+  verbose = FALSE, id_na = NULL)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
@@ -21,6 +21,8 @@ MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
+
+\item{id_na}{A list of na indices for each block. Initialized to NULL.}
 }
 \value{
 A list containing the following objects:

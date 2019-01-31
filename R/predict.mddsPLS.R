@@ -2,9 +2,10 @@
 #'
 #' @param object A mdd-sPLS object, output from the mddsPLS function.
 #' @param newdata A data-set where individuals are described by the same as for mod_0
+#' @param type charcter. It can be \emph{y} to return Y estimated value of \emph{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.
 #' @param ... Other plotting parameters to affect the plot.
 #'
-#' @return A matrix of estimated \emph{Y_test} values.
+#' @return Requested predicted values
 #'
 #' @importFrom stats predict
 #'
@@ -16,7 +17,7 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' mod_0 <- mddsPLS(X,Y)
 #' Y_test <- predict(mod_0,X)
-predict.mddsPLS  <- function(object,newdata,...){
+predict.mddsPLS  <- function(object,newdata,type="y",...){
   mod_0 <- object
   newX <- newdata
   object$L0 <- NULL
@@ -45,7 +46,11 @@ predict.mddsPLS  <- function(object,newdata,...){
         for(k_id in 1:length(pos_no_ok)){
           vars_k_id <- pos_vars_Y_here[[k_id]]
           if(length(vars_k_id)>0){
-            vars_Y_here[,C_pos+(0:(length(vars_k_id)-1))] <- mod_0$Xs[[pos_no_ok[k_id]]][,vars_k_id,drop=FALSE]
+            to_use <- mod_0$Xs[[pos_no_ok[k_id]]][,vars_k_id,drop=FALSE]
+            if(!is.matrix(to_use)){
+              to_use <- as.matrix(to_use)
+            }
+            vars_Y_here[,C_pos+(0:(length(vars_k_id)-1))] <- to_use
             C_pos <- C_pos + length(vars_k_id)
           }
         }
@@ -181,11 +186,26 @@ predict.mddsPLS  <- function(object,newdata,...){
     newY <- matrix(NA,n_new,q)
     for(i_new in 1:n_new){
       # Solved by Soso
-      newY[i_new,] <- predict.mddsPLS(mod_0,lapply(newX,
+      RES <- predict.mddsPLS(mod_0,lapply(newX,
                                            function(nx,ix){
                                              nx[ix,,drop=FALSE]
-                                           },i_new))
+                                           },i_new),type="both")
+      newY[i_new,] <- RES$y
+      if(type=="x"|type=="both"){
+        for(k in 1:length(newX)){
+          if(anyNA(newX[[k]][i_new,])){
+            newX[[k]][i_new,] <- RES$x[[k]][1,]
+          }
+        }
+      }
     }
   }
-  newY
+  if(type=="y"){
+    out <- newY
+  }else if(type=="x"){
+    out <- newX
+  }else{
+    out <- list(x=newX,y=newY)
+  }
+  out
 }
