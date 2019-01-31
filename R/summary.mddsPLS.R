@@ -62,7 +62,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   df_miss <- data.frame(matrix(1,n,K))
   for(k in 1:K){popo <- as.numeric(object$id_na[[k]]);if(length(popo)>0){df_miss[popo,k]<-0};
   df_miss[,k] <- factor(df_miss[,k],levels = c(0,1))}
-  names(df_miss) <- names_X_block
+  names(df_miss) <- paste(names_X_block," (",unlist(lapply(object$id_na,length)),")",sep="")
   q <- ncol(object$Y_0); if(is.null(q)){q <- length(object$Y_0)};    sent_q <- paste("Number of variables in Y part:",q)
   mode <- object$mode;if(mode=="reg"){mode <- "regression"}else{mode <- "classification"}
   sent_mode <- paste("Model built in mode",mode)

@@ -5,7 +5,8 @@
 \title{Function to plot cross-validation performance results.}
 \usage{
 \method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, legend_names = NULL,
-  pos_legend = "bottomleft", ...)
+  pos_legend = "bottomleft", which_sd_plot = NULL, ylim = NULL,
+  alpha.f = 0.4, no_occurence = F, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -15,6 +16,14 @@
 \item{legend_names}{vector of characters. Each element is the name of one of the q response variables.}
 
 \item{pos_legend}{character. One of "bottomleft", "topright",....}
+
+\item{which_sd_plot}{vector of integers of length the number of columns in Y. Indicates which area of standard error must be drawn.}
+
+\item{ylim}{numeric vectors of length 2, giving the error plot range.}
+
+\item{alpha.f}{factor modifying the opacity alpha; typically in [0,1]. Used by \emph{adjustcolor}}
+
+\item{no_occurence}{logical. Whether or not to plot the occurence plot of the **Y** variables. Initialized to **TRUE**.}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }

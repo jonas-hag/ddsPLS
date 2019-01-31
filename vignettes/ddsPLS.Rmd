@@ -14,7 +14,8 @@ bibliography: bib.bib
 ---
 
 ```{r,include=FALSE}
-htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+library(htmltools)
+tagList(rmarkdown::html_dependency_font_awesome())
 ```
 
 In the following $\mathbf{X}\in\mathbb{R}^{n\times p}$ is a matrix of $n$ rows and $p$ columns describing the covariate part of a data set in a mono-block context. If this is a multi-block analysis, with one block for **Proteomics**, one block for **DNA methylation** for example and other $K-2$ blocks, then the covariate data set is built on $K$ blocks and is denoted as 
@@ -201,12 +202,21 @@ The best suited model is chosen for $\lambda\approx0.957$. As the top ruller exp
 
 In the following we have performed another cross-validation but the $\lambda$ paramter is not given as an input of the method. In fact we have decided to give a parameter $L_0$ corresponding to the maximum number of variables to be selected in the final model.
 
-```{r}
+```{r,eval=F}
 NCORES <- 7
 res_cv_class_L0 <- perf_mddsPLS(X,Y,R = 2,L0s = 1:4,
                              mode = "clas",NCORES = NCORES,
                              fold_fixed = rep(1:12,3))
+```
 
+```{r,eval=T,echo=F}
+# save(res_cv_class_L0,file="res_cv_class_L0.RData")
+load(file="res_cv_class_L0.RData")
+```
+
+Which can simply plotted with the following command
+
+```{r,eval=T}
 plot(res_cv_class_L0,legend_names = levels(Y),pos_legend="bottomleft")
 ```
 
