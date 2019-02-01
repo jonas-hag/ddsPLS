@@ -135,10 +135,12 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     R <- mod$R
     K <- length(mu_x_s)
     for(k in 1:K){
-      for(i in 1:n_new){
-        newX[[k]][i,]<-(newX[[k]][i,]-mu_x_s[[k]])
-        ok_sd <- which(sd_x_s[[k]]!=0)
-        newX[[k]][i,ok_sd] <- newX[[k]][i,ok_sd]/sd_x_s[[k]][ok_sd]
+      newX[[k]][1,]<-(newX[[k]][1,]-mu_x_s[[k]])
+      ok_sd <- which(sd_x_s[[k]]!=0)
+      if(length(ok_sd)>0){
+        newX[[k]][1,ok_sd] <- newX[[k]][1,ok_sd]/sd_x_s[[k]][ok_sd]
+      }else{
+        newX[[k]][1,] <- 0
       }
     }
     if(mode=="reg"){
@@ -181,15 +183,19 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
         newY <- predict(mod_0$mod$B,df_new)$'class'
       }
     }
+    for(k in 1:K){
+      newX[[k]][1,] <- newX[[k]][1,]*sd_x_s[[k]]
+      newX[[k]][1,]<- newX[[k]][1,]+mu_x_s[[k]]
+    }
   }
   else{
     newY <- matrix(NA,n_new,q)
     for(i_new in 1:n_new){
       # Solved by Soso
       RES <- predict.mddsPLS(mod_0,lapply(newX,
-                                           function(nx,ix){
-                                             nx[ix,,drop=FALSE]
-                                           },i_new),type="both")
+                                          function(nx,ix){
+                                            nx[ix,,drop=FALSE]
+                                          },i_new),type="both")
       newY[i_new,] <- RES$y
       if(type=="x"|type=="both"){
         for(k in 1:length(newX)){
