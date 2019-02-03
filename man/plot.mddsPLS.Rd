@@ -4,16 +4,16 @@
 \alias{plot.mddsPLS}
 \title{Function to plot \emph{mddsPLS}}
 \usage{
-\method{plot}{mddsPLS}(x, weights = TRUE, super = FALSE,
+\method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   mar_left = 2, block = NULL, comp = NULL, addY = FALSE,
   pos_legend = "topright", legend_names = NULL, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{weights}{logical. Whether to plot the weight values. If \emph{FALSE} then the variates are plotted. Initialized to \emph{TRUE}.}
+\item{vizu}{character. One of \emph{weights}, \emph{heatmpap}}
 
-\item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of **weights** of with général **X** and **Y** components else.}
+\item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
 
 \item{mar_left}{positive float. Extra lines to add to the left margins, where the variable names are written.}
 

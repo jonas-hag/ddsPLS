@@ -17,6 +17,8 @@
 #'
 #' @seealso  \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}
 #'
+#' @importFrom graphics par
+#'
 #' @export
 #'
 #' @examples
@@ -51,7 +53,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   if(res_perf_mdd$mode=="reg"){
     cc <- matrix(NA,nrow = ncol(res_perf_mdd$Y),ncol = ncol(X_all))
     for(j in 1:ncol(X_all)){
-      cc[,j] <- abs(stats::cor(res_perf_mdd$Y,X_all[,j],use = "pairwise.complete.obs"))
+      cc[,j] <- abs(cor(res_perf_mdd$Y,X_all[,j],use = "pairwise.complete.obs"))
     }
     # cc <- abs(crossprod(scale(res_perf_mdd$Y),X_all)/(nrow(res_perf_mdd$Y)-1))
     col_na <- which(is.na(colSums(cc)))
@@ -61,7 +63,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   }else{
     Y_df <- data.frame(res_perf_mdd$Y)
     colnames(Y_df) <- "Y"
-    Y <- scale(stats::model.matrix( ~ Y - 1, data=Y_df))
+    Y <- scale(model.matrix( ~ Y - 1, data=Y_df))
     cc <- abs(crossprod(Y,X_all)/(nrow(Y)-1))
   }
   ranges_0 <- sort(apply(cc,2,max))
@@ -94,12 +96,12 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     colors <- 1:q
   }
   else if(q>8){
-    colors <- RColorBrewer::brewer.pal(8, "Dark2")
-    pal <- grDevices::colorRampPalette(colors)
+    colors <- brewer.pal(8, "Dark2")
+    pal <- colorRampPalette(colors)
     colors <- pal(q)
   }
   else{
-    colors <- RColorBrewer::brewer.pal(q, "Dark2")
+    colors <- brewer.pal(q, "Dark2")
   }
   if(res_perf_mdd$mod=="reg"){
     ylab1<-"MSEP"
@@ -110,9 +112,9 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     main1 <- "MSEP versus regularization coefficient mdd-sPLS"
     main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
     if(!no_occurence){
-      graphics::par(mar=c(3,3,5,3),mfrow=c(2,1))
+      par(mar=c(3,3,5,3),mfrow=c(2,1))
     }else{
-      graphics::par(mar=c(3,3,5,3),mfrow=c(1,1))
+      par(mar=c(3,3,5,3),mfrow=c(1,1))
     }
   }
   else{
@@ -127,7 +129,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
     main1 <- "Good classification rate versus regularization coefficient mdd-sPLS"
     main2 <- "Occurences per class versus regularization coefficient mdd-sPLS"
-    graphics::par(mar=c(3,3,5,3),mfrow=c(1,1))
+    par(mar=c(3,3,5,3),mfrow=c(1,1))
   }
   # graphics::matplot(sort(RMSEP[,2]),y1,type="l",lwd=4,lty=1,
   #                   ylim=ylim1,col=colors,
@@ -151,6 +153,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       with(dat,
            plot(
              lambda, MSEP, type="l", ylim=ylim,col=colors[jq],lwd=3,
+             main=main1,
              panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
                                  border=NA,
                                  col=adjustcolor(colors[jq],alpha.f = alpha.f))
@@ -190,14 +193,14 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                lam_plot[which(y1==min(y1),arr.ind = T)[,1]]),lty=4,lwd=2)
   }
   if(res_perf_mdd$mod!="reg"){
-    graphics::points(sort(RMSEP[,2]),y_mean,type = "l",lwd=4,lty=1,
-                     col=grDevices::adjustcolor(1,alpha.f = 0.2))
-    graphics::points(sort(RMSEP[,2]),y_mean,type = "l",lwd=2,lty=3,
+    points(sort(RMSEP[,2]),y_mean,type = "l",lwd=4,lty=1,
+                     col=adjustcolor(1,alpha.f = 0.2))
+    points(sort(RMSEP[,2]),y_mean,type = "l",lwd=2,lty=3,
                      col=1)
   }
   if(!is.null(legend_names)){
     if(res_perf_mdd$mod!="reg"){
-      graphics::legend(pos_legend,
+      legend(pos_legend,
                        legend = c(paste(legend_names,
                                         paste(" (",TAB," indiv.)",sep=""),
                                         sep=""),
@@ -216,13 +219,13 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
         lty <- rep(1,length(colors))
         lwd <- rep(1,length(colors))
       }
-      graphics::legend(pos_legend,legend = legend_names,
+      legend(pos_legend,legend = legend_names,
                        col = col,lty = lty,lwd=lwd)
     }
   }
 
   if(plot_mean){
-    graphics::points(sort(RMSEP[,2]),y_mean,type="l",
+    points(sort(RMSEP[,2]),y_mean,type="l",
                      lty=3,lwd=2)
     # graphics::points(sort(RMSEP[,2]),y_mean,type="l",
     # col=grDevices::adjustcolor("black",alpha.f = 0.2),
@@ -231,13 +234,13 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   if(is_L0!="L0s"){
     y_card <- card_ranges*diff(range(y1))/diff(range(card_ranges))
     y_card <- y_card - min(y_card) + min(y1)
-    graphics::par(new = TRUE)
+    par(new = TRUE)
     # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
     # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
     # lty = 1,lwd=5)
-    graphics::axis(side = 3,at=ranges,labels=card_ranges, col="red",
+    axis(side = 3,at=ranges,labels=card_ranges, col="red",
                    col.axis="red")
-    graphics::mtext("", side = 3, line = 3, col = "red")
+    mtext("", side = 3, line = 3, col = "red")
   }
   if(res_perf_mdd$mod=="reg"){
     if(is_L0!="L0s"){
@@ -258,7 +261,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       }
     }
     if(!no_occurence){
-      graphics::matplot(FREQ[order(FREQ[2]),2],
+      matplot(FREQ[order(FREQ[2]),2],
                         FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,
                         type="l",lwd=4,col=colors,lty=1,
                         xlab=expression(lambda),
@@ -267,8 +270,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       if(is_L0!="L0s"){
         pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
         pos_y[length(pos_y)] <- min(max(pos_y),length(ranges_y))
-        graphics::axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
-        graphics::mtext("", side = 3, line = 3, col = "blue")
+        axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
+        mtext("", side = 3, line = 3, col = "blue")
       }
     }
   }

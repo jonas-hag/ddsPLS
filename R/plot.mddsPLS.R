@@ -4,8 +4,8 @@
 #'  avalaible to control the plot quality.
 #'
 #' @param x The perf_mddsPLS object.
-#' @param weights logical. Whether to plot the weight values. If \emph{FALSE} then the variates are plotted. Initialized to \emph{TRUE}.
-#' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of **weights** of with général **X** and **Y** components else.
+#' @param vizu character. One of \emph{weights}, \emph{heatmap}, \emph{components}
+#' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
 #' @param comp vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.
 #' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
@@ -17,6 +17,9 @@
 #' @return The plot visualisation
 #'
 #' @importFrom graphics abline arrows barplot legend par
+#' @importFrom stats heatmap model.matrix
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom grDevices colorRampPalette
 #'
 #' @seealso  \code{\link{mddsPLS}}, \code{\link{summary.mddsPLS}}
 #'
@@ -39,10 +42,153 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' #res_cv_reg <- ddsPLS(Xs = X,Y = Y,lambda=0.8,R = 2)
 #' #plot(res_cv_reg)
-plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
+plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
                          block=NULL,comp=NULL,addY=FALSE,
                          pos_legend="topright",legend_names=NULL,
                          ...){
+  ## Functions
+  get_t <- function(mod,isSuper=F,block=1,comp=1){
+    if(isSuper){
+      t <- mod$t_ort[,comp,drop=F]
+    }else{
+      t <- mod$ts[[block]][,comp,drop=F]
+    }
+    return(t)
+  }
+  get_variance <- function(x,super){
+    Xs <- x$Xs
+    K <- length(Xs)
+    y_obs <- x$Y_0
+    R <- length(x$mod$ts)
+    y_pred <- predict(x,Xs)
+    mode <- x$mode
+    if(mode=="reg"){
+      if(!is.matrix(y_pred)){
+        y_pred <- matrix(y_pred,ncol=1)
+      }
+      y_pred_cent <- scale(y_pred,scale = F)
+      y_obs_cent <- scale(y_obs,scale = F)
+      VAR_TOTS <- rep(NA,q)
+      for(j in 1:q){
+        var_j_pred <- sum(y_pred_cent[,j]^2)
+        var_j_obs <- sum(y_obs_cent[,j]^2)
+        VAR_TOTS[j] <- 0
+        if(var_j_pred!=0){
+          VAR_TOTS[j] <- abs(crossprod(y_pred_cent[,j],y_obs_cent[,j])/
+                               sqrt(var_j_pred*var_j_obs))
+        }
+      }
+      VAR_COMPS <- matrix(NA,K,R)
+      for(r in 1:R){
+        for(k in 1:K){
+          t_r <- x$mod$ts[[r]]
+          t_k_r <- scale(t_r[,k],scale=F)
+          var_t_k_r_all <- sum(t_k_r^2)
+          var_t_k_r <- 0
+          for(j in 1:q){
+            dim_j <- y_pred_cent[,j]
+            var_dim_j <- sum(dim_j^2)
+            if(var_dim_j!=0 & var_t_k_r_all!=0){
+              var_t_k_r <- var_t_k_r +
+                as.numeric(abs(crossprod(dim_j,t_k_r)/sqrt(var_dim_j*var_t_k_r_all)))/q
+            }
+          }
+          VAR_COMPS[k,r] <- var_t_k_r
+        }
+      }
+    }
+    VAR_COMPS <- VAR_COMPS*mean(VAR_TOTS)
+    return(list(var_pred=VAR_TOTS,var_block_comp=VAR_COMPS))
+  }
+
+  ##### HEATMAP FUNCTION #####
+  plot_heatmap <- function(x,comp=NULL){
+    Xs <- x$Xs
+    K <- length(Xs)
+    if(!is.null(names(Xs))){
+      for(k in 1:K){
+        if(nchar(names(Xs)[k])==0){
+          names(Xs)[k] <- paste("Block",k)
+        }
+      }
+    }else{
+      for(k in 1:K){
+        names(Xs)[k] <- paste("Block",k)
+      }
+    }
+    Y_1 <- x$Y_0
+    R <- length(x$mod$ts)
+    comp_in<-comp
+    if(is.null(comp_in)){
+      comp_in <- R
+    }
+    if(x$mode!="reg"){
+      Y_1 <- as.matrix(model.matrix( ~ Y - 1, data=data.frame(x$Y_0,ncol=1)))
+      colnames(Y_1) <- levels(as.factor(x$Y_0))
+      q <- ncol(Y_1)
+    }else if(!is.matrix(Y_1)){
+      Y_1 <- matrix(Y_1,ncol=1)
+    }
+    n <- nrow(Y_1)
+    q <- ncol(Y_1)
+    which_sel <- lapply(x$mod$u,function(u){which(abs(u[,comp_in])>1e-9)})
+    p_sel <- sum(unlist(lapply(which_sel,length)))
+    coco_imputed <- data.frame(matrix(NA,n,p_sel+q))
+    coeffs <- matrix(rep(0,p_sel),nrow = 1)
+    colnames(coeffs) <- rep("OOO",p_sel)
+    count <- 0
+    my_group <- rep("Block Y",p_sel+q)
+    for(k in 1:K){
+      Xs_k <- Xs[[k]]
+      if(!is.matrix(Xs_k)){
+        Xs_k <- matrix(Xs_k,nrow=1)
+      }
+      ls <- which_sel[[k]]
+      if(length(ls)!=0){
+        my_group[count + 1:length(ls)] <- names(Xs)[k]
+        coco_imputed[,count + 1:length(ls)] <- Xs[[k]][,ls,drop=F]
+        coeffs[1,count + 1:length(ls)] <- x$mod$u_t_super[[k]][ls,1]
+        colNames <- colnames(Xs[[k]])[ls]
+        if(!is.null(colNames)){
+          names(coco_imputed)[count + 1:length(ls)] <- colNames
+        }else{
+          names(coco_imputed)[count + 1:length(ls)] <- paste(names(Xs)[k],", Var. ",ls,sep="")
+        }
+      }
+      count <- count + length(ls)
+    }
+    coco_imputed[,count + 1:q] <- Y_1
+    names_Y <- colnames(Y_1)
+    if(is.null(colnames(Y_1))){
+      names_Y <- paste("Y, Var.",1:q)
+    }
+    colnames(coco_imputed)[count +1:q] <- names_Y
+    my_group_factor <- factor(my_group)
+    if(K+1<3){
+      colors <- c("black","red","blue")[1:(K+1)]
+    }else if(K+1>8){
+      colors <- brewer.pal(8, "Dark2")
+      pal <- colorRampPalette(colors)
+      colors <- pal(K+1)
+    }else{
+      colors <- brewer.pal(K+1, "Dark2")
+    }
+    my_col <- matrix(colors[my_group_factor],nrow=1)
+    rownames(my_col) <- "Block"
+    heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
+            xlab = "Individuals",RowSideColors=my_col,
+            main=paste("Heatmap for component",comp_in))
+    legend("topleft",legend=levels(my_group_factor),
+           fill=colors[1:nlevels(my_group_factor)],
+           border=FALSE, bty="n",cex=0.7)
+  }
+  plot_components <- function(x,comp=NULL){
+
+  }
+  ##
+
+
+
   R <- x$mod$R
   if(is.null(comp)){
     comp_in <- 1:R
@@ -52,7 +198,7 @@ plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
   R_in <- length(comp_in)
   K <- length(x$Xs)
   block_in <- block
-  if(is.null(block_in)){
+  if(is.null(block_in) | super){
     block_in <- 1:K
   }
   if (any(!comp_in %in% 1:R)) {
@@ -82,17 +228,24 @@ plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
   }
   if(is.null(legend_names) & is.null(names(x$Xs))){
     legend_names_in <- paste("Block",block_in,sep=" ")
+  }else{
+    legend_names_in <- names(x$Xs)
+    for(k in 1:K){
+      if(nchar(names(x$Xs)[k])==0){
+        legend_names_in[k] <- paste("Block",k)
+      }
+    }
   }
   l_bl <- K+1
   if(l_bl<3){
     colors <- 1:l_bl
   }else if(l_bl>8){
-    pal <- grDevices::colorRampPalette(colors)
+    pal <- colorRampPalette(colors)
     colors <- pal(l_bl)
   }else{
-    colors <- RColorBrewer::brewer.pal(l_bl, "Dark2")
+    colors <- brewer.pal(l_bl, "Dark2")
   }
-  if(weights){
+  if(vizu=="weights"){
     viz <- x$mod$u
     viz_y <- x$mod$v
     if(super){
@@ -132,6 +285,9 @@ plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
         if(length(pos_no_nul)>0){
           toplot[[k]][[r]] <- viz_k[pos_no_nul,r]
           names(toplot[[k]][[r]]) <- colnames(x$Xs[[k]])[pos_no_nul]
+          if(is.null(names(toplot[[k]][[r]]))){
+            names(toplot[[k]][[r]]) <- pos_no_nul
+          }
           toplot[[k]][[r]] <- toplot[[k]][[r]][order(abs(toplot[[k]][[r]]),
                                                      decreasing = T)]
 
@@ -156,7 +312,7 @@ plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
         toplot_y <- y_como[order(abs(y_como),decreasing = T)]
         barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
                 main=paste("Bloc Y, component ",r,sep=""))
-        legeds <- c(legend_names_in,"Block Y")
+        legeds <- c(legend_names_in[block_in],"Block Y")
         colOut <- colors[c(block_in,K+1)]
       }else{
         legeds <- legend_names_in
@@ -200,7 +356,7 @@ plot.mddsPLS <- function(x,weights=TRUE,super=FALSE,mar_left=2,
       }
     }
     legend(pos_legend,legend = legeds,fill = colOut)
-  }else{
-    viz <- x$mod$ts
+  }else if(vizu=="heatmap"){
+    plot_heatmap(x,comp)
   }
 }
