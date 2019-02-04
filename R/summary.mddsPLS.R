@@ -72,7 +72,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
 
   df_num_var_sel <- data.frame(matrix(NA,K,R))
   rownames(df_num_var_sel) <- names_X_block
-  colnames(df_num_var_sel) <- paste("Dim.",1:R)
+  colnames(df_num_var_sel) <- paste("Comp.",1:R)
   for(r in 1:R){
     for(k in 1:K){
       df_num_var_sel[k,r] <- length(which(abs(object$mod$u[[k]][,r])>1e-9))
@@ -94,6 +94,18 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   cat(sent_con);cat("\n")
   cat("\n")
   cat("\n")
+  cat("     Variance explained of Y (%)    ");cat("\n")
+  cat("---------------------------------");cat("\n")
+  cat("By the predicted values");cat("\n")
+  print(signif(object$Variances$VAR_FINAL[1],2)*100)
+  cat("\n")
+  cat("By the Super Components");cat("\n")
+  print(signif(object$Variances$VAR_SUPER_COMPS,2)*100)
+  cat("\n")
+  cat("By each Component of each Block");cat("\n")
+  print(signif(object$Variances$VAR_COMPS,2)*100)
+  cat("\n")
+  cat("\n")
   cat("    Missing value information    ");cat("\n")
   cat("---------------------------------");cat("\n")
   cat("\n")
@@ -105,9 +117,9 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   N_max <- sum(unlist(lapply(object$mod$Ms,function(m){length(which(colSums(abs(m))!=0))})))
   cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   a<-lapply(object$mod$u,function(u){apply(u,2,function(u){length(which(abs(u)>1e-9))})})
-  cat("    For each block of X, are selected in order of component:");cat("\n")
+  cat("    For each block of X, are selected");cat("\n")
   print(df_num_var_sel)
-  cat("    For the Y block, are selected in order of component:");cat("\n")
+  cat("    For the Y block, are selected");cat("\n")
   cat(paste("        @ (",paste(apply(object$mod$v,2,function(u){length(which(abs(u)>1e-9))}),
                                 collapse = ","),") variable(s)",sep=""));cat("\n")
   cat("\n")

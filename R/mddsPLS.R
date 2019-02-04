@@ -338,7 +338,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #'
 #' @export
 #'
-#' @seealso \code{\link{summary.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
+#' @seealso \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
 #'
 #' @examples
 #' # Single-block example :
@@ -379,6 +379,62 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
+  get_variances <- function(x){
+    Xs <- x$Xs
+    K <- length(Xs)
+    y_obs <- x$Y_0
+    R <- length(x$mod$ts)
+    y_pred <- predict(x,Xs)
+    mode <- x$mode
+    if(mode=="reg"){
+      if(!is.matrix(y_pred)){
+        y_pred <- matrix(y_pred,ncol=1)
+      }
+    }else{
+      y_obs <- as.matrix(model.matrix( ~ y_obs - 1, data=data.frame(y_obs,ncol=1)))
+      colnames(y_obs) <- levels(as.factor(x$Y_0))
+      q <- ncol(y_obs)
+      y_obs <- scale(y_obs,scale = F)
+    }
+    VAR_TOT <- sum(abs(crossprod(y_obs)))
+    VAR_COMPS <- matrix(0,K,R)
+    VAR_SUPER_COMPS <- rep(0,R)
+    for(r in 1:R){
+      for(k in 1:K){
+        t_r <- x$mod$ts[[r]]
+        t_k_r <- scale(t_r[,k],scale=F)
+        var_t_k_r_all <- sum(t_k_r^2)
+        if(var_t_k_r_all!=0){
+          VAR_COMPS[k,r] <- sum(abs(crossprod(y_obs,t_k_r)/sqrt(var_t_k_r_all*VAR_TOT)))
+        }
+      }
+      t_super_r <- scale(x$mod$t_ort[,r],scale=F)
+      var_t_super_r <- sum(t_super_r^2)
+      if(var_t_super_r!=0){
+        VAR_SUPER_COMPS[r] <- sum(abs(crossprod(y_obs,t_super_r)/sqrt(var_t_super_r*VAR_TOT)))
+      }
+    }
+    VAR_FINAL <- 0
+    var_y_pred <- sum(abs(crossprod(y_pred)))
+    if(var_y_pred!=0){
+      VAR_FINAL <- sum(abs(crossprod(y_obs,y_pred)/sqrt(var_y_pred*VAR_TOT)))
+    }
+    names(VAR_FINAL) <- "Predicted"
+    if(is.null(names(Xs))){
+      legend_names_in <- paste("Block",1:K,sep=" ")
+    }else{
+      legend_names_in <- names(Xs)
+      for(k in 1:K){
+        if(nchar(names(Xs)[k])==0){
+          legend_names_in[k] <- paste("Block",k)
+        }
+      }
+    }
+    rownames(VAR_COMPS) <- legend_names_in;
+    colnames(VAR_COMPS) <- paste("Comp.",1:R)
+    names(VAR_SUPER_COMPS) <- paste("Comp.",1:R)
+    return(list(VAR_FINAL=VAR_FINAL,VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS))
+  }
   if(lambda<0|lambda>1){
     stop("Choose lambda regularization parameter between 0 and 1",
          call. = FALSE)
@@ -493,6 +549,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
   class(out) <- "mddsPLS"
+  out$Variances <- get_variances(out)
   out
 }
 

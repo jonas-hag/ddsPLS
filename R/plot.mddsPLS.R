@@ -4,7 +4,7 @@
 #'  avalaible to control the plot quality.
 #'
 #' @param x The perf_mddsPLS object.
-#' @param vizu character. One of \emph{weights}, \emph{heatmap}, \emph{components}
+#' @param vizu character. One of \emph{weights}, \emph{heatmap}, \emph{components}, \emph{correlogram}
 #' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
 #' @param comp vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.
@@ -19,7 +19,8 @@
 #' @importFrom graphics abline arrows barplot legend par
 #' @importFrom stats heatmap model.matrix
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom grDevices colorRampPalette
+#' @importFrom grDevices colorRampPalette adjustcolor
+#' @importFrom corrplot corrplot
 #'
 #' @seealso  \code{\link{mddsPLS}}, \code{\link{summary.mddsPLS}}
 #'
@@ -47,62 +48,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
                          pos_legend="topright",legend_names=NULL,
                          ...){
   ## Functions
-  get_t <- function(mod,isSuper=F,block=1,comp=1){
-    if(isSuper){
-      t <- mod$t_ort[,comp,drop=F]
-    }else{
-      t <- mod$ts[[block]][,comp,drop=F]
-    }
-    return(t)
-  }
-  get_variance <- function(x,super){
-    Xs <- x$Xs
-    K <- length(Xs)
-    y_obs <- x$Y_0
-    R <- length(x$mod$ts)
-    y_pred <- predict(x,Xs)
-    mode <- x$mode
-    if(mode=="reg"){
-      if(!is.matrix(y_pred)){
-        y_pred <- matrix(y_pred,ncol=1)
-      }
-      y_pred_cent <- scale(y_pred,scale = F)
-      y_obs_cent <- scale(y_obs,scale = F)
-      VAR_TOTS <- rep(NA,q)
-      for(j in 1:q){
-        var_j_pred <- sum(y_pred_cent[,j]^2)
-        var_j_obs <- sum(y_obs_cent[,j]^2)
-        VAR_TOTS[j] <- 0
-        if(var_j_pred!=0){
-          VAR_TOTS[j] <- abs(crossprod(y_pred_cent[,j],y_obs_cent[,j])/
-                               sqrt(var_j_pred*var_j_obs))
-        }
-      }
-      VAR_COMPS <- matrix(NA,K,R)
-      for(r in 1:R){
-        for(k in 1:K){
-          t_r <- x$mod$ts[[r]]
-          t_k_r <- scale(t_r[,k],scale=F)
-          var_t_k_r_all <- sum(t_k_r^2)
-          var_t_k_r <- 0
-          for(j in 1:q){
-            dim_j <- y_pred_cent[,j]
-            var_dim_j <- sum(dim_j^2)
-            if(var_dim_j!=0 & var_t_k_r_all!=0){
-              var_t_k_r <- var_t_k_r +
-                as.numeric(abs(crossprod(dim_j,t_k_r)/sqrt(var_dim_j*var_t_k_r_all)))/q
-            }
-          }
-          VAR_COMPS[k,r] <- var_t_k_r
-        }
-      }
-    }
-    VAR_COMPS <- VAR_COMPS*mean(VAR_TOTS)
-    return(list(var_pred=VAR_TOTS,var_block_comp=VAR_COMPS))
-  }
-
   ##### HEATMAP FUNCTION #####
-  plot_heatmap <- function(x,comp=NULL){
+  plot_heatmap <- function(x,comp=NULL,out=F){
     Xs <- x$Xs
     K <- length(Xs)
     if(!is.null(names(Xs))){
@@ -120,7 +67,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     R <- length(x$mod$ts)
     comp_in<-comp
     if(is.null(comp_in)){
-      comp_in <- R
+      comp_in <- 1
     }
     if(x$mode!="reg"){
       Y_1 <- as.matrix(model.matrix( ~ Y - 1, data=data.frame(x$Y_0,ncol=1)))
@@ -175,12 +122,23 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     }
     my_col <- matrix(colors[my_group_factor],nrow=1)
     rownames(my_col) <- "Block"
-    heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
-            xlab = "Individuals",RowSideColors=my_col,
-            main=paste("Heatmap for component",comp_in))
-    legend("topleft",legend=levels(my_group_factor),
-           fill=colors[1:nlevels(my_group_factor)],
-           border=FALSE, bty="n",cex=0.7)
+    main <- paste("Heatmap for component",comp_in)
+    main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[comp_in],2)*100,"% var. expl.)",sep="")
+    if(!out){
+      heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
+              xlab = "Individuals",RowSideColors=my_col,
+              main=main)
+      legend("topleft",legend=levels(my_group_factor),
+             fill=colors[1:nlevels(my_group_factor)],
+             border=FALSE, bty="n",cex=0.7)
+    }
+    output <- coco_imputed
+    if(out){
+      return(output)
+    }
+  }
+  plot_corcor <- function(x,comp=NULL){
+    corrplot(cor(plot_heatmap(x,comp=comp,out=T)))
   }
   plot_components <- function(x,comp=NULL){
 
@@ -202,10 +160,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     block_in <- 1:K
   }
   if (any(!comp_in %in% 1:R)) {
-    stop("One asked component does not exist",
+    stop("One of the asked components does not exist",
          call. = FALSE)
   }else if(any(!block_in %in% 1:K)){
-    stop("One asked block does not exist",
+    stop("One of the asked block does not exist",
          call. = FALSE)
   }
   isReg <- x$mode=="reg"
@@ -250,6 +208,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     viz_y <- x$mod$v
     if(super){
       viz <- x$mod$u_t_super
+      block_in <- 1:K
     }
     toplot <- list()
     ind_1 <- 1:length(block_in)
@@ -282,6 +241,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
         viz_k_r <- viz_k[,r]
         pos_no_nul <- which(abs(viz_k_r)>1e-12)
         main <- paste(legend_names_in[i_k],", component ",r,sep="")
+        main <- paste(main,"\n(",signif(x$Variances$VAR_COMPS[k,r],2)*100,"% var. expl.)",sep="")
         if(length(pos_no_nul)>0){
           toplot[[k]][[r]] <- viz_k[pos_no_nul,r]
           names(toplot[[k]][[r]]) <- colnames(x$Xs[[k]])[pos_no_nul]
@@ -294,6 +254,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
           if(!super){
             barplot(toplot[[k]][[r]],horiz = T,las=2,col=colors[k],xlim = c(-1,1),
                     main=main)
+            abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           }
         }else{
           toplot[[k]][[r]] <- 0
@@ -312,6 +273,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
         toplot_y <- y_como[order(abs(y_como),decreasing = T)]
         barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
                 main=paste("Bloc Y, component ",r,sep=""))
+        abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         legeds <- c(legend_names_in[block_in],"Block Y")
         colOut <- colors[c(block_in,K+1)]
       }else{
@@ -330,12 +292,14 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             cols <- c(cols,rep(colors[k],length(toplot[[k]][[r]])))
           }
         }
-        main <- paste("Bloc Xs, component ",r,sep="")
+        main <- paste("Block Xs, component ",r,sep="")
+        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[r],2)*100,"% var. expl.)",sep="")
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
         }else{
           oo <- order(abs(plotR),decreasing = T)
-          barplot(plotR[oo],horiz = T,las=2,col=cols[oo],main=main)
+          barplot(plotR[oo],horiz = T,las=2,col=cols[oo],main=main,xlim=c(-1,1))
+          abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         }
         if(addY){
           y_como <- viz_y[,r]
@@ -347,6 +311,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
           toplot_y <- y_como[order(abs(y_como),decreasing = T)]
           barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
                   main=paste("Bloc Y, component ",r,sep=""))
+          abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           legeds <- c(legend_names_in,"Block Y")
           colOut <- colors[c(block_in,K+1)]
         }else{
@@ -358,5 +323,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     legend(pos_legend,legend = legeds,fill = colOut)
   }else if(vizu=="heatmap"){
     plot_heatmap(x,comp)
+  }else if(vizu=="correlogram"){
+    plot_corcor(x,comp)
   }
 }

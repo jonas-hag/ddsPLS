@@ -11,7 +11,7 @@
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \emph{weights}, \emph{heatmpap}}
+\item{vizu}{character. One of \emph{weights}, \emph{heatmap}, \emph{components}, \emph{correlogram}}
 
 \item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
 
