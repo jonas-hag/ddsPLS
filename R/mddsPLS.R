@@ -110,7 +110,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   }
   ## Solve optimization problem
-  tete <- min(R,min(unlist(lapply(Ms,dim))))
+  tete <- min(R,q)#min(R,min(unlist(lapply(Ms,dim))))
   if(R<1){
     stop("Choose R superior to 1",
          call. = FALSE)
@@ -142,6 +142,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       if(length(svd_k$d)==1){
         svd_k$d <- c(svd_k$d,rep(0,R-1))
       }
+    }
+    R_k <- ncol(svd_k$v)
+    if(R_k!=R){
+      svd_k$v <- cbind(svd_k$v,matrix(0,nrow(svd_k$v),R-R_k))
     }
     u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
     if(k==1){
