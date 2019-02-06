@@ -141,20 +141,41 @@ NCORES <- 7
 res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,
                            R = 1,lambda_min=0.5,n_lambda=n_lambda,
                            mode = "reg",NCORES = NCORES,kfolds = "loo")
+
+res_cv_reg_L0 <- perf_mddsPLS(Xs = X,Y = Y,
+                           R = 1,L0=1:20,
+                           mode = "reg",NCORES = NCORES,kfolds = "loo")
 ```
 
 ```{r,echo=F}
 # save(res_cv_reg,file="res_cv_reg.RData")
+# save(res_cv_reg_L0,file="res_cv_reg_L0.RData")
 load("res_cv_reg.RData")
+load("res_cv_reg_L0.RData")
 ```
 
-#### Error Plot
+#### Error Plot {.tabset}
 
 A *plot* method plots the results. *plot_mean* permits to add the mean of the **Y** variable prediction errors. *legend_names* permits to add a legend with the names of the **Y** variables. *pos_legend* permits to choose the position of the legend. *which_sd_plot* picks the **Y** variables whose standard error must be drawn.
+
+##### Using $\lambda$ paradigm
 
 ```{r, fig.show='hold',message=FALSE,eval=T,fig.width=12, fig.height=12}
 plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(-0.3,1.1),alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y))
 ```
+
+Minimum for $\lambda\approx0.85$.
+
+##### Using $L_0$ paradigm
+
+```{r, fig.show='hold',message=FALSE,eval=T,fig.width=12, fig.height=7}
+plot(res_cv_reg_L0,which_sd_plot = c(5,7),ylim=c(-0.3,1.1),alpha.f = 0.4,
+     plot_mean = T,legend_names = colnames(Y),pos_legend = "top",no_occurence = T)
+```
+
+Minimum for $L_0\approx 18$.
+
+##### Observations
 
 Are also plotted vertical lines representing:
 
@@ -292,12 +313,34 @@ load(file="res_cv_class_L0.RData")
 Which can simply plotted with the following command
 
 ```{r,eval=T}
-plot(res_cv_class_L0,legend_names = levels(Y),pos_legend="bottomleft")
+plot(res_cv_class_L0,legend_names = levels(Y),pos_legend="bottomright")
 ```
 
 This synthaxe is particularly well suited when the number of samples is low and so the $(X_j,Y_j)$ are sensible to down-sampling.
 
 It is now clear that the best model is reached for $L_0=3$.
+
+### Optimal Models {.tabset}
+
+In [@clemmensen2011sparse], only $2$ variableds are selected. 
+
+#### Using $\lambda$ paradigm
+
+```{r,eval=T}
+model_lambda <- mddsPLS(X,Y,R = 2,lambda = 0.957,mode = "cla")
+plot(model_lambda,super = T,addY = T)
+```
+
+This model selects $4$ variables.
+
+#### Using $L_0$ paradigm
+
+```{r,eval=T}
+model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla")
+plot(model_L0,super = T,addY = T)
+```
+
+This model selects $3$ variables.
 
 # Multi-block
 

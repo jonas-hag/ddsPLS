@@ -12,6 +12,7 @@
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param pos_legend Initialized to "topright"
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
+#' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation
@@ -44,9 +45,10 @@
 #' #res_cv_reg <- ddsPLS(Xs = X,Y = Y,lambda=0.8,R = 2)
 #' #plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
-                         block=NULL,comp=NULL,addY=FALSE,
-                         pos_legend="topright",legend_names=NULL,
-                         ...){
+               block=NULL,comp=NULL,addY=FALSE,
+               pos_legend="topright",legend_names=NULL,
+               values_corr=F,
+               ...){
   ## Functions
   ##### HEATMAP FUNCTION #####
   plot_heatmap <- function(x,comp=NULL,out=F){
@@ -137,11 +139,12 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
       return(output)
     }
   }
-  plot_corcor <- function(x,comp=NULL){
-    corrplot(cor(plot_heatmap(x,comp=comp,out=T)))
-  }
-  plot_components <- function(x,comp=NULL){
-
+  plot_corcor <- function(x,comp=NULL,values=F){
+    if(values){
+      corrplot(cor(plot_heatmap(x,comp=comp,out=T)),method="number")
+    }else{
+      corrplot(cor(plot_heatmap(x,comp=comp,out=T)))
+    }
   }
   ##
 
@@ -184,6 +187,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
       names_Y <- 1:q
     }
   }
+  legends_names_y <- colnames(Y_in)
   if(is.null(legend_names) & is.null(names(x$Xs))){
     legend_names_in <- paste("Block",block_in,sep=" ")
   }else{
@@ -215,10 +219,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     ind_2 <- 1:R_in
     if(!super){
       if(addY){
-        par(mfrow=c(R_in,length(block_in)+1),
+        par(mfrow=c(length(block_in),R_in+1),
             mar=c(5,4+mar_left,4,2)+0.1)
       }else{
-        par(mfrow=c(R_in,length(block_in)),
+        par(mfrow=c(length(block_in),R_in),
             mar=c(5,4+mar_left,4,2)+0.1)
       }
     }else{
@@ -230,8 +234,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             mar=c(5,4+mar_left,4,2)+0.1)
       }
     }
-    for(i_r in ind_2){
-      for(i_k in ind_1){
+    for(i_k in ind_1){
+      for(i_r in ind_2){
         r <- comp_in[i_r]
         k <- block_in[i_k]
         if(i_r==1){
@@ -293,7 +297,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
           }
         }
         main <- paste("Block Xs, component ",r,sep="")
-        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[r],2)*100,"% var. expl.)",sep="")
+        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[r],2)*100,"% var. expl. total Y)",sep="")
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
         }else{
@@ -308,10 +312,15 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             y_como <- y_como[pos_no_nul]
             names(y_como) <- names_Y[pos_no_nul]
           }
-          toplot_y <- y_como[order(abs(y_como),decreasing = T)]
-          barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
+          # toplot_y <- y_como[order(abs(y_como),decreasing = T)]
+          if(!is.null(dim(x$Variances$VAR_SUPER_COMPS))){
+            toplot_y <- x$Variances$VAR_SUPER_COMPS[,r]*100
+          }else{
+            toplot_y <- x$Variances$VAR_SUPER_COMPS[r]*100
+          }
+          barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(0,100),
                   main=paste("Bloc Y, component ",r,sep=""))
-          abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
+          abline(v=c(0.25,0.5,0.75,1)*100,lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           legeds <- c(legend_names_in,"Block Y")
           colOut <- colors[c(block_in,K+1)]
         }else{
@@ -324,6 +333,6 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
   }else if(vizu=="heatmap"){
     plot_heatmap(x,comp)
   }else if(vizu=="correlogram"){
-    plot_corcor(x,comp)
+    plot_corcor(x,comp,values=values_corr)
   }
 }

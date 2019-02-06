@@ -387,6 +387,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     y_pred <- predict(x,Xs)
     mode <- x$mode
     if(mode=="reg"){
+      if(!is.matrix(y_obs)){
+        y_obs <- matrix(y_obs,ncol=1)
+      }
       if(!is.matrix(y_pred)){
         y_pred <- matrix(y_pred,ncol=1)
       }
@@ -396,9 +399,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       q <- ncol(y_obs)
       y_obs <- scale(y_obs,scale = F)
     }
+    q <- ncol(y_obs)
     VAR_TOT <- sum(abs(crossprod(y_obs)))
     VAR_COMPS <- matrix(0,K,R)
-    VAR_SUPER_COMPS <- rep(0,R)
+    VAR_SUPER_COMPS <- matrix(0,q,R)
     for(r in 1:R){
       for(k in 1:K){
         t_r <- x$mod$ts[[r]]
@@ -408,10 +412,23 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           VAR_COMPS[k,r] <- sum(abs(crossprod(y_obs,t_k_r)/sqrt(var_t_k_r_all*VAR_TOT)))
         }
       }
-      t_super_r <- scale(x$mod$t_ort[,r],scale=F)
-      var_t_super_r <- sum(t_super_r^2)
-      if(var_t_super_r!=0){
-        VAR_SUPER_COMPS[r] <- sum(abs(crossprod(y_obs,t_super_r)/sqrt(var_t_super_r*VAR_TOT)))
+      # t_super_r <- scale(x$mod$t_ort[,r],scale=F)
+      # var_t_super_r <- sum(t_super_r^2)
+      # if(var_t_super_r!=0){
+        # VAR_SUPER_COMPS[r] <- sum(abs(crossprod(y_obs,t_super_r)/sqrt(var_t_super_r*VAR_TOT)))
+      # }
+    }
+    for(j in 1:q){
+      Y_j <- y_obs[,j]
+      var_j <- sum(Y_j^2)
+      if(var_j!=0){
+        for(r in 1:R){
+          t_super_r <- scale(x$mod$t_ort[,r],scale=F)
+          var_t_super_r <- sum(t_super_r^2)
+          if(var_t_super_r!=0){
+            VAR_SUPER_COMPS[j,r] <- sum(abs(crossprod(Y_j,t_super_r)/sqrt(var_t_super_r*var_j)))
+          }
+        }
       }
     }
     VAR_FINAL <- 0
@@ -432,7 +449,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     rownames(VAR_COMPS) <- legend_names_in;
     colnames(VAR_COMPS) <- paste("Comp.",1:R)
-    names(VAR_SUPER_COMPS) <- paste("Comp.",1:R)
+    colnames(VAR_SUPER_COMPS) <- paste("Super Comp.",1:R)
+    rownames(VAR_SUPER_COMPS) <- colnames(y_obs)
     return(list(VAR_FINAL=VAR_FINAL,VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS))
   }
   if(lambda<0|lambda>1){
