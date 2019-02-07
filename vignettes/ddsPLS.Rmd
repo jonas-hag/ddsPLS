@@ -6,6 +6,7 @@ output:
   html_document: 
     number_sections: yes
     toc: yes
+    theme: lumen
 vignette: >
   %\VignetteIndexEntry{Mono and Multi-block Data-Driven sparse PLS (mdd-sPLS)}
   %\VignetteEngine{knitr::rmarkdown}

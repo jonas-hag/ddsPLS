@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   mar_left = 2, block = NULL, comp = NULL, addY = FALSE,
-  pos_legend = "topright", legend_names = NULL, ...)
+  pos_legend = "topright", legend_names = NULL, values_corr = F, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -26,6 +26,8 @@
 \item{pos_legend}{Initialized to "topright"}
 
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
+
+\item{values_corr}{logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }

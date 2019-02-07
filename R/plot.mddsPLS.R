@@ -256,9 +256,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
                                                      decreasing = T)]
 
           if(!super){
-            barplot(toplot[[k]][[r]],horiz = T,las=2,col=colors[k],xlim = c(-1,1),
-                    main=main)
-            abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
+            barplot(toplot[[k]][[r]],horiz = T,las=2,
+                    col=colors[k],xlim = c(-1,1),
+                    main=main,xlab="Coefficient")
+            abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           }
         }else{
           toplot[[k]][[r]] <- 0
@@ -276,8 +277,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
         }
         toplot_y <- y_como[order(abs(y_como),decreasing = T)]
         barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
-                main=paste("Bloc Y, component ",r,sep=""))
-        abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
+                main=paste("Bloc Y, component ",r,sep=""),xlab="Coefficient")
+        abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         legeds <- c(legend_names_in[block_in],"Block Y")
         colOut <- colors[c(block_in,K+1)]
       }else{
@@ -302,8 +303,9 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
         }else{
           oo <- order(abs(plotR),decreasing = T)
-          barplot(plotR[oo],horiz = T,las=2,col=cols[oo],main=main,xlim=c(-1,1))
-          abline(v=c(0.5,-0.5,1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
+          barplot(plotR[oo],horiz = T,las=2,col=cols[oo],
+                  main=main,xlim=c(-1,1),xlab="Coefficient")
+          abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         }
         if(addY){
           y_como <- viz_y[,r]
@@ -319,7 +321,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             toplot_y <- x$Variances$VAR_SUPER_COMPS[r]*100
           }
           barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(0,100),
-                  main=paste("Bloc Y, component ",r,sep=""))
+                  main=paste("Bloc Y, component ",r,sep=""),
+                  xlab="Variance Explained")
           abline(v=c(0.25,0.5,0.75,1)*100,lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           legeds <- c(legend_names_in,"Block Y")
           colOut <- colors[c(block_in,K+1)]
