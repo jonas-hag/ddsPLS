@@ -40,7 +40,7 @@ must be built on. The coefficient lambda regularizes the quality of proximity to
 ## Classification example :
 data("penicilliumYES")
 X <- penicilliumYES$X
-X <- scale(X[,which(apply(X,2,stats::sd)>0)])
+X <- scale(X[,which(apply(X,2,sd)>0)])
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 summary(mddsPLS_model_class)
@@ -56,7 +56,7 @@ summary(mddsPLS_model_reg)
 ## Classification example :
 data("penicilliumYES")
 X <- penicilliumYES$X
-X <- scale(X[,which(apply(X,2,stats::sd)>0)])
+X <- scale(X[,which(apply(X,2,sd)>0)])
 Xs <- list(X[,1:1000],X[,-(1:1000)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))

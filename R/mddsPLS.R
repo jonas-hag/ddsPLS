@@ -16,11 +16,12 @@
 #'   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
 #'    weights per block per axis.}
 #'   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
-#'    weights per block per axis scaled on the super description of the dataset.}
+#'    weights per block per axis scaled on the super description of the dataset. Denoted as
+#'    \emph{scaled super-weights}.}
 #'   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
 #'   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
 #'    scores per axis per block.}
-#'   \item{(t,s)}{Two \emph{nXR} matrices, scores of the \emph{X} and \emph{Y} parts.}
+#'   \item{(t,s)}{Two \emph{nXR} matrices, super-scores of the \emph{X} and \emph{Y} parts.}
 #'   \item{(t_ort,s_ort)}{Two \emph{nXR} matrices, final scores of the \emph{X} and \emph{Y} part.
 #'    They correspond to \emph{PLS} scores of \emph{(t,s)} scores and so \emph{t_ort^T s_ort} is diagonal,
 #'    \emph{t_ort}, respectively \emph{s_ort}, carries the same information as \emph{t}, respectively \emph{s}.}
@@ -35,6 +36,10 @@
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
+#'
+#' @importFrom stats sd model.matrix
+#' @importFrom MASS lda
+#'
 MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_na=NULL){
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -44,7 +49,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   ps <- lapply(Xs,ncol)
   ## Standardize Xs
   mu_x_s <- lapply(Xs,colMeans)
-  sd_x_s <- lapply(Xs,function(X){apply(X,2,stats::sd)})
+  sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)})
   Xs <- lapply(Xs,scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
   if(length(unlist(pos_0))>0){
@@ -64,10 +69,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   }
   else{
     Y_df <- data.frame(Y)
-    Y <- scale(stats:: model.matrix( ~ Y - 1, data=Y_df))
+    Y <- scale(model.matrix( ~ Y - 1, data=Y_df))
   }
   mu_y <- colMeans(Y)
-  sd_y <- apply(Y,2,stats::sd)
+  sd_y <- apply(Y,2,sd)
   for(q_j in 1:length(sd_y)){
     if(sd_y[q_j]!=0){
       Y[,q_j] <- scale(Y[,q_j])
@@ -291,19 +296,19 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
-    sds <- apply(dataf[,-1,drop=FALSE],2,stats::sd)
+    sds <- apply(dataf[,-1,drop=FALSE],2,sd)
     if(any(sds==0)){
       pos_sd0 <- as.numeric(which(sds==0))
       if(length(pos_sd0)==length(sds)){
         B <- NULL
       }else{
         dataf <- dataf[,-c(1+pos_sd0)]
-        B <- MASS::lda(Y ~ ., data = dataf)
+        B <- lda(Y ~ ., data = dataf)
         B <- list(B=B,sds=sds)
       }
     }
     else{
-      B <- MASS::lda(Y ~ ., data = dataf)
+      B <- lda(Y ~ ., data = dataf)
     }
   }
   if(verbose){
@@ -342,6 +347,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #'
 #' @export
 #'
+#' @importFrom stats na.omit
+#'
 #' @seealso \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
 #'
 #' @examples
@@ -349,7 +356,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #' ## Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
-#' X <- scale(X[,which(apply(X,2,stats::sd)>0)])
+#' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 #' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
 #' summary(mddsPLS_model_class)
@@ -365,7 +372,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #' ## Classification example :
 #' data("penicilliumYES")
 #' X <- penicilliumYES$X
-#' X <- scale(X[,which(apply(X,2,stats::sd)>0)])
+#' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Xs <- list(X[,1:1000],X[,-(1:1000)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
@@ -486,8 +493,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     as.numeric(out)
   })
-  if(length(stats::na.omit(unlist(any_na_no_all)))!=0){
-    which.block <- which(unlist(lapply(any_na_no_all,function(oo){length(stats::na.omit(oo))!=0})))
+  if(length(na.omit(unlist(any_na_no_all)))!=0){
+    which.block <- which(unlist(lapply(any_na_no_all,function(oo){length(na.omit(oo))!=0})))
     mess1 <- "Block(s) with values missing not for all the variables:\n"
     mess2 <- paste("(",paste(which.block,collapse=","),")\n",sep="",collapse=",")
     mess3 <- "Corresponding individuals for each block:\n"

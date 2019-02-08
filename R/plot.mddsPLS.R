@@ -17,8 +17,8 @@
 #'
 #' @return The plot visualisation
 #'
-#' @importFrom graphics abline arrows barplot legend par
-#' @importFrom stats heatmap model.matrix
+#' @importFrom graphics abline arrows barplot legend par axis matplot mtext points
+#' @importFrom stats heatmap model.matrix cor
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette adjustcolor
 #' @importFrom corrplot corrplot

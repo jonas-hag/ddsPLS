@@ -135,7 +135,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
            call. = FALSE)
     }else if(requireNamespace("eulerr", quietly = TRUE)){
       requireNamespace("eulerr")
-      model_euler <- eulerr::euler(df_miss)
+      model_euler <- euler(df_miss)
       plot(model_euler, counts = T, factor_names=T,quantities=T,
            main="Missing samples in each dataset and intersections")
     }

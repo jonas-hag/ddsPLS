@@ -30,7 +30,8 @@ A list containing the following objects:
   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
    weights per block per axis.}
   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
-   weights per block per axis scaled on the super description of the dataset.}
+   weights per block per axis scaled on the super description of the dataset. Denoted as
+   \emph{scaled super-weights}.}
   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
    scores per axis per block.}

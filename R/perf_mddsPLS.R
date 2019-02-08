@@ -41,6 +41,8 @@
 #' @return A result of the perf function
 #'
 #' @import foreach
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
 #'
 #' @seealso  \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}, \code{\link{mddsPLS}}, \code{\link{predict.mddsPLS}},
 #'
@@ -119,14 +121,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   NCORES_w <- min(NCORES,nrow(paras))
   `%my_do%` <- ifelse(NCORES_w!=1,{
     out<-`%dopar%`
-    cl <- parallel::makeCluster(NCORES_w)
-    doParallel::registerDoParallel(cl)
+    cl <- makeCluster(NCORES_w)#cl <- parallel::makeCluster(NCORES_w)
+    registerDoParallel(cl)#doParallel::registerDoParallel(cl)
     out},{
     out <- `%do%`
     out})
   pos_decoupe <- NULL
   options(warn=-1)
-  ERRORS <- foreach::foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
+  ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
                     .combine = rbind,.packages = c("ddsPLS","MASS")) %my_do% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
                       paras_here <- paras[paras_here_pos,,drop=FALSE]
@@ -192,7 +194,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       out <- cbind(paras_here,errors,select_y,has_converged,time_build)
                     }
   if(NCORES_w!=1){
-    parallel::stopCluster(cl)
+    stopCluster(cl)#parallel::stopCluster(cl)
   }
   options(warn=0)
   if(!is.null(L0s)){
