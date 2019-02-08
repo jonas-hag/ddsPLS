@@ -10,6 +10,8 @@
 #'
 #' @importFrom eulerr euler
 #' @importFrom graphics plot
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom grDevices colorRampPalette
 #'
 #' @seealso  \code{\link{mddsPLS}}
 #'
@@ -135,8 +137,18 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
            call. = FALSE)
     }else if(requireNamespace("eulerr", quietly = TRUE)){
       requireNamespace("eulerr")
+      if(K+1<3){
+        colors <- c("black","red","blue")[1:(K)]
+      }else if(K+1>8){
+        colors <- brewer.pal(8, "Dark2")
+        pal <- colorRampPalette(colors)
+        colors <- pal(K+1)[1:K]
+      }else{
+        colors <- brewer.pal(K+1, "Dark2")[1:K]
+      }
       model_euler <- euler(df_miss)
-      plot(model_euler, counts = T, factor_names=T,quantities=T,
+      plot(model_euler, counts = T, factor_names=T,
+           quantities=T,fills=colors,
            main="Missing samples in each dataset and intersections")
     }
   }
