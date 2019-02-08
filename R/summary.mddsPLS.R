@@ -72,10 +72,10 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
 
   df_num_var_sel <- data.frame(matrix(NA,K,R))
   rownames(df_num_var_sel) <- names_X_block
-  colnames(df_num_var_sel) <- paste("Comp.",1:R)
+  colnames(df_num_var_sel) <- paste("Super Comp.",1:R)
   for(r in 1:R){
     for(k in 1:K){
-      df_num_var_sel[k,r] <- length(which(abs(object$mod$u[[k]][,r])>1e-9))
+      df_num_var_sel[k,r] <- length(which(abs(object$mod$u_t_super[[k]][,r])>1e-9))
     }
   }
 
