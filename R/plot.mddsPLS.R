@@ -125,7 +125,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     my_col <- matrix(colors[my_group_factor],nrow=1)
     rownames(my_col) <- "Block"
     main <- paste("Heatmap for component",comp_in)
-    main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[comp_in],2)*100,"% var. expl.)",sep="")
+    main <- paste(main,"(",signif(x$Variances$VAR_SUPER_COMPS[comp_in],2)*100,"% var. expl.)",sep="")
     if(!out){
       heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
               xlab = "Individuals",RowSideColors=my_col,

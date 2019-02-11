@@ -35,7 +35,7 @@ Xs <- list(X_dna=X1,X_proteo=X2,X_RNA=X3)
 
 if the covariate part is filled with only one data set, it is possible to use the *list()* structure or not. 
 
-In the other cases, the number of variables in each matrix can be different. In the previous examples we have denoted by $p_{proteo}$ and $p_{DNA}$ two of the different number of variables. It is knowd that **Proteomics** data-sets are filled with hundreds of variables while **DNA methylation** data sets gather hundresds of thousands of variables.
+In the other cases, the number of variables in each matrix can be different. In the previous examples we have denoted by $p_{proteo}$ and $p_{DNA}$ two of the different number of variables. It is knowd that **Proteomics** data-sets are filled with hundreds of variables while **DNA methylation** data sets gather hundreds of thousands of variables.
 
 The supervizion part is described by the $\mathbf{Y}\in\mathbb{R}^{n\times q}$ matrix. In case of regression it can be a *vector* for univariate case ($q=1$) or a *matrix* or even a *data.frame*. In multi-variate regression, $q>1$, it can be a *matrix* or a *data.frame*. In case on classification, $\mathbf{Y}$ must be unidimensionnal but it can be a *vector* or a *matrix* or even a *data.frame*. The argument *mode* permits to choose between regression mode, then use *reg*, and classification mode, then use something else.
 
@@ -239,13 +239,17 @@ The following figure permits to represent the *weights* for the first and the se
 plot(mddsPLS_model_class,vizu = "weights",comp = c(1,2),addY = T,mar_left = 2)
 ```
 
-##### *Heatmap* representation
+##### *Heatmap* representation {.tabset}
 
 Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+
+##### Component 1
 
 ```{r}
 plot(mddsPLS_model_class,vizu = "heatmap",comp = 1)
 ```
+
+##### Component 2
 
 ```{r}
 plot(mddsPLS_model_class,vizu = "heatmap",comp = 2)
@@ -338,7 +342,7 @@ This model selects $4$ variables.
 
 ```{r,eval=T}
 model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla")
-plot(model_L0,super = T,addY = T)
+plot(model_L0,super = T,addY = T,pos_legend = "right")
 ```
 
 This model selects $3$ variables.
@@ -374,38 +378,47 @@ The **Plot** mehtod permits many types of representation. Among which
  * *heatmap* which shows the selected variables (for $\mathbf{X}$ and $\mathbf{Y}$) for the all individuals.
 
 The following sections detailed the discussed method though those parametizations.
- 
-#### *Weight* representation
 
-The following figure permits to represent the *weights* for the second and the third components for blocks 1, 2 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
+#### *Scaled Super-Weight* representation {.tabset}
 
-```{r,fig.height=14,fig.width=11}
-plot(model_multi_vizu,vizu = "weights",comp = c(2,3),
-     block=c(1,2) ,addY = T,mar_left = 5)
+The following figure permits to represent the *scaled super-weights* for blocks 1, 2 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
+
+##### Super-Component 1
+
+```{r,fig.height=10,fig.width=10}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,mar_left = 5)
 ```
 
-#### *Super-Weight* representation
+##### Super-Component 2
 
-The following figure permits to represent the *super-weights* for blocks 1, 2 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
-
-```{r,fig.height=14,fig.width=8}
-plot(model_multi_vizu,vizu = "weights",super = T,
-     block=c(1,2) ,addY = T,mar_left = 5)
+```{r,fig.height=10,fig.width=10}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5)
 ```
 
-#### *Heatmap* representation
+##### Super-Component 3
+
+```{r,fig.height=10,fig.width=10}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=3 ,addY = T,mar_left = 5)
+```
+
+#### *Heatmap* representation {.tabset}
 
 Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+
+Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
+
+##### Super-Component 1
 
 ```{r}
 plot(model_multi_vizu,vizu = "heatmap",comp = 1)
 ```
 
+##### Super-Component 2
+
 ```{r}
 plot(model_multi_vizu,vizu = "heatmap",comp = 2)
 ```
 
-Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
 
 ### Summary Method
 
@@ -524,7 +537,7 @@ load("Xs_y_multi.RData")
 A model is simply built as follows
 
 ```{r}
-model <- mddsPLS(Xs,Y,lambda = 0.55,R = 3,verbose = T)
+model <- mddsPLS(Xs,Y,lambda = 0.75,R = 3,verbose = T)
 ```
 
 
@@ -537,31 +550,44 @@ The **Plot** mehtod permits many types of representation. Among which
 
 The following sections detailed the discussed method though those parametizations.
  
-##### *Weight* representation
+##### *Scaled Super-Weight* representation {.tabset}
 
-The following figure permits to represent the *weights* for the second and the third components for blocks 1, 2, 3, 5 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
+The following figure permits to represent the *scaled super-weights* for blocks **X** and block **Y**. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
 
-```{r,fig.height=14,fig.width=11}
-plot(model,vizu = "weights",comp = c(2,3),
-     block=c(1,2,4,5) ,addY = T,mar_left = 0)
-```
+###### Super-Component 1
 
-##### *Super-Weight* representation
-
-The following figure permits to represent the *super-weights* for blocks 1, 2 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
-
-```{r,fig.height=18,fig.width=8}
+```{r,fig.height=10,fig.width=10}
 plot(model,vizu = "weights",super = T,
-     block=c(1,2) ,addY = T,mar_left = 0)
+     comp=1 ,addY = T,mar_left = 0)
 ```
 
-##### *Heatmap* representation
+###### Super-Component 2
 
-Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+```{r,fig.height=10,fig.width=10}
+plot(model,vizu = "weights",super = T,
+     comp=2 ,addY = T,mar_left = 0)
+```
+
+###### Super-Component 3
+
+```{r,fig.height=10,fig.width=10}
+plot(model,vizu = "weights",super = T,
+     comp=3 ,addY = T,mar_left = 0)
+```
+
+
+
+##### *Heatmap* representation {.tabset}
+
+Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second only here.
+
+###### Super-Component 1
 
 ```{r,fig.height=13}
 plot(model,vizu = "heatmap",comp = 1)
 ```
+
+###### Super-Component 2
 
 ```{r,fig.height=13}
 plot(model,vizu = "heatmap",comp = 2)
@@ -730,7 +756,9 @@ More precise information can be found using the summary method
 summary(model_specific)
 ```
 
-The Venn diagramm represents the missing samples positions and overlappings among the different data sets.
+The Venn diagramm represents the missing samples positions and overlappings among the different data sets. 
+
+<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **The Venn diagram problem becomes hard when the number of sets is to large and in those contexts can be wrong.** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
 
 Here blocks 1 and 2 are not selected and no more than $21$ variables is used per block.
 
