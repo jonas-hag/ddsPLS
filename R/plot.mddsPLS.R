@@ -66,7 +66,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
       }
     }
     Y_1 <- x$Y_0
-    R <- length(x$mod$ts)
+    R <- length(x$mod$t)
     comp_in<-comp
     if(is.null(comp_in)){
       comp_in <- 1
@@ -80,7 +80,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     }
     n <- nrow(Y_1)
     q <- ncol(Y_1)
-    which_sel <- lapply(x$mod$u,function(u){which(abs(u[,comp_in])>1e-9)})
+    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>1e-9)})
     p_sel <- sum(unlist(lapply(which_sel,length)))
     coco_imputed <- data.frame(matrix(NA,n,p_sel+q))
     coeffs <- matrix(rep(0,p_sel),nrow = 1)

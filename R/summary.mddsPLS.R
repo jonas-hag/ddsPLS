@@ -6,6 +6,9 @@
 #' @param plot_present_indiv logical. If \emph{TRUE}, plots a venn diagram of the missing
 #'  individuals in each \emph{X} dataset. If the dataset does not appear, it means that it
 #'   does not have missing values
+#' @param main_plot_indiv character. Main of the Venn diagram. Initialized to NULL.
+#' @param fontsize interger. The size of the text, initialized to 10.
+#' @param alpha real between 0 and 1. The transparency parameter.
 #' @param ... Other parameters.
 #'
 #' @importFrom eulerr euler
@@ -30,6 +33,8 @@
 #' # object <- mddsPLS(Xs = Xs,Y = Y[,1],lambda=0.1,R = 1, mode = "reg",verbose = TRUE)
 #' # summary(object,plot_present_indiv = T)
 summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
+                             main_plot_indiv=NULL,
+                             fontsize=10,alpha=0.7,
                              ...)
 {
   K <- length(object$Xs);    sent_K <- paste("Number of blocks:",K)
@@ -148,8 +153,10 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
       }
       model_euler <- euler(df_miss)
       plot(model_euler, counts = T, factor_names=T,
-           quantities=T,fills=colors,
-           main="Missing samples in each dataset and intersections")
+           quantities=list(fontsize=fontsize),
+           labels=list(fontsize=fontsize),
+           fills=list(fill=colors,alpha=alpha),
+           main=main_plot_indiv)
     }
   }
 }

@@ -45,6 +45,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                               which_sd_plot=NULL,
                               ylim=NULL,alpha.f=0.4,
                               no_occurence=F,
+                              main=NULL,
                               ...){
   res_perf_mdd <- x
   names(res_perf_mdd)[1] <- "RMSEP"
@@ -69,6 +70,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   ranges_0 <- sort(apply(cc,2,max))
   l_lambdas <- length(unique(res_perf_mdd$RMSEP[,2]))
   if(is_L0!="L0s"){
+    xlab <- expression(lambda)
     if(ncol(cc)>1){
       if(l_lambdas>1){
         # ranges <- sort(ranges_0)
@@ -86,6 +88,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     }else{
       card_ranges <- 1
     }
+  }else{
+    xlab <- expression(L[0])
   }
   ERRORS <- res_perf_mdd
   FREQ <- ERRORS$FREQ
@@ -109,12 +113,17 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     ylim1 <- range(abs(RMSEP[,3:ncol(RMSEP)]))^2
     y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2
     y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2)
-    main1 <- "MSEP versus regularization coefficient mdd-sPLS"
-    main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
-    if(!no_occurence){
-      par(mar=c(3,3,5,3),mfrow=c(2,1))
+    if(is.null(main)){
+      main1 <- "MSEP versus regularization coefficient mdd-sPLS"
+      main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
     }else{
-      par(mar=c(3,3,5,3),mfrow=c(1,1))
+      main1 <- main
+      main2 <- NULL
+    }
+    if(!no_occurence){
+      par(mfrow=c(2,1),ann=T)
+    }else{
+      par(mfrow=c(1,1),ann=T)
     }
   }
   else{
@@ -129,7 +138,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
     main1 <- "Good classification rate versus regularization coefficient mdd-sPLS"
     main2 <- "Occurences per class versus regularization coefficient mdd-sPLS"
-    par(mar=c(3,3,5,3),mfrow=c(1,1))
+    par(mfrow=c(1,1),ann=T)
   }
   # graphics::matplot(sort(RMSEP[,2]),y1,type="l",lwd=4,lty=1,
   #                   ylim=ylim1,col=colors,
@@ -152,7 +161,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     if(jq==1){
       with(dat,
            plot(
-             lambda, MSEP, type="l", ylim=ylim,col=colors[jq],lwd=3,
+             lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
+             ylim=ylim,col=colors[jq],lwd=3,
              main=main1,
              panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
                                  border=NA,
@@ -264,8 +274,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       matplot(FREQ[order(FREQ[2]),2],
                         FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,
                         type="l",lwd=4,col=colors,lty=1,
-                        xlab=expression(lambda),
-                        ylab=ylab2,
+                        xlab=expression(lambda),ylab=ylab1,
                         main=main2)
       if(is_L0!="L0s"){
         pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
