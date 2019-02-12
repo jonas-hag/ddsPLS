@@ -428,7 +428,7 @@ A *summary* method explains more precisely the model.
 summary(model_multi_vizu,plot_present_indiv = T)
 ```
 
-The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Venn Diagramm such as follows
+The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Euler Diagramm such as follows
 
 In each area is detailed the number of individuals present. So **Block1** has $5$ missing samples in common with **Matrix2** and **Other_Variables** has $10$ missing samples which are present in the other matrices.
 
@@ -603,7 +603,7 @@ A *summary* method explains more precisely the model.
 summary(model,plot_present_indiv = T)
 ```
 
-The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Venn Diagramm such as follows
+The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Euler Diagramm such as follows
 
 In each area is detailed the number of individuals present. So **Block1** has $5$ missing samples in common with **Matrix2** and **Other_Variables** has $10$ missing samples which are present in the other matrices.
 
@@ -740,7 +740,7 @@ More precise information can be found using the summary method
 summary(model_general)
 ```
 
-The Venn diagramm represents the missing samples positions and overlappings among the different data sets.
+The Euler diagramm represents the missing samples positions and overlappings among the different data sets.
 
 ### A Specific Model
 
@@ -756,9 +756,9 @@ More precise information can be found using the summary method
 summary(model_specific)
 ```
 
-The Venn diagramm represents the missing samples positions and overlappings among the different data sets. 
+The Euler diagramm represents the missing samples positions and overlappings among the different data sets. 
 
-<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **The Venn diagram problem becomes hard when the number of sets is to large and in those contexts can be wrong.** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
+<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **The Euler diagram problem becomes hard when the number of sets is to large and in those contexts can be wrong.** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
 
 Here blocks 1 and 2 are not selected and no more than $21$ variables is used per block.
 
