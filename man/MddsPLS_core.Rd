@@ -35,7 +35,7 @@ A list containing the following objects:
   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
    scores per axis per block.}
-  \item{(t,s)}{Two \emph{nXR} matrices, scores of the \emph{X} and \emph{Y} parts.}
+  \item{(t,s)}{Two \emph{nXR} matrices, super-scores of the \emph{X} and \emph{Y} parts.}
   \item{(t_ort,s_ort)}{Two \emph{nXR} matrices, final scores of the \emph{X} and \emph{Y} part.
    They correspond to \emph{PLS} scores of \emph{(t,s)} scores and so \emph{t_ort^T s_ort} is diagonal,
    \emph{t_ort}, respectively \emph{s_ort}, carries the same information as \emph{t}, respectively \emph{s}.}

@@ -153,10 +153,6 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       corrplot(cor(plot_heatmap(x,comp=comp,out=T)))
     }
   }
-  ##
-
-
-
   R <- x$mod$R
   if(is.null(comp)){
     comp_in <- 1:R
@@ -316,7 +312,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[r],2)*100
           main <- paste(main," (",var_here,"% var. expl. total Y)",sep="")
         }else{
-          var_here <- signif(x$Variances$Frobenius$VAR_COMPS[r],2)*100
+          var_here <- signif(x$Variances$Frobenius$VAR_SUPER_COMPS_ALL_Y[r],2)*100
           main <- paste(main," (",var_here,"% var. com. total Y)",sep="")
         }
         if(is.null(plotR)){
@@ -335,7 +331,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             names(y_como) <- names_Y[pos_no_nul]
           }
           if(variance=="Linear"){
-            if(!is.null(dim(x$Variances$VAR_SUPER_COMPS))){
+            if(!is.null(dim(x$Variances$Linear$VAR_SUPER_COMPS))){
               toplot_y <- x$Variances$Linear$VAR_SUPER_COMPS[,r]*100
             }else{
               toplot_y <- x$Variances$Linear$VAR_SUPER_COMPS[r]*100

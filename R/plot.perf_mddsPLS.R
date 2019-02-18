@@ -11,13 +11,15 @@
 #' @param alpha.f factor modifying the opacity alpha; typically in [0,1]. Used by \emph{adjustcolor}
 #' @param ylim numeric vectors of length 2, giving the error plot range.
 #' @param no_occurence logical. Whether or not to plot the occurence plot of the **Y** variables. Initialized to **TRUE**.
+#' @param main character of \emph{NULL}. If null the title is given to the willing of the software. If \emph{""}, no title is given. Else is what the user wants.
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation
 #'
 #' @seealso  \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}
 #'
-#' @importFrom graphics par
+#' @importFrom graphics par axis matplot mtext points
+#' @importFrom stats cor
 #'
 #' @export
 #'
@@ -159,16 +161,30 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     dat <- data.frame(list(lambda=lam_plot,MSEP=y1[ord,jq],sd=SDEP[ord,2+jq]))
     ses <- dat$MSEP + outer(dat$sd, c(1,-1)*delta[jq])
     if(jq==1){
-      with(dat,
-           plot(
-             lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
-             ylim=ylim,col=colors[jq],lwd=3,
-             main=main1,
-             panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
-                                 border=NA,
-                                 col=adjustcolor(colors[jq],alpha.f = alpha.f))
-           )
-      )
+      if(res_perf_mdd$mod=="reg"){
+        with(dat,
+             plot(
+               lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
+               ylim=ylim,col=colors[jq],lwd=3,
+               main=main1,
+               panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
+                                   border=NA,
+                                   col=adjustcolor(colors[jq],alpha.f = alpha.f))
+             )
+        )
+      }else{
+        with(dat,
+             plot(
+               lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
+               ylim=ylim,col=colors[jq],lwd=3,
+               main=main1,xaxt="n",
+               panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
+                                   border=NA,
+                                   col=adjustcolor(colors[jq],alpha.f = alpha.f))
+             )
+        )
+        axis(1,at=dat$lambda)
+      }
     }else{
       with(dat,
            points(

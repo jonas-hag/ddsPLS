@@ -421,8 +421,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         if(var_t_k_r_all!=0){
           b <- solve(crossprod(t_k_r))%*%crossprod(t_k_r,y_obs)
           VAR_COMPS[k,r] <- (norm(t_k_r%*%b,"f")/VAR_TOT)^2
-          VAR_COMPS_FROB[k,r] <- (sum(diag(crossprod(t_k_r,y_obs)))/
-                                    (VAR_TOT*sqrt(var_t_k_r_all)))^2
+          deno <- norm(tcrossprod(y_obs),'f')*norm(tcrossprod(var_t_k_r_all),'f')
+          VAR_COMPS_FROB[k,r] <- sum(diag(tcrossprod(y_obs)%*%tcrossprod(t_k_r)))/deno
         }
       }
     }
@@ -436,8 +436,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           if(var_t_super_r!=0){
             b <- solve(crossprod(t_super_r))%*%crossprod(t_super_r,Y_j)
             VAR_SUPER_COMPS[j,r] <- (norm(t_super_r%*%b,"f")/var_j)^2
-            VAR_SUPER_COMPS_FROB[j,r] <- (sum(diag(crossprod(Y_j,t_super_r)/
-                                                     (var_j*sqrt(var_t_super_r)))))^2
+            deno <- norm(tcrossprod(t_super_r),'f')*norm(tcrossprod(Y_j),'f')
+            VAR_SUPER_COMPS_FROB[j,r] <- sum(diag(tcrossprod(Y_j)%*%tcrossprod(t_super_r)))/
+                                                     deno
           }
         }
       }
@@ -448,8 +449,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       if(var_t_super_r!=0){
         b <- solve(crossprod(sc_r))%*%crossprod(sc_r,y_obs)
         VAR_SUPER_COMPS_ALL_Y[r] <- (norm(sc_r%*%b,"f")/VAR_TOT)^2
-        VAR_SUPER_COMPS_ALL_Y_FROB[r] <- (sum(diag(crossprod(sc_r,y_obs)))/
-                                            (VAR_TOT*sqrt(var_t_super_r)))^2
+        deno <- norm(tcrossprod(y_obs),'f')*norm(tcrossprod(sc_r),'f')
+        VAR_SUPER_COMPS_ALL_Y_FROB[r] <- sum(diag(tcrossprod(sc_r)%*%tcrossprod(y_obs)))/
+                                            deno
       }
     }
     if(is.null(names(Xs))){
@@ -552,9 +554,17 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         #   Xs[[k]][id_na[[k]][k_ik],] <- mu_k
         # }
         ## ## ## Imputation with prediction by block
-        x_train <- Y[-id_na[[k]],,drop=F]
-        x_test <- Y[id_na[[k]],,drop=F]
+        ## Be careful if this is a classification case ##############################
         y_train <- Xs[[k]][-id_na[[k]],,drop=F]
+        if(mode!="reg"){
+          x_df <- data.frame(y=Y)
+          x <- scale(model.matrix( ~ y - 1, data=x_df))
+          x_train <- x[-id_na[[k]],,drop=F]
+          x_test <- x[id_na[[k]],,drop=F]
+        }else{
+          x_train <- Y[-id_na[[k]],,drop=F]
+          x_test <- Y[id_na[[k]],,drop=F]
+        }
         model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init)
         y_test <- predict(model_init,x_test)
         Xs[[k]][id_na[[k]],] <- y_test

@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, legend_names = NULL,
   pos_legend = "bottomleft", which_sd_plot = NULL, ylim = NULL,
-  alpha.f = 0.4, no_occurence = F, ...)
+  alpha.f = 0.4, no_occurence = F, main = NULL, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -24,6 +24,8 @@
 \item{alpha.f}{factor modifying the opacity alpha; typically in [0,1]. Used by \emph{adjustcolor}}
 
 \item{no_occurence}{logical. Whether or not to plot the occurence plot of the **Y** variables. Initialized to **TRUE**.}
+
+\item{main}{character of \emph{NULL}. If null the title is given to the willing of the software. If \emph{""}, no title is given. Else is what the user wants.}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }
