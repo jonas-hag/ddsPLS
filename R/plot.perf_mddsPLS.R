@@ -223,11 +223,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
         legend_names <- c(legend_names, "Mean MSEP")
         col <- c(colors,"black")
         lty <- c(rep(1,length(colors)),3)
-        lwd <- c(rep(1,length(colors)),2)
+        lwd <- c(rep(2,length(colors)),3)
       }else{
         col <- colors
         lty <- rep(1,length(colors))
-        lwd <- rep(1,length(colors))
+        lwd <- rep(2,length(colors))
       }
       legend(pos_legend,legend = legend_names,
                        col = col,lty = lty,lwd=lwd)

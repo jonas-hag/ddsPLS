@@ -92,14 +92,24 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     for(k in 1:K){
       ii <- cum_ps[k]
       if(is.null(id_na)){
-        all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+        c_k <- abs(cor(Y,Xs[[k]]))
       }else{
         if(length(id_na[[k]])>0){
-          all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
+          c_k <- abs(cor(Y[-id_na[[k]],,drop=F],Xs[[k]][-id_na[[k]],,drop=F]))
         }else{
-          all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+          c_k <- abs(cor(Y,Xs[[k]]))
         }
       }
+      all_maxs[ii+1:(ps[k])] <- apply(c_k,2,max)
+      # if(is.null(id_na)){
+      #   all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      # }else{
+      #   if(length(id_na[[k]])>0){
+      #     all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
+      #   }else{
+      #     all_maxs[ii+1:(ps[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      #   }
+      # }
     }
     lambda_L0 <- sort(all_maxs,decreasing = T)[min(sum_ps,1+L0)]
     lambda_in <- rep(lambda_L0,K)
@@ -121,8 +131,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
          call. = FALSE)
   }
   if(tete!=R){
-    warning(paste("R modified to ",tete," due to dimension consraints",sep=""),
-            call. = FALSE)
+    # warning(paste("R modified to ",tete," due to dimension consraints",sep=""),
+    #         call. = FALSE)
     R <- tete
   }
   if(floor(R)!=ceiling(R)){
@@ -134,99 +144,64 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
   z_r <- list()
-  z_t <- list()
+  z_t=t_t <- list()
   # BETA_r <- list()
   for(k in 1:K){
     if(norm(Ms[[k]])==0){
-      svd_k <- list(v=matrix(0,
-                             nrow = ncol(Ms[[k]]),
-                             ncol = R),d=0)
+      svd_k <- list(v=matrix(0,nrow = ncol(Ms[[k]]),ncol = R),
+                    d=rep(0,R))
     }
     else{
+      # R_k <- min(R,min(dim(Ms[[k]])))
       svd_k <- svd(Ms[[k]],nu = 0,nv = R)
-      if(length(svd_k$d)==1){
-        svd_k$d <- c(svd_k$d,rep(0,R-1))
+      ## Complete coefficients if needed
+      length_val_prop <- length(svd_k$d)
+      if(length_val_prop<R){
+        svd_k$d <- c(svd_k$d,rep(0,R-length_val_prop))
       }
-    }
-    R_k <- ncol(svd_k$v)
-    if(R_k!=R){
-      svd_k$v <- cbind(svd_k$v,matrix(0,nrow(svd_k$v),R-R_k))
+      ## Complete basis if needed
+      ncol_V <- ncol(svd_k$v)
+      if(ncol_V<R){
+        svd_k$v <- cbind(svd_k$v,matrix(0,nrow(svd_k$v),R-ncol_V))
+      }
+      ## Test coefficients and put corresponding vectors to 0 if needed
+      for(r in 1:R){
+        if(svd_k$d[r]==0){
+          svd_k$v[,r] <- 0
+        }
+      }
     }
     u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
     if(k==1){
       for(r in 1:R){
-        t_r[[r]] <- matrix(NA,n,K)
-        z_r[[r]] <- matrix(NA,q,K)
+        t_r[[r]] <- matrix(0,n,K)
+        z_r[[r]] <- matrix(0,q,K)
       }
     }
     for(r in 1:R){
-      t_r[[r]][,k] <- Xs[[k]]%*%u_t_r[[k]][,r]
-      z_r[[r]][,k] <- Ms[[k]]%*%u_t_r[[k]][,r]
+      if(svd_k$d[r]!=0){
+        t_r[[r]][,k] <- Xs[[k]]%*%u_t_r[[k]][,r]
+        z_r[[r]][,k] <- Ms[[k]]%*%u_t_r[[k]][,r]
+      }
     }
     z_t[[k]] <- Ms[[k]]%*%u_t_r[[k]]
+    t_t[[k]] <- Xs[[k]]%*%u_t_r[[k]]#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
   t <- matrix(NA,n,R)
   v <- matrix(0,q,R)
-  if(F){
-    ## Optimization criterion solution ######################### -----------------
-    # theta <- rep(0,R*K)
-    # count <- 1
-    # for(r in 1:R){
-    #   for(k in 1:K){
-    #     theta[count] <- sqrt(crossprod(z_r[[r]][,k]))
-    #     count <- count + 1
-    #   }
-    # }
-    # norm_theta <- as.numeric(sqrt(crossprod(theta)))
-    # if(norm_theta!=0){
-    #   beta <- matrix(theta/norm_theta,ncol=1)
-    # }
-    # else{
-    #   beta <- matrix(theta,ncol=1)
-    # }
-    # BETA <- matrix(0,R,K)
-    # s_soft <- matrix(rep(0,q),ncol = 1)
-    # count <- 1
-    # for(r in 1:R){
-    #   for(k in 1:K){
-    #     BETA[r,k] <- beta[count]
-    #     s_soft <- s_soft + beta[count]*z_r[[r]][,k]
-    #     count <- count + 1
-    #   }
-    # }
-    # norm_s_soft <- as.numeric(sqrt(crossprod(s_soft)))
-    # if(norm_s_soft!=0){
-    #   v <- matrix(s_soft/norm_s_soft,ncol=1)
-    # }
-    # else{
-    #   v <- matrix(s_soft,ncol=1)
-    # }
-    # U_t_super <- list()
-    # T_super <- matrix(0,nrow=n,ncol=R)
-    # S_soft <- matrix(0,nrow=q,ncol=R)
-    # V_super <- matrix(0,nrow=q,ncol=R)
-    # count <- 1
-    # for(k in 1:K){
-    #   U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
-    #   for(r in 1:R){
-    #     U_t_super[[k]][,r] <- u_t_r[[k]][,r]*as.numeric(BETA[r,k])
-    #     count <- count + 1
-    #   }
-    #   T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
-    #   S_soft <- S_soft + Ms[[k]]%*%U_t_super[[k]]
-    # }
-    # for(r in 1:R){
-    #   norm_s_soft_r <- as.numeric(sqrt(crossprod(S_soft[,r])))
-    #   if(norm_s_soft_r!=0){
-    #     V_super[,r] <- S_soft[,r]/norm_s_soft_r
-    #   }
-    # }
-  }
-  ## -------------------------- ######################### -----------------
   ## Big SVD solution ######################### -----------------
   U_t_super <- list()
-  Z <- do.call(cbind,z_t)#z_r)
-  svd_Z <- svd(Z,nu = R,nv = R)
+  Z <- do.call(cbind,z_t)
+  R_opt <- min(dim(Z))
+  svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
+  ## Reorder well ## -----
+  crosY_T <- do.call(cbind,t_t)
+  power <- colSums((crosY_T%*%svd_Z$v)^2)
+  orderGood <- order(power,decreasing = T)
+  svd_Z$d <- (svd_Z$d[orderGood])[1:R]
+  svd_Z$u <- (svd_Z$u[,orderGood,drop=F])[,1:R,drop=F]
+  svd_Z$v <- (svd_Z$v[,orderGood,drop=F])[,1:R,drop=F]
+  ## END --- Reorder well ## -----
   beta_all <- svd_Z$v
   beta_list <- list()
   V_super <- Z%*%beta_all
@@ -247,6 +222,29 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     # }
     U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
     T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
+  }
+  vars_current <- rep(0,R)
+  for(r in 1:R){
+    sc_r <- T_super[,r,drop=F]#scale(x$mod$t[,r,drop=F],scale=F)
+    var_t_super_r <- sum(sc_r^2)
+    if(var_t_super_r!=0){
+      # VAR_SUPER_COMPS_ALL_Y[r] <- sum(abs(crossprod(sc_r,y_obs)/sqrt(var_t_super_r*VAR_TOT)))
+      b <- solve(crossprod(sc_r))%*%crossprod(sc_r,Y)
+      vars_current[r] <- (norm(sc_r%*%b,"f"))^2
+    }
+  }
+  l_cur <- length(vars_current)
+  if(l_cur>1){
+    ord <- order(vars_current,decreasing = T)
+    if(sum(abs(ord-1:R))!=0){
+      T_super <- T_super[,ord,drop=F]
+      v=V_super <- v[,ord,drop=F]
+      for(k in 1:K){
+        U_t_super[[k]] <- U_t_super[[k]][,ord,drop=F]
+        u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
+        beta_list[[k]] <- beta_list[[k]][,ord,drop=F]
+      }
+    }
   }
   ## -------------------------- ######################### -----------------
   S_super <- Y%*%V_super
@@ -411,43 +409,56 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       y_obs <- scale(y_obs,scale = F)
     }
     q <- ncol(y_obs)
-    VAR_TOT <- sum(abs(crossprod(y_obs)))
+    VAR_TOT <- norm(y_obs,"f")#sum(abs(crossprod(y_obs)))
     VAR_COMPS <- matrix(0,K,R)
     VAR_SUPER_COMPS <- matrix(0,q,R)
+    VAR_SUPER_COMPS_ALL_Y <- matrix(0,1,R)
     for(r in 1:R){
       for(k in 1:K){
         t_r <- x$mod$ts[[r]]
-        t_k_r <- scale(t_r[,k],scale=F)
+        t_k_r <- scale(t_r[,k,drop=F],scale=F)
         var_t_k_r_all <- sum(t_k_r^2)
         if(var_t_k_r_all!=0){
-          VAR_COMPS[k,r] <- sum(abs(crossprod(y_obs,t_k_r)/sqrt(var_t_k_r_all*VAR_TOT)))
+          # VAR_COMPS[k,r] <- sum(abs(crossprod(y_obs,t_k_r)/sqrt(var_t_k_r_all*VAR_TOT)))
+          b <- solve(crossprod(t_k_r))%*%crossprod(t_k_r,y_obs)
+          VAR_COMPS[k,r] <- (norm(t_k_r%*%b,"f")/VAR_TOT)^2
         }
       }
-      # t_super_r <- scale(x$mod$t_ort[,r],scale=F)
-      # var_t_super_r <- sum(t_super_r^2)
-      # if(var_t_super_r!=0){
-        # VAR_SUPER_COMPS[r] <- sum(abs(crossprod(y_obs,t_super_r)/sqrt(var_t_super_r*VAR_TOT)))
-      # }
     }
     for(j in 1:q){
-      Y_j <- y_obs[,j]
-      var_j <- sum(Y_j^2)
+      Y_j <- y_obs[,j,drop=F]
+      # var_j <- sum(Y_j^2)
+      var_j <- norm(Y_j,"f")
       if(var_j!=0){
         for(r in 1:R){
-          t_super_r <- scale(x$mod$t_ort[,r],scale=F)
+          t_super_r <- scale(x$mod$t[,r,drop=F],scale=F)
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
-            VAR_SUPER_COMPS[j,r] <- sum(abs(crossprod(Y_j,t_super_r)/sqrt(var_t_super_r*var_j)))
+            # VAR_SUPER_COMPS[j,r] <- sum(abs(crossprod(Y_j,t_super_r)/sqrt(var_t_super_r*var_j)))
+            b <- solve(crossprod(t_super_r))%*%crossprod(t_super_r,Y_j)
+            VAR_SUPER_COMPS[j,r] <- (norm(t_super_r%*%b,"f")/var_j)^2
           }
         }
       }
     }
-    VAR_FINAL <- 0
-    var_y_pred <- sum(abs(crossprod(y_pred)))
-    if(var_y_pred!=0){
-      VAR_FINAL <- sum(abs(crossprod(y_obs,y_pred)/sqrt(var_y_pred*VAR_TOT)))
+    # VAR_FINAL <- 0
+    # var_y_pred <- sum(abs(crossprod(y_pred)))
+    # var_y_pred <- norm(y_pred,"f")
+    # if(var_y_pred!=0){
+    #   # VAR_FINAL <- sum(abs(crossprod(y_obs,y_pred)/sqrt(var_y_pred*VAR_TOT)))
+    #   b <- solve(crossprod(y_pred))%*%crossprod(y_pred,y_obs)
+    #   VAR_FINAL <- (norm(y_pred%*%b,"f")/VAR_TOT)^2
+    # }
+    # names(VAR_FINAL) <- "Predicted"
+    for(r in 1:R){
+      sc_r <- scale(x$mod$t[,r,drop=F],scale=F)
+      var_t_super_r <- sum(sc_r^2)
+      if(var_t_super_r!=0){
+        # VAR_SUPER_COMPS_ALL_Y[r] <- sum(abs(crossprod(sc_r,y_obs)/sqrt(var_t_super_r*VAR_TOT)))
+        b <- solve(crossprod(sc_r))%*%crossprod(sc_r,y_obs)
+        VAR_SUPER_COMPS_ALL_Y[r] <- (norm(sc_r%*%b,"f")/VAR_TOT)^2
+      }
     }
-    names(VAR_FINAL) <- "Predicted"
     if(is.null(names(Xs))){
       legend_names_in <- paste("Block",1:K,sep=" ")
     }else{
@@ -460,9 +471,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     rownames(VAR_COMPS) <- legend_names_in;
     colnames(VAR_COMPS) <- paste("Comp.",1:R)
-    colnames(VAR_SUPER_COMPS) <- paste("Super Comp.",1:R)
+    colnames(VAR_SUPER_COMPS)= names(VAR_SUPER_COMPS_ALL_Y) <- paste("Super Comp.",1:R)
     rownames(VAR_SUPER_COMPS) <- colnames(y_obs)
-    return(list(VAR_FINAL=VAR_FINAL,VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS))
+    return(list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS))
   }
   if(lambda<0|lambda>1){
     stop("Choose lambda regularization parameter between 0 and 1",
@@ -505,18 +516,54 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     stop(paste(mess1,mess2,mess3,mess4),
          call. = FALSE)
   }
+  Models_init <- list()
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
   }else{
-    ## If ther are some missing samples
-    for(k in 1:K){## ## Imputation to mean
-      if(length(id_na[[k]])>0){
-        mu_k <- colMeans(Xs[[k]],na.rm = TRUE)
-        for(k_ik in 1:length(id_na[[k]])){
-          Xs[[k]][id_na[[k]][k_ik],] <- mu_k
-        }
+    if(!is.null(L0)){
+      ps_init <- unlist(lapply(Xs,ncol))
+      sum_ps_init <- sum(ps_init);cum_ps_init <- cumsum(c(0,ps_init))
+      all_maxs_init <- rep(NA,sum_ps_init)
+      for(k in 1:K){
+        ii <- cum_ps_init[k]
+        c_k <- abs(cor(Y,Xs[[k]],use = "pairwise"))
+        all_maxs_init[ii+1:(ps_init[k])] <- apply(c_k,2,max)
+        # if(is.null(id_na)){
+        #   all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+        # }else{
+        #   l_k <- length(id_na[[k]])
+        #   if(l_k>0){
+        #     all_maxs_init[ii+1:(ps_init[k])] <-
+        #       apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
+        #   }else{
+        #     all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+        #   }
+        # }
       }
+      lambda_init <- sort(all_maxs_init,decreasing = T)[min(sum_ps_init,1+L0)]
+    }else{
+      lambda_init <- lambda
+    }
+    ## If ther are some missing samples
+    for(k in 1:K){## ## Types of imputation for initialization
+      if(length(id_na[[k]])>0){
+        ## ## ## Imputation to mean
+        # mu_k <- colMeans(Xs[[k]],na.rm = TRUE)
+        # for(k_ik in 1:length(id_na[[k]])){
+        #   Xs[[k]][id_na[[k]][k_ik],] <- mu_k
+        # }
+        ## ## ## Imputation with prediction by block
+        x_train <- Y[-id_na[[k]],,drop=F]
+        x_test <- Y[id_na[[k]],,drop=F]
+        y_train <- Xs[[k]][-id_na[[k]],,drop=F]
+        model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init)
+        y_test <- predict(model_init,x_test)
+        Xs[[k]][id_na[[k]],] <- y_test
+      }else{
+        model_init <- mddsPLS(Y,Xs[[k]],R=R)
+      }
+      Models_init[[k]] <- model_init
     }
     if(K>1){
       # Xs_init <- Xs
@@ -548,7 +595,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=NULL)
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0)#NULL)#######################L0)#
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){

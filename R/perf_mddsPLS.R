@@ -124,8 +124,8 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     cl <- makeCluster(NCORES_w)#cl <- parallel::makeCluster(NCORES_w)
     registerDoParallel(cl)#doParallel::registerDoParallel(cl)
     out},{
-    out <- `%do%`
-    out})
+      out <- `%do%`
+      out})
   pos_decoupe <- NULL
   options(warn=-1)
   ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
@@ -181,7 +181,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
-                          if(max(errors[i,])>100) browser()
                           v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
                           select_y[i,v_no_null] <- 1
                         }else{
@@ -194,7 +193,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       out <- cbind(paras_here,errors,select_y,has_converged,time_build)
                     }
   if(NCORES_w!=1){
-    stopCluster(cl)#parallel::stopCluster(cl)
+    stopCluster(cl)
   }
   options(warn=0)
   if(!is.null(L0s)){

@@ -202,6 +202,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
   if(l_bl<3){
     colors <- 1:l_bl
   }else if(l_bl>8){
+    colors <- brewer.pal(8, "Dark2")
     pal <- colorRampPalette(colors)
     colors <- pal(l_bl)
   }else{
@@ -297,8 +298,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             cols <- c(cols,rep(colors[k],length(toplot[[k]][[r]])))
           }
         }
-        main <- paste("Block Xs, component ",r,sep="")
-        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS[r],2)*100,"% var. expl. total Y)",sep="")
+        main <- paste("Block Xs, Super Component ",r,sep="")
+        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS_ALL_Y[r],2)*100,"% var. expl. total Y)",sep="")
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
         }else{
