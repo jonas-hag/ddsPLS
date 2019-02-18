@@ -6,9 +6,10 @@
 #' @param x The perf_mddsPLS object.
 #' @param vizu character. One of \emph{weights}, \emph{heatmap}, \emph{correlogram}.
 #' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
+#' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
 #' @param comp vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.
-#' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
+#' @param variance character. One of \emph{Linear}, \emph{Frobenius}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param pos_legend Initialized to "topright"
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
@@ -44,8 +45,8 @@
 #' Y <- scale(liver.toxicity$clinic)
 #' #res_cv_reg <- ddsPLS(Xs = X,Y = Y,lambda=0.8,R = 2)
 #' #plot(res_cv_reg)
-plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
-               block=NULL,comp=NULL,addY=FALSE,
+plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
+               block=NULL,comp=NULL,variance="Linear",mar_left=2,
                pos_legend="topright",legend_names=NULL,
                values_corr=F,
                ...){
@@ -125,7 +126,13 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
     my_col <- matrix(colors[my_group_factor],nrow=1)
     rownames(my_col) <- "Block"
     main <- paste("Heatmap for component",comp_in)
-    main <- paste(main,"(",signif(x$Variances$VAR_SUPER_COMPS[comp_in],2)*100,"% var. expl.)",sep="")
+    if(variance=="Linear"){
+      var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS[comp_in],2)*100
+      main <- paste(main," (",var_here,"% var. expl.)",sep="")
+    }else{
+      var_here <- signif(x$Variances$Frobenius$VAR_SUPER_COMPS[comp_in],2)*100
+      main <- paste(main," (",var_here,"% var. com.)",sep="")
+    }
     if(!out){
       heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
               xlab = "Individuals",RowSideColors=my_col,
@@ -246,7 +253,13 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
         viz_k_r <- viz_k[,r]
         pos_no_nul <- which(abs(viz_k_r)>1e-12)
         main <- paste(legend_names_in[i_k],", component ",r,sep="")
-        main <- paste(main,"\n(",signif(x$Variances$VAR_COMPS[k,r],2)*100,"% var. expl.)",sep="")
+        if(variance=="Linear"){
+          var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
+          main <- paste(main," (",var_here,"% var. expl.)",sep="")
+        }else{
+          var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
+          main <- paste(main," (",var_here,"% var. com.)",sep="")
+        }
         if(length(pos_no_nul)>0){
           toplot[[k]][[r]] <- viz_k[pos_no_nul,r]
           names(toplot[[k]][[r]]) <- colnames(x$Xs[[k]])[pos_no_nul]
@@ -299,7 +312,13 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
           }
         }
         main <- paste("Block Xs, Super Component ",r,sep="")
-        main <- paste(main,"\n(",signif(x$Variances$VAR_SUPER_COMPS_ALL_Y[r],2)*100,"% var. expl. total Y)",sep="")
+        if(variance=="Linear"){
+          var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[r],2)*100
+          main <- paste(main," (",var_here,"% var. expl. total Y)",sep="")
+        }else{
+          var_here <- signif(x$Variances$Frobenius$VAR_COMPS[r],2)*100
+          main <- paste(main," (",var_here,"% var. com. total Y)",sep="")
+        }
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
         }else{
@@ -315,15 +334,24 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,mar_left=2,
             y_como <- y_como[pos_no_nul]
             names(y_como) <- names_Y[pos_no_nul]
           }
-          # toplot_y <- y_como[order(abs(y_como),decreasing = T)]
-          if(!is.null(dim(x$Variances$VAR_SUPER_COMPS))){
-            toplot_y <- x$Variances$VAR_SUPER_COMPS[,r]*100
+          if(variance=="Linear"){
+            if(!is.null(dim(x$Variances$VAR_SUPER_COMPS))){
+              toplot_y <- x$Variances$Linear$VAR_SUPER_COMPS[,r]*100
+            }else{
+              toplot_y <- x$Variances$Linear$VAR_SUPER_COMPS[r]*100
+            }
+            xlab <- "Variance Explained"
           }else{
-            toplot_y <- x$Variances$VAR_SUPER_COMPS[r]*100
+            if(!is.null(dim(x$Variances$Frobenius$VAR_SUPER_COMPS))){
+              toplot_y <- x$Variances$Frobenius$VAR_SUPER_COMPS[,r]*100
+            }else{
+              toplot_y <- x$Variances$Frobenius$VAR_SUPER_COMPS[r]*100
+            }
+            xlab <- "Variance in Common"
           }
           barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(0,100),
                   main=paste("Bloc Y, component ",r,sep=""),
-                  xlab="Variance Explained")
+                  xlab=xlab)
           abline(v=c(0.25,0.5,0.75,1)*100,lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           legeds <- c(legend_names_in,"Block Y")
           colOut <- colors[c(block_in,K+1)]

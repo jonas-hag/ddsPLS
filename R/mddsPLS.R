@@ -409,54 +409,47 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       y_obs <- scale(y_obs,scale = F)
     }
     q <- ncol(y_obs)
-    VAR_TOT <- norm(y_obs,"f")#sum(abs(crossprod(y_obs)))
-    VAR_COMPS <- matrix(0,K,R)
-    VAR_SUPER_COMPS <- matrix(0,q,R)
-    VAR_SUPER_COMPS_ALL_Y <- matrix(0,1,R)
+    VAR_TOT=VAR_TOT_FROB <- norm(y_obs,"f")
+    VAR_COMPS=VAR_COMPS_FROB <- matrix(0,K,R)
+    VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R)
+    VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB <- matrix(0,1,R)
     for(r in 1:R){
       for(k in 1:K){
         t_r <- x$mod$ts[[r]]
         t_k_r <- scale(t_r[,k,drop=F],scale=F)
         var_t_k_r_all <- sum(t_k_r^2)
         if(var_t_k_r_all!=0){
-          # VAR_COMPS[k,r] <- sum(abs(crossprod(y_obs,t_k_r)/sqrt(var_t_k_r_all*VAR_TOT)))
           b <- solve(crossprod(t_k_r))%*%crossprod(t_k_r,y_obs)
           VAR_COMPS[k,r] <- (norm(t_k_r%*%b,"f")/VAR_TOT)^2
+          VAR_COMPS_FROB[k,r] <- (sum(diag(crossprod(t_k_r,y_obs)))/
+                                    (VAR_TOT*sqrt(var_t_k_r_all)))^2
         }
       }
     }
     for(j in 1:q){
       Y_j <- y_obs[,j,drop=F]
-      # var_j <- sum(Y_j^2)
       var_j <- norm(Y_j,"f")
       if(var_j!=0){
         for(r in 1:R){
           t_super_r <- scale(x$mod$t[,r,drop=F],scale=F)
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
-            # VAR_SUPER_COMPS[j,r] <- sum(abs(crossprod(Y_j,t_super_r)/sqrt(var_t_super_r*var_j)))
             b <- solve(crossprod(t_super_r))%*%crossprod(t_super_r,Y_j)
             VAR_SUPER_COMPS[j,r] <- (norm(t_super_r%*%b,"f")/var_j)^2
+            VAR_SUPER_COMPS_FROB[j,r] <- (sum(diag(crossprod(Y_j,t_super_r)/
+                                                     (var_j*sqrt(var_t_super_r)))))^2
           }
         }
       }
     }
-    # VAR_FINAL <- 0
-    # var_y_pred <- sum(abs(crossprod(y_pred)))
-    # var_y_pred <- norm(y_pred,"f")
-    # if(var_y_pred!=0){
-    #   # VAR_FINAL <- sum(abs(crossprod(y_obs,y_pred)/sqrt(var_y_pred*VAR_TOT)))
-    #   b <- solve(crossprod(y_pred))%*%crossprod(y_pred,y_obs)
-    #   VAR_FINAL <- (norm(y_pred%*%b,"f")/VAR_TOT)^2
-    # }
-    # names(VAR_FINAL) <- "Predicted"
     for(r in 1:R){
       sc_r <- scale(x$mod$t[,r,drop=F],scale=F)
       var_t_super_r <- sum(sc_r^2)
       if(var_t_super_r!=0){
-        # VAR_SUPER_COMPS_ALL_Y[r] <- sum(abs(crossprod(sc_r,y_obs)/sqrt(var_t_super_r*VAR_TOT)))
         b <- solve(crossprod(sc_r))%*%crossprod(sc_r,y_obs)
         VAR_SUPER_COMPS_ALL_Y[r] <- (norm(sc_r%*%b,"f")/VAR_TOT)^2
+        VAR_SUPER_COMPS_ALL_Y_FROB[r] <- (sum(diag(crossprod(sc_r,y_obs)))/
+                                            (VAR_TOT*sqrt(var_t_super_r)))^2
       }
     }
     if(is.null(names(Xs))){
@@ -469,11 +462,16 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         }
       }
     }
-    rownames(VAR_COMPS) <- legend_names_in;
-    colnames(VAR_COMPS) <- paste("Comp.",1:R)
-    colnames(VAR_SUPER_COMPS)= names(VAR_SUPER_COMPS_ALL_Y) <- paste("Super Comp.",1:R)
-    rownames(VAR_SUPER_COMPS) <- colnames(y_obs)
-    return(list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS))
+    rownames(VAR_COMPS)=rownames(VAR_COMPS_FROB) <- legend_names_in;
+    colnames(VAR_COMPS)=colnames(VAR_COMPS_FROB) <- paste("Comp.",1:R)
+    colnames(VAR_SUPER_COMPS)= names(VAR_SUPER_COMPS_ALL_Y) =
+      colnames(VAR_SUPER_COMPS_FROB)= names(VAR_SUPER_COMPS_ALL_Y_FROB)<- paste("Super Comp.",1:R)
+    rownames(VAR_SUPER_COMPS)=rownames(VAR_SUPER_COMPS_FROB) <- colnames(y_obs)
+    return(list(
+      Linear=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
+                  VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS),
+      Frobenius=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
+                  VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
   }
   if(lambda<0|lambda>1){
     stop("Choose lambda regularization parameter between 0 and 1",
