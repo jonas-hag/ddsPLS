@@ -153,7 +153,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     }
     else{
       # R_k <- min(R,min(dim(Ms[[k]])))
-      svd_k <- svd(Ms[[k]],nu = 0,nv = R)
+      # svd_k <- svd(Ms[[k]],nu = 0,nv = R)
+      R_init <- min(q,sum(ps))
+      svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
+      eigen_YXk <- apply(crossprod(Y,Xs[[k]])%*%svd_k_init$v,2,function(t)sum(t^2))
+      ordo_YXk <- order(eigen_YXk,decreasing = T)[1:min(R,length(eigen_YXk))]
+      svd_k <- list(v=svd_k_init$v[,ordo_YXk,drop=F],
+                    d=svd_k_init$d[ordo_YXk])
       ## Complete coefficients if needed
       length_val_prop <- length(svd_k$d)
       if(length_val_prop<R){

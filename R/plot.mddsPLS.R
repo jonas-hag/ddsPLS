@@ -4,7 +4,7 @@
 #'  avalaible to control the plot quality.
 #'
 #' @param x The perf_mddsPLS object.
-#' @param vizu character. One of \emph{weights}, \emph{heatmap}, \emph{correlogram}.
+#' @param vizu character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}
 #' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
 #' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
@@ -357,10 +357,34 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
       }
     }
-    legend(pos_legend,legend = legeds,fill = colOut)
+    legend(pos_legend,legend = legeds,
+           fill = colOut,bty="n")
+
   }else if(vizu=="heatmap"){
     plot_heatmap(x,comp)
   }else if(vizu=="correlogram"){
     plot_corcor(x,comp,values=values_corr)
+  }else if(vizu=="coeffs"){
+    y_selected <- which(colSums(abs(do.call(rbind,x$mod$B)))>1e-9)
+    t_selected <- which(unlist(lapply(x$mod$B,norm))>1e-9)
+    par(mfrow=c(length(y_selected),length(t_selected)),mar = c(5,4 + mar_left, 4, 2) + 0.1)
+    for(j in y_selected){
+      for(i_t in 1:length(t_selected)){
+        t <- t_selected[i_t]
+        oo <- x$mod$B[[t]][,j]
+        pos_ok <- which(abs(oo)>1e-9)
+        if(length(pos_ok)>0){
+          ok <- x$mod$B[[t]][pos_ok,j,drop=F]
+          rownames(ok) <- colnames(x$Xs[[t]])[pos_ok]
+          barplot(t(ok),las = 2,horiz = T,col=colors[t],
+                  main=paste("Block X : ",legend_names_in[t],", variable Y : ",
+                             names_Y[j],sep=""))
+        }else{
+          plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
+        }
+      }
+    }
+    legend(pos_legend,legend = legend_names_in[t_selected],
+           fill = colors[t_selected],bty="n")
   }
 }
