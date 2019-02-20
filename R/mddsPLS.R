@@ -157,6 +157,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       R_init <- min(q,sum(ps))
       svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
       eigen_YXk <- apply(crossprod(Y,Xs[[k]])%*%svd_k_init$v,2,function(t)sum(t^2))
+      eigen_YXk[which(svd_k_init$d==0)] <- 0
       ordo_YXk <- order(eigen_YXk,decreasing = T)[1:min(R,length(eigen_YXk))]
       svd_k <- list(v=svd_k_init$v[,ordo_YXk,drop=F],
                     d=svd_k_init$d[ordo_YXk])
@@ -229,14 +230,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
     T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
   }
+  ###########################################################
   vars_current <- rep(0,R)
   for(r in 1:R){
     sc_r <- T_super[,r,drop=F]#scale(x$mod$t[,r,drop=F],scale=F)
     var_t_super_r <- sum(sc_r^2)
     if(var_t_super_r!=0){
       # VAR_SUPER_COMPS_ALL_Y[r] <- sum(abs(crossprod(sc_r,y_obs)/sqrt(var_t_super_r*VAR_TOT)))
-      b <- solve(crossprod(sc_r))%*%crossprod(sc_r,Y)
-      vars_current[r] <- (norm(sc_r%*%b,"f"))^2
+      # b <- solve(crossprod(sc_r))%*%crossprod(sc_r,Y)
+      # vars_current[r] <- (norm(sc_r%*%b,"f"))^2
+      deno <- norm(tcrossprod(Y),'f')*norm(tcrossprod(sc_r),'f')
+      vars_current[r] <- sum(diag(tcrossprod(Y)%*%tcrossprod(sc_r)))/deno
     }
   }
   l_cur <- length(vars_current)
@@ -247,11 +251,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       v=V_super <- v[,ord,drop=F]
       for(k in 1:K){
         U_t_super[[k]] <- U_t_super[[k]][,ord,drop=F]
-        u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
+        # u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
         beta_list[[k]] <- beta_list[[k]][,ord,drop=F]
       }
     }
   }
+  ###########################################################
   ## -------------------------- ######################### -----------------
   S_super <- Y%*%V_super
   T_S <- crossprod(T_super,S_super)
