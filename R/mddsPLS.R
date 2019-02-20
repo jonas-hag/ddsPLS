@@ -154,7 +154,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     else{
       # R_k <- min(R,min(dim(Ms[[k]])))
       # svd_k <- svd(Ms[[k]],nu = 0,nv = R)
-      R_init <- min(q,sum(ps))
+      R_init <- min(q,sum(unlist(ps)))
       svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
       eigen_YXk <- apply(crossprod(Y,Xs[[k]])%*%svd_k_init$v,2,function(t)sum(t^2))
       eigen_YXk[which(svd_k_init$d==0)] <- 0
