@@ -50,6 +50,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   ## Standardize Xs
   mu_x_s <- lapply(Xs,colMeans)
   sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)})
+  ooooo <- Xs#####
   Xs <- lapply(Xs,scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
   if(length(unlist(pos_0))>0){
@@ -57,6 +58,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       Xs[[i_0]][,pos_0[[i_0]]] <- 0
     }
   }
+  if(K==3) browser()
   ## Standardize Y
   Y_0 <- Y
   if(mode=="reg"){
@@ -449,7 +451,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             VAR_SUPER_COMPS[j,r] <- (norm(t_super_r%*%b,"f")/var_j)^2
             deno <- norm(tcrossprod(t_super_r),'f')*norm(tcrossprod(Y_j),'f')
             VAR_SUPER_COMPS_FROB[j,r] <- sum(diag(tcrossprod(Y_j)%*%tcrossprod(t_super_r)))/
-                                                     deno
+              deno
           }
         }
       }
@@ -462,7 +464,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         VAR_SUPER_COMPS_ALL_Y[r] <- (norm(sc_r%*%b,"f")/VAR_TOT)^2
         deno <- norm(tcrossprod(y_obs),'f')*norm(tcrossprod(sc_r),'f')
         VAR_SUPER_COMPS_ALL_Y_FROB[r] <- sum(diag(tcrossprod(sc_r)%*%tcrossprod(y_obs)))/
-                                            deno
+          deno
       }
     }
     if(is.null(names(Xs))){
@@ -484,7 +486,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       Linear=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
                   VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS),
       Frobenius=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
-                  VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
+                     VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
   }
   if(lambda<0|lambda>1){
     stop("Choose lambda regularization parameter between 0 and 1",
@@ -527,7 +529,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     stop(paste(mess1,mess2,mess3,mess4),
          call. = FALSE)
   }
-  Models_init <- list()
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
@@ -556,8 +557,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }else{
       lambda_init <- lambda
     }
+    mu_x_s=sd_x_s <- list()
+    mu_y <- colMeans(Y)
+    sd_y <- apply(Y,2,sd)
     ## If ther are some missing samples
     for(k in 1:K){## ## Types of imputation for initialization
+      y_train <- Xs[[k]][-id_na[[k]],,drop=F]
+      mu_x_s[[k]] <- colMeans(y_train)
+      sd_x_s[[k]] <- apply(y_train,2,sd)
       if(length(id_na[[k]])>0){
         ## ## ## Imputation to mean
         # mu_k <- colMeans(Xs[[k]],na.rm = TRUE)
@@ -566,7 +573,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         # }
         ## ## ## Imputation with prediction by block
         ## Be careful if this is a classification case ##############################
-        y_train <- Xs[[k]][-id_na[[k]],,drop=F]
         if(mode!="reg"){
           x_df <- data.frame(y=Y)
           x <- scale(model.matrix( ~ y - 1, data=x_df))
@@ -582,7 +588,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }else{
         model_init <- mddsPLS(Y,Xs[[k]],R=R)
       }
-      Models_init[[k]] <- model_init
     }
     if(K>1){
       # Xs_init <- Xs
@@ -615,6 +620,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             }
           }
           mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0)#NULL)#######################L0)#
+          mod$mu_x_s <- mu_x_s
+          mod$sd_x_s <- sd_x_s
+          mod$mu_y <- mu_y
+          mod$sd_y <- sd_y
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
@@ -640,6 +649,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }
     }
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0)
+    mod$mu_x_s <- mu_x_s
+    mod$sd_x_s <- sd_x_s
+    mod$mu_y <- mu_y
+    mod$sd_y <- sd_y
   }
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
