@@ -41,6 +41,11 @@
 #' @importFrom MASS lda
 #'
 MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_na=NULL){
+
+  my_scale <- function(a){
+    apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
+  }
+
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
@@ -49,16 +54,16 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   ps <- lapply(Xs,ncol)
   ## Standardize Xs
   mu_x_s <- lapply(Xs,colMeans)
-  sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)})
-  ooooo <- Xs#####
-  Xs <- lapply(Xs,scale)
+  n <- nrow(Xs[[1]])
+  sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)*sqrt((n-1)/n)})
+  xs1 <- Xs
+  Xs <- lapply(Xs,my_scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
   if(length(unlist(pos_0))>0){
     for(i_0 in which(lapply(pos_0,function(pp){length(pp)})>0)){
       Xs[[i_0]][,pos_0[[i_0]]] <- 0
     }
   }
-  if(K==3) browser()
   ## Standardize Y
   Y_0 <- Y
   if(mode=="reg"){
@@ -71,13 +76,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   }
   else{
     Y_df <- data.frame(Y)
-    Y <- scale(model.matrix( ~ Y - 1, data=Y_df))
+    Y <- my_scale(model.matrix( ~ Y - 1, data=Y_df))
   }
   mu_y <- colMeans(Y)
-  sd_y <- apply(Y,2,sd)
+  sd_y <- apply(Y,2,function(y){sd(y)*sqrt((n-1)/n)})
   for(q_j in 1:length(sd_y)){
     if(sd_y[q_j]!=0){
-      Y[,q_j] <- scale(Y[,q_j])
+      Y[,q_j] <- my_scale(Y[,q_j,drop=F])
     }
   }
   q <- ncol(Y)
@@ -87,8 +92,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   if(length(lambda_in)==1){
     lambda_in <- rep(lambda_in,K)
   }
+  ps <- unlist(lapply(Xs,ncol))
   if(!is.null(L0)){
-    ps <- unlist(lapply(Xs,ncol))
     sum_ps <- sum(ps);cum_ps <- cumsum(c(0,ps))
     all_maxs <- rep(NA,sum_ps)
     for(k in 1:K){
@@ -156,7 +161,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     else{
       # R_k <- min(R,min(dim(Ms[[k]])))
       # svd_k <- svd(Ms[[k]],nu = 0,nv = R)
-      R_init <- min(q,sum(unlist(ps)))
+      R_init <- min(q,sum(ps))
       svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
       eigen_YXk <- apply(crossprod(Y,Xs[[k]])%*%svd_k_init$v,2,function(t)sum(t^2))
       eigen_YXk[which(svd_k_init$d==0)] <- 0
@@ -196,51 +201,42 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     z_t[[k]] <- Ms[[k]]%*%u_t_r[[k]]
     t_t[[k]] <- Xs[[k]]%*%u_t_r[[k]]#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
-  t <- matrix(NA,n,R)
-  v <- matrix(0,q,R)
   ## Big SVD solution ######################### -----------------
   U_t_super <- list()
   Z <- do.call(cbind,z_t)
   R_opt <- min(dim(Z))
   svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
-  ## Reorder well ## -----
-  crosY_T <- do.call(cbind,t_t)
-  power <- colSums((crosY_T%*%svd_Z$v)^2)
-  orderGood <- order(power,decreasing = T)
-  svd_Z$d <- (svd_Z$d[orderGood])[1:R]
-  svd_Z$u <- (svd_Z$u[,orderGood,drop=F])[,1:R,drop=F]
-  svd_Z$v <- (svd_Z$v[,orderGood,drop=F])[,1:R,drop=F]
+  # ## Reorder well ## -----
+  # crosY_T <- crossprod(Y,do.call(cbind,t_t))
+  # power <- colSums((crosY_T%*%svd_Z$v)^2)
+  # orderGood <- order(power,decreasing = T)
+  # svd_Z$d <- (svd_Z$d[orderGood])[1:R]
+  # svd_Z$u <- (svd_Z$u[,orderGood,drop=F])[,1:R,drop=F]
+  # svd_Z$v <- (svd_Z$v[,orderGood,drop=F])[,1:R,drop=F]
   ## END --- Reorder well ## -----
   beta_all <- svd_Z$v
   beta_list <- list()
-  V_super <- Z%*%beta_all
   for(k in 1:K){#r in 1:R){
     #beta_list[[r]] <- beta_all[K*(r-1)+1:K,,drop=F]
     beta_list[[k]] <- beta_all[R*(k-1)+1:R,,drop=F]
   }
-  v = V_super <- svd_Z$u
+  V_super <- svd_Z$u
   if(length(svd_Z$d)<R){
     svd_Z$d <- c(svd_Z$d,rep(0,R-length(svd_Z$d)))
-    v <- cbind(v,matrix(0,nrow=nrow(v),ncol=R-length(svd_Z$d)))
+    V_super <- cbind(V_super,matrix(0,nrow=nrow(V_super),ncol=R-length(svd_Z$d)))
   }
-  T_super <- matrix(0,nrow=n,ncol=R)
+  R_here <- ncol(beta_list[[1]])
+  T_super <- matrix(0,nrow=n,ncol=R_here)
   for(k in 1:K){
-    # U_t_super[[k]] <- matrix(0,nrow=nrow(u_t_r[[k]]),ncol=R)
-    # for(r in 1:R){
-    #   U_t_super[[k]] <- U_t_super[[k]] + u_t_r[[k]][,r,drop=F]%*%beta_list[[r]][k,,drop=F]
-    # }
     U_t_super[[k]] <- u_t_r[[k]]%*%beta_list[[k]]
     T_super <- T_super + Xs[[k]]%*%U_t_super[[k]]
   }
   ###########################################################
-  vars_current <- rep(0,R)
-  for(r in 1:R){
+  vars_current <- rep(0,R_here)
+  for(r in 1:R_here){
     sc_r <- T_super[,r,drop=F]#scale(x$mod$t[,r,drop=F],scale=F)
     var_t_super_r <- sum(sc_r^2)
     if(var_t_super_r!=0){
-      # VAR_SUPER_COMPS_ALL_Y[r] <- sum(abs(crossprod(sc_r,y_obs)/sqrt(var_t_super_r*VAR_TOT)))
-      # b <- solve(crossprod(sc_r))%*%crossprod(sc_r,Y)
-      # vars_current[r] <- (norm(sc_r%*%b,"f"))^2
       deno <- norm(tcrossprod(Y),'f')*norm(tcrossprod(sc_r),'f')
       vars_current[r] <- sum(diag(tcrossprod(Y)%*%tcrossprod(sc_r)))/deno
     }
@@ -248,14 +244,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   l_cur <- length(vars_current)
   if(l_cur>1){
     ord <- order(vars_current,decreasing = T)
-    if(sum(abs(ord-1:R))!=0){
-      T_super <- T_super[,ord,drop=F]
-      v=V_super <- v[,ord,drop=F]
-      for(k in 1:K){
-        U_t_super[[k]] <- U_t_super[[k]][,ord,drop=F]
-        # u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
-        beta_list[[k]] <- beta_list[[k]][,ord,drop=F]
-      }
+    T_super <- T_super[,ord[1:R],drop=F]
+    V_super <- V_super[,ord[1:R],drop=F]
+    for(k in 1:K){
+      U_t_super[[k]] <- U_t_super[[k]][,ord[1:R],drop=F]
+      # u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
+      beta_list[[k]] <- beta_list[[k]][,ord[1:R],drop=F]
     }
   }
   ###########################################################
@@ -278,20 +272,19 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     }else{
       diag(D_0_inv) <- 1/Delta_ort
     }
+    # if(K==3) browser()
     B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
-    A <- matrix(0,R,R)
-    for(r in 1:R){
-      A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
-    }
+    # A <- matrix(0,R,R)
+    # for(r in 1:R){
+    #  A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
+    # }
   }else{
     t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
     B_0 <- matrix(0,nrow = R,ncol=R)
-    A <- matrix(0,R,R)
+    # A <- matrix(0,R,R)
     V_super <- matrix(0,q,R)
   }
   u <- beta_all#beta# deprecated
-  s <- S_super
-  t <- T_super
   if(mode=="reg"){
     B <- list()
     count <- 1
@@ -307,7 +300,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
-    sds <- apply(dataf[,-1,drop=FALSE],2,sd)
+    sds <- apply(dataf[,-1,drop=FALSE],2,function(y){sd(y)*sqrt((n-1)/n)})
     if(any(sds==0)){
       pos_sd0 <- as.numeric(which(sds==0))
       if(length(pos_sd0)==length(sds)){
@@ -329,10 +322,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       cat(paste("        @ (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
     }
     cat("    For the Y block, are selected in order of component:");cat("\n")
-    cat(paste("        @ (",paste(apply(v,2,function(u){length(which(abs(u)>1e-9))}),
+    cat(paste("        @ (",paste(apply(V_super,2,function(u){length(which(abs(u)>1e-9))}),
                                   collapse = ","),") variable(s)",sep=""));cat("\n")
   }
-  list(u=u_t_r,u_t_super=U_t_super,v=v,ts=t_r,beta_comb=u,t=t,s=s,t_ort=t_ort,s_ort=s_ort,B=B,
+  list(u=u_t_r,u_t_super=U_t_super,V_super=V_super,ts=t_r,beta_comb=u,
+       T_super=T_super,S_super=S_super,
+       t_ort=t_ort,s_ort=s_ort,B=B,
        mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda_in[1])
 }
 
@@ -444,7 +439,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       var_j <- norm(Y_j,"f")
       if(var_j!=0){
         for(r in 1:R){
-          t_super_r <- scale(x$mod$t[,r,drop=F],scale=F)
+          t_super_r <- scale(x$mod$T_super[,r,drop=F],scale=F)
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
             b <- solve(crossprod(t_super_r))%*%crossprod(t_super_r,Y_j)
@@ -457,7 +452,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }
     }
     for(r in 1:R){
-      sc_r <- scale(x$mod$t[,r,drop=F],scale=F)
+      sc_r <- scale(x$mod$T_super[,r,drop=F],scale=F)
       var_t_super_r <- sum(sc_r^2)
       if(var_t_super_r!=0){
         b <- solve(crossprod(sc_r))%*%crossprod(sc_r,y_obs)
@@ -529,6 +524,20 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     stop(paste(mess1,mess2,mess3,mess4),
          call. = FALSE)
   }
+  Models_init <- list()
+  mu_x_s <- lapply(Xs,colMeans,na.rm=T)
+  mu_y <- colMeans(Y)
+  sd_x_s <- lapply(1:length(ps),function(ii){
+    p <- ps[ii]
+    pos_na_ii <- which(is.na(Xs[[ii]][,1]))
+    if(length(pos_na_ii)>0){
+      out <- apply(na.omit(Xs[[ii]]),2,sd)*sqrt((n-1-length(pos_na_ii))/(n-length(pos_na_ii)))
+    }else{
+      out <- apply(Xs[[ii]],2,sd)*sqrt((n-1)/(n))
+    }
+    out
+  })
+  sd_y <- apply(Y,2,sd)*sqrt((n-1)/n)
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
@@ -557,14 +566,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }else{
       lambda_init <- lambda
     }
-    mu_x_s=sd_x_s <- list()
-    mu_y <- colMeans(Y)
-    sd_y <- apply(Y,2,sd)
     ## If ther are some missing samples
     for(k in 1:K){## ## Types of imputation for initialization
-      y_train <- Xs[[k]][-id_na[[k]],,drop=F]
-      mu_x_s[[k]] <- colMeans(y_train)
-      sd_x_s[[k]] <- apply(y_train,2,sd)
       if(length(id_na[[k]])>0){
         ## ## ## Imputation to mean
         # mu_k <- colMeans(Xs[[k]],na.rm = TRUE)
@@ -573,9 +576,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         # }
         ## ## ## Imputation with prediction by block
         ## Be careful if this is a classification case ##############################
+        y_train <- Xs[[k]][-id_na[[k]],,drop=F]
         if(mode!="reg"){
           x_df <- data.frame(y=Y)
-          x <- scale(model.matrix( ~ y - 1, data=x_df))
+          x <- my_scale(model.matrix( ~ y - 1, data=x_df))
           x_train <- x[-id_na[[k]],,drop=F]
           x_test <- x[id_na[[k]],,drop=F]
         }else{
@@ -588,11 +592,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }else{
         model_init <- mddsPLS(Y,Xs[[k]],R=R)
       }
+      Models_init[[k]] <- model_init
     }
     if(K>1){
       # Xs_init <- Xs
       mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,id_na=id_na)
-      if(sum(abs(as.vector(mod_0$s)))!=0){
+      if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
           Mat_na[id_na[[k]],k] <- 1
@@ -605,8 +610,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
-              Xs_i <- mod_0$s[-i_k,,drop=FALSE]
-              newX_i <- mod_0$s[i_k,,drop=FALSE]
+              Xs_i <- mod_0$S_super[-i_k,,drop=FALSE]
+              newX_i <- mod_0$S_super[i_k,,drop=FALSE]
               ## ## ## Look for selected variables
               Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))!=0)
               if(length(Var_selected_k)>0){
@@ -620,10 +625,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             }
           }
           mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0)#NULL)#######################L0)#
-          mod$mu_x_s <- mu_x_s
-          mod$sd_x_s <- sd_x_s
-          mod$mu_y <- mu_y
-          mod$sd_y <- sd_y
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
@@ -649,11 +650,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }
     }
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0)
-    mod$mu_x_s <- mu_x_s
-    mod$sd_x_s <- sd_x_s
-    mod$mu_y <- mu_y
-    mod$sd_y <- sd_y
   }
+  mod$mu_x_s <- mu_x_s
+  mod$sd_x_s <- sd_x_s
+  mod$sd_y <- sd_y
+  mod$mu_y <- mu_y
   out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
   class(out) <- "mddsPLS"

@@ -99,7 +99,8 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   ## Get highest Lambda
   if(is.null(lambdas)&is.null(L0s)){
     if(is.null(lambda_max)){
-      MMss0 <- mddsPLS(Xs,Y,lambda = 0,R = 1,mode = mode,maxIter_imput = 0)$mod$Ms
+      MMss0 <- mddsPLS(Xs,Y,lambda = 0,R = 1,
+                       mode = mode,maxIter_imput = 0)$mod$Ms
       lambda_max <- max(unlist(lapply(MMss0,
                                       function(Mi){max(abs(Mi))})))
     }
@@ -109,7 +110,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     ## Write paras
     paras <- expand.grid(R,L0s,1:max(fold))
   }else{
-
     ## Write paras
     paras <- expand.grid(R,Lambdas,1:max(fold))
   }
@@ -181,12 +181,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
-                          v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
+                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>1e-10)
                           select_y[i,v_no_null] <- 1
                         }else{
                           Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                           errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")
-                          v_no_null <- which(rowSums(abs(mod_0$mod$v))>1e-10)
+                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>1e-10)
                           select_y[i,v_no_null] <- 1
                         }
                       }
@@ -224,7 +224,8 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
     if(mode=="reg"){
       ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2))
-      SDEP_OUT[i,] <- apply(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2,2,sd)
+      SDEP_OUT[i,] <- apply(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2,2,
+                            function(y){sd(y)*sqrt((n-1)/n)})
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
     }else{
       err_char <- ERRORS[pos_in_errors,1:(q)+3]
