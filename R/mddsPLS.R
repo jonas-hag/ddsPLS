@@ -56,7 +56,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   mu_x_s <- lapply(Xs,colMeans)
   n <- nrow(Xs[[1]])
   sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)*sqrt((n-1)/n)})
-  xs1 <- Xs
   Xs <- lapply(Xs,my_scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
   if(length(unlist(pos_0))>0){
@@ -163,7 +162,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       # svd_k <- svd(Ms[[k]],nu = 0,nv = R)
       R_init <- min(q,sum(ps))
       svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
-      eigen_YXk <- apply(crossprod(Y,Xs[[k]])%*%svd_k_init$v,2,function(t)sum(t^2))
+      eigen_YXk <- apply(Ms[[k]]%*%svd_k_init$v,2,function(t)sum(t^2))
       eigen_YXk[which(svd_k_init$d==0)] <- 0
       ordo_YXk <- order(eigen_YXk,decreasing = T)[1:min(R,length(eigen_YXk))]
       svd_k <- list(v=svd_k_init$v[,ordo_YXk,drop=F],
@@ -590,7 +589,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         y_test <- predict(model_init,x_test)
         Xs[[k]][id_na[[k]],] <- y_test
       }else{
-        model_init <- mddsPLS(Y,Xs[[k]],R=R)
+        model_init <- mddsPLS(Xs[[k]],Y,R=R)
       }
       Models_init[[k]] <- model_init
     }
@@ -610,10 +609,15 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
-              Xs_i <- mod_0$S_super[-i_k,,drop=FALSE]
-              newX_i <- mod_0$S_super[i_k,,drop=FALSE]
-              ## ## ## Look for selected variables
-              Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))!=0)
+              if(iter!=1){
+                Xs_i <- mod$S_super[-i_k,,drop=FALSE]#_0$S_super[-i_k,,drop=FALSE]
+                newX_i <- mod$S_super[i_k,,drop=FALSE]#_0$S_super[i_k,,drop=FALSE]
+                Var_selected_k <- which(rowSums(abs(mod$u[[k]]))!=0)#_0$u[[k]]))!=0)
+              }else{
+                Xs_i <- mod_0$S_super[-i_k,,drop=FALSE]
+                newX_i <- mod_0$S_super[i_k,,drop=FALSE]
+                Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))!=0)
+              }
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
@@ -631,7 +635,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               n_new <- sqrt(sum(mod$t_ort[,r]^2))
               n_0 <- sqrt(sum(mod_0$t_ort[,r]^2))
               if(n_new*n_0!=0){
-                err_i <- abs(1-as.numeric(abs(diag(crossprod(mod$t_ort[,r],mod_0$t_ort[,r]))))/(n_new*n_0))
+                err_i <- abs(1-as.numeric(abs(diag(crossprod(mod$t_ort[,r],
+                                                             mod_0$t_ort[,r]))))/(n_new*n_0))
                 err <- err + err_i
               }
             }
