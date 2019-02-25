@@ -67,7 +67,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       }
     }
     Y_1 <- x$Y_0
-    R <- length(x$mod$t)
+    R <- length(x$mod$T_super)
     comp_in<-comp
     if(is.null(comp_in)){
       comp_in <- 1
@@ -213,7 +213,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
   }
   if(vizu=="weights"){
     viz <- x$mod$u
-    viz_y <- x$mod$v
+    viz_y <- x$mod$V_super
     if(super){
       viz <- x$mod$u_t_super
       block_in <- 1:K

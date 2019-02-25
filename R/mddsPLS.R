@@ -121,11 +121,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     lambda_in <- rep(lambda_L0,K)
   }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
-    M0 <- crossprod(Y,Xs[[k]])/(n-1)
+    M0 <- cor(Y,Xs[[k]])
     M <- abs(M0) - l[k]
     M[which(M<0)] <- 0
     M <- sign(M0)*M
+    pos <- which(is.na(M))
+    if(length(pos)>0){
+      M[which(is.na(M))] <- 0
+    }
+    M
   },Xs,Y,lambda_in,n)
+
   if(verbose){
     N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))!=0))})))
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
@@ -295,7 +301,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       B[[k]] <- B_k
     }
   }else{
-    dataf <- data.frame(cbind(Y_0,t));colnames(dataf)[1]<-"Y"
+    dataf <- data.frame(cbind(Y_0,T_super));colnames(dataf)[1]<-"Y"
     for( cc in 2:ncol(dataf)){
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
@@ -395,6 +401,11 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE){
+
+  my_scale <- function(a){
+    apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
+  }
+
   get_variances <- function(x){
     Xs <- x$Xs
     K <- length(Xs)
@@ -523,9 +534,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     stop(paste(mess1,mess2,mess3,mess4),
          call. = FALSE)
   }
-  Models_init <- list()
   mu_x_s <- lapply(Xs,colMeans,na.rm=T)
-  mu_y <- colMeans(Y)
   sd_x_s <- lapply(1:length(ps),function(ii){
     p <- ps[ii]
     pos_na_ii <- which(is.na(Xs[[ii]][,1]))
@@ -536,7 +545,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     out
   })
-  sd_y <- apply(Y,2,sd)*sqrt((n-1)/n)
+  if(mode=="reg"){
+    mu_y <- colMeans(Y)
+    sd_y <- apply(Y,2,sd)*sqrt((n-1)/n)
+  }else{
+    Y_class_dummies <- my_scale(model.matrix( ~ y - 1, data=data.frame(y=Y)))
+    mu_y <- colMeans(Y_class_dummies)
+    sd_y <- apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
+  }
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
@@ -544,22 +560,27 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     if(!is.null(L0)){
       ps_init <- unlist(lapply(Xs,ncol))
       sum_ps_init <- sum(ps_init);cum_ps_init <- cumsum(c(0,ps_init))
-      all_maxs_init <- rep(NA,sum_ps_init)
-      for(k in 1:K){
-        ii <- cum_ps_init[k]
-        c_k <- abs(cor(Y,Xs[[k]],use = "pairwise"))
-        all_maxs_init[ii+1:(ps_init[k])] <- apply(c_k,2,max)
-        # if(is.null(id_na)){
-        #   all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
-        # }else{
-        #   l_k <- length(id_na[[k]])
-        #   if(l_k>0){
-        #     all_maxs_init[ii+1:(ps_init[k])] <-
-        #       apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
-        #   }else{
-        #     all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
-        #   }
-        # }
+      # all_maxs_init <- rep(NA,sum_ps_init)
+      # for(k in 1:K){
+      #   ii <- cum_ps_init[k]
+      #   c_k <- abs(cor(Y,Xs[[k]],use = "pairwise"))
+      #   all_maxs_init[ii+1:(ps_init[k])] <- apply(c_k,2,max)
+      #   # if(is.null(id_na)){
+      #   #   all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      #   # }else{
+      #   #   l_k <- length(id_na[[k]])
+      #   #   if(l_k>0){
+      #   #     all_maxs_init[ii+1:(ps_init[k])] <-
+      #   #       apply(abs(crossprod(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],])/(n-1)),MARGIN = 2,max)
+      #   #   }else{
+      #   #     all_maxs_init[ii+1:(ps_init[k])] <- apply(abs(crossprod(Y,Xs[[k]])/(n-1)),MARGIN = 2,max)
+      #   #   }
+      #   # }
+      # }
+      if(mode=="reg"){
+        all_maxs_init <- apply(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")),2,max)
+      }else{
+        all_maxs_init <- apply(abs(cor(Y_class_dummies,do.call(cbind,Xs),use = "pairwise")),2,max)
       }
       lambda_init <- sort(all_maxs_init,decreasing = T)[min(sum_ps_init,1+L0)]
     }else{
@@ -577,10 +598,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         ## Be careful if this is a classification case ##############################
         y_train <- Xs[[k]][-id_na[[k]],,drop=F]
         if(mode!="reg"){
-          x_df <- data.frame(y=Y)
-          x <- my_scale(model.matrix( ~ y - 1, data=x_df))
-          x_train <- x[-id_na[[k]],,drop=F]
-          x_test <- x[id_na[[k]],,drop=F]
+          x_train <- Y_class_dummies[-id_na[[k]],,drop=F]
+          x_test <- Y_class_dummies[id_na[[k]],,drop=F]
         }else{
           x_train <- Y[-id_na[[k]],,drop=F]
           x_test <- Y[id_na[[k]],,drop=F]
@@ -588,10 +607,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init)
         y_test <- predict(model_init,x_test)
         Xs[[k]][id_na[[k]],] <- y_test
-      }else{
-        model_init <- mddsPLS(Xs[[k]],Y,R=R)
       }
-      Models_init[[k]] <- model_init
     }
     if(K>1){
       # Xs_init <- Xs
@@ -609,7 +625,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
-              if(iter!=1){
+              if(iter>01){
                 Xs_i <- mod$S_super[-i_k,,drop=FALSE]#_0$S_super[-i_k,,drop=FALSE]
                 newX_i <- mod$S_super[i_k,,drop=FALSE]#_0$S_super[i_k,,drop=FALSE]
                 Var_selected_k <- which(rowSums(abs(mod$u[[k]]))!=0)#_0$u[[k]]))!=0)

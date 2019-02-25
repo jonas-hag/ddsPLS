@@ -143,7 +143,7 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   cat("    For each block of X, are selected");cat("\n")
   print(df_num_var_sel)
   cat("    For the Y block, are selected");cat("\n")
-  cat(paste("        @ (",paste(apply(object$mod$v,2,function(u){length(which(abs(u)>1e-9))}),
+  cat(paste("        @ (",paste(apply(object$mod$V_super,2,function(u){length(which(abs(u)>1e-9))}),
                                 collapse = ","),") variable(s)",sep=""));cat("\n")
   cat("\n")
   cat("\n")
