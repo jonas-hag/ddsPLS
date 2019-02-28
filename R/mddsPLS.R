@@ -676,7 +676,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   mod$sd_x_s <- sd_x_s
   mod$sd_y <- sd_y
   mod$mu_y <- mu_y
-  out <- list(mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
+  var_selected <- list()
+  for(k in 1:K){
+    var_selected[[k]] <- which(rowSums(mod$u[[k]])!=0)
+  }
+  out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
   class(out) <- "mddsPLS"
   out$Variances <- get_variances(out)
