@@ -600,10 +600,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         }
         err <- 2
         iter <- 0
+        ## Covariate for imputation is always the same : the projected values of Y on the initial weights
         S_super_obj <- mod_0$S_super
         while(iter<maxIter_imput&err>errMin_imput){
           iter <- iter + 1
-          print(paste(iter,"---",err))
           for(k in 1:K){
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
