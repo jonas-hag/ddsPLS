@@ -10,6 +10,7 @@
 #' @param mode A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
+#' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
 #' @return A list containing the following objects:
 #' \describe{
@@ -40,8 +41,9 @@
 #' @importFrom stats sd model.matrix
 #' @importFrom MASS lda
 #'
-MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_na=NULL){
-
+MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
+                         L0=NULL,verbose=FALSE,id_na=NULL,
+                         NZV=1e-9){
   my_scale <- function(a){
     apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
   }
@@ -57,7 +59,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   n <- nrow(Xs[[1]])
   sd_x_s <- lapply(Xs,function(X){apply(X,2,sd)*sqrt((n-1)/n)})
   Xs <- lapply(Xs,my_scale)
-  pos_0 <- lapply(sd_x_s,function(sdi){which(sdi==0)})
+  pos_0 <- lapply(sd_x_s,function(sdi){which(sdi<NZV)})
   if(length(unlist(pos_0))>0){
     for(i_0 in which(lapply(pos_0,function(pp){length(pp)})>0)){
       Xs[[i_0]][,pos_0[[i_0]]] <- 0
@@ -133,7 +135,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
   },Xs,Y,lambda_in,n)
 
   if(verbose){
-    N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))!=0))})))
+    N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))>NZV))})))
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
   }
   ## Solve optimization problem
@@ -169,7 +171,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
       R_init <- min(q,sum(ps))
       svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
       eigen_YXk <- apply(Ms[[k]]%*%svd_k_init$v,2,function(t)sum(t^2))
-      eigen_YXk[which(svd_k_init$d==0)] <- 0
+      eigen_YXk[which(svd_k_init$d<NZV)] <- 0
       ordo_YXk <- order(eigen_YXk,decreasing = T)[1:min(R,length(eigen_YXk))]
       svd_k <- list(v=svd_k_init$v[,ordo_YXk,drop=F],
                     d=svd_k_init$d[ordo_YXk])
@@ -271,13 +273,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     t_ort <- T_super%*%v_ort
     s_ort <- S_super%*%v_ort
     D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
-    del_0 <- which(Delta_ort<1e-10)
+    del_0 <- which(Delta_ort<NZV)
     if(length(del_0)>0){
       diag(D_0_inv)[-del_0] <- 1/Delta_ort[-del_0]
     }else{
       diag(D_0_inv) <- 1/Delta_ort
     }
-    # if(K==3) browser()
     B_0 <- v_ort%*%tcrossprod(D_0_inv,v_ort)%*%T_S
     # A <- matrix(0,R,R)
     # for(r in 1:R){
@@ -307,7 +308,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     }
     sds <- apply(dataf[,-1,drop=FALSE],2,function(y){sd(y)*sqrt((n-1)/n)})
     if(any(sds==0)){
-      pos_sd0 <- as.numeric(which(sds==0))
+      pos_sd0 <- as.numeric(which(sds<NZV))
       if(length(pos_sd0)==length(sds)){
         B <- NULL
       }else{
@@ -321,13 +322,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
     }
   }
   if(verbose){
-    a<-lapply(u_t_r,function(u){apply(u,2,function(u){length(which(abs(u)>1e-9))})})
+    a<-lapply(u_t_r,function(u){apply(u,2,function(u){length(which(abs(u)>NZV))})})
     cat("    For each block of X, are selected in order of component:");cat("\n")
     for(k in 1:K){
       cat(paste("        @ (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
     }
     cat("    For the Y block, are selected in order of component:");cat("\n")
-    cat(paste("        @ (",paste(apply(V_super,2,function(u){length(which(abs(u)>1e-9))}),
+    cat(paste("        @ (",paste(apply(V_super,2,function(u){length(which(abs(u)>NZV))}),
                                   collapse = ","),") variable(s)",sep=""));cat("\n")
   }
   list(u=u_t_r,u_t_super=U_t_super,V_super=V_super,ts=t_r,beta_comb=u,
@@ -353,6 +354,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
+#' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
 #'
@@ -400,7 +402,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,verbose=FALSE,id_n
 #' summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     errMin_imput=1e-9,maxIter_imput=50,
-                    verbose=FALSE){
+                    verbose=FALSE,NZV=1E-9){
 
   my_scale <- function(a){
     apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
@@ -555,7 +557,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   }
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose,NZV=NZV)
   }else{
     if(!is.null(L0)){
       ps_init <- unlist(lapply(Xs,ncol))
@@ -611,7 +613,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     if(K>1){
       # Xs_init <- Xs
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,id_na=id_na)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,id_na=id_na,NZV=NZV)
       if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -628,23 +630,23 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               if(iter>01){
                 Xs_i <- mod$S_super[-i_k,,drop=FALSE]#_0$S_super[-i_k,,drop=FALSE]
                 newX_i <- mod$S_super[i_k,,drop=FALSE]#_0$S_super[i_k,,drop=FALSE]
-                Var_selected_k <- which(rowSums(abs(mod$u[[k]]))!=0)#_0$u[[k]]))!=0)
+                Var_selected_k <- which(rowSums(abs(mod$u[[k]]))>NZV)#_0$u[[k]]))!=0)
               }else{
                 Xs_i <- mod_0$S_super[-i_k,,drop=FALSE]
                 newX_i <- mod_0$S_super[i_k,,drop=FALSE]
-                Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))!=0)
+                Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))>NZV)
               }
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,R=R,L0=NULL)
+                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,R=R,L0=NULL,NZV=NZV)
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0)#NULL)#######################L0)#
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             for(r in 1:R){
@@ -670,7 +672,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         }
       }
     }
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0,NZV=NZV)
   }
   mod$mu_x_s <- mu_x_s
   mod$sd_x_s <- sd_x_s
@@ -678,10 +680,18 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   mod$mu_y <- mu_y
   var_selected <- list()
   for(k in 1:K){
-    var_selected[[k]] <- which(rowSums(mod$u[[k]])!=0)
+    var_selected[[k]] <- which(rowSums(abs(mod$u[[k]]))>NZV)
+  }
+  names_Xs <- names(Xs)
+  if(length(names_Xs)!=0){
+    names(var_selected) <- names_Xs
+    names(mod$u) <- names_Xs
+    names(mod$u_t_super) <- names_Xs
+    names(mod$B) <- names_Xs
+    names(mod$Ms) <- names_Xs
   }
   out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
-              maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0)
+              maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0,NZV=NZV)
   class(out) <- "mddsPLS"
   out$Variances <- get_variances(out)
   out

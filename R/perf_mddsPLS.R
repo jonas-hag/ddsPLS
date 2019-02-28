@@ -37,6 +37,7 @@
 #' Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is
 #'  considered. Default is \eqn{5}.
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
+#' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
 #' @return A result of the perf function
 #'
@@ -68,7 +69,8 @@
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,
                          L0s=NULL,
                          kfolds="loo",mode="reg",fold_fixed=NULL,
-                         maxIter_imput=20,errMin_imput=1e-9,NCORES=1){
+                         maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
+                         NZV=1e-9){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -167,12 +169,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(!is.null(L0s)){
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,
                                            R = R,mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput)
+                                           maxIter_imput = maxIter_imput,NZV=NZV)
 
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
                                            R = R,mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput)
+                                           maxIter_imput = maxIter_imput,NZV=NZV)
 
                         }
                         time_build[i] <- as.numeric((Sys.time()-t1))
@@ -181,12 +183,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
-                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>1e-10)
+                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1
                         }else{
                           Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
                           errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")
-                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>1e-10)
+                          v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1
                         }
                       }

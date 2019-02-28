@@ -60,7 +60,8 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       }
       ## Generate model
       model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,
-                                   R = R,maxIter_imput = mod_0$maxIter_imput)
+                                   R = R,maxIter_imput = mod_0$maxIter_imput,
+                                   NZV=mod_0$NZV)
       ## Create test dataset
       n_test <- nrow(X_test[[1]])
       t_X_test <- matrix(NA,n_test,ncol(t_X_here))
