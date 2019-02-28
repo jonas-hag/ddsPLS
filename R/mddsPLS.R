@@ -693,7 +693,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0,NZV=NZV)
   class(out) <- "mddsPLS"
-  if(keep_imp_mod) out$model_imputations <- model_imputations
+  if(keep_imp_mod){
+    if(length(names_Xs)!=0) names(model_imputations) <- names_Xs
+    out$model_imputations <- model_imputations
+  }
   out$Variances <- get_variances(out)
   out
 }
