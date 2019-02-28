@@ -50,7 +50,6 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                pos_legend="topright",legend_names=NULL,
                values_corr=F,
                ...){
-  browser()
   ## Functions
   ##### HEATMAP FUNCTION #####
   plot_heatmap <- function(x,comp=NULL,out=F){
