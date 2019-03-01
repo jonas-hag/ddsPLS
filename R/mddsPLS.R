@@ -407,13 +407,15 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     verbose=FALSE,NZV=1E-9){
 
   my_scale <- function(a){
+    n <- nrow(a)
     apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
   }
 
-  get_variances <- function(x){
+  get_variances <- function(x,std_Y=T){
     Xs <- x$Xs
     K <- length(Xs)
     y_obs <- x$Y_0
+    if(std_Y) y_obs<- my_scale(y_obs)
     R <- length(x$mod$ts)
     y_pred <- predict(x,Xs)
     mode <- x$mode
@@ -632,6 +634,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                   model_imputations[[k]] <- mod_i_k
                 }
                 Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
+              }else{
+                if(keep_imp_mod){
+                  model_imputations[[k]] <- list()
+                }
+              }
+            }else{
+              if(keep_imp_mod){
+                model_imputations[[k]] <- list()
               }
             }
           }

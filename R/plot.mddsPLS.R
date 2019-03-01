@@ -13,6 +13,7 @@
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param pos_legend Initialized to "topright"
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
+#' @param block_Y_name character. Initialized to "Block Y".
 #' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
 #' @param ... Other plotting parameters to affect the plot.
 #'
@@ -48,7 +49,7 @@
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                block=NULL,comp=NULL,variance="Linear",mar_left=2,
                pos_legend="topright",legend_names=NULL,
-               values_corr=F,
+               values_corr=F,block_Y_name="Block Y",
                ...){
   ## Functions
   ##### HEATMAP FUNCTION #####
@@ -87,7 +88,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     coeffs <- matrix(rep(0,p_sel),nrow = 1)
     colnames(coeffs) <- rep("OOO",p_sel)
     count <- 0
-    my_group <- rep("Block Y",p_sel+q)
+    my_group <- rep(block_Y_name,p_sel+q)
     for(k in 1:K){
       Xs_k <- Xs[[k]]
       if(!is.matrix(Xs_k)){
@@ -191,14 +192,18 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }
   }
   legends_names_y <- colnames(Y_in)
-  if(is.null(legend_names) & is.null(names(x$Xs))){
+  legend_names_in <- names(x$Xs)
+  if(is.null(legend_names) & is.null(legend_names_in)){
     legend_names_in <- paste("Block",block_in,sep=" ")
   }else{
-    legend_names_in <- names(x$Xs)
-    for(k in 1:K){
-      if(nchar(names(x$Xs)[k])==0){
-        legend_names_in[k] <- paste("Block",k)
+    if(K!=1){
+      for(k in 1:K){
+        if(nchar(names(x$Xs)[k])==0){
+          legend_names_in[k] <- paste("Block",k)
+        }
       }
+    }else{
+      legend_names_in <- legend_names
     }
   }
   l_bl <- K+1
@@ -287,9 +292,9 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
         toplot_y <- y_como[order(abs(y_como),decreasing = T)]
         barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
-                main=paste("Bloc Y, component ",r,sep=""),xlab="Coefficient")
+                main=paste(block_Y_name," component ",r,sep=""),xlab="Coefficient")
         abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
-        legeds <- c(legend_names_in[block_in],"Block Y")
+        legeds <- c(legend_names_in[block_in],block_Y_name)
         colOut <- colors[c(block_in,K+1)]
       }else{
         legeds <- legend_names_in
@@ -349,7 +354,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                   main=paste("Bloc Y, component ",r,sep=""),
                   xlab=xlab)
           abline(v=c(0.25,0.5,0.75,1)*100,lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
-          legeds <- c(legend_names_in,"Block Y")
+          legeds <- c(legend_names_in,block_Y_name)
           colOut <- colors[c(block_in,K+1)]
         }else{
           legeds <- legend_names_in
