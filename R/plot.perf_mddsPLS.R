@@ -233,7 +233,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                                   "Mean good classif rate"),
                        col = c(colors,1),
                        lty = c(rep(1,length(colors)),3),
-                       lwd=c(rep(2,length(colors),1.5)))
+                       lwd=c(rep(2,length(colors),1.5)),bty = "n")
     }else{
       if(!is.null(plot_mean)){
         legend_names <- c(legend_names, "Mean MSEP")
@@ -246,7 +246,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
         lwd <- rep(2,length(colors))
       }
       legend(pos_legend,legend = legend_names,
-                       col = col,lty = lty,lwd=lwd)
+                       col = col,lty = lty,lwd=lwd,bty = "n")
     }
   }
 

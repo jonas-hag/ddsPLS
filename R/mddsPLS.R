@@ -372,8 +372,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
-#' summary(mddsPLS_model_class)
+#' # mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
+#' # summary(mddsPLS_model_class,plot_present_indiv = FALSE)
 #'
 #' ## Regression example :
 #' data("liver.toxicity")
@@ -407,6 +407,15 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     verbose=FALSE,NZV=1E-9){
 
   my_scale <- function(a){
+    if(!is.matrix(a)){
+      a <- as.matrix(a,ncol=1)
+    }
+    if(!is.numeric(a)){
+      a_ <- as.matrix(model.matrix( ~ y_obs - 1,
+                                    data=data.frame(y_obs=a,ncol=1)))
+      colnames(a_) <- levels(as.factor(a))
+      a <- a_
+    }
     n <- nrow(a)
     apply(a,2,function(x){(x-mean(x))/(sd(x)*sqrt((n-1)/n))})
   }
@@ -415,8 +424,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     Xs <- x$Xs
     K <- length(Xs)
     y_obs <- x$Y_0
-    if(std_Y) y_obs<- my_scale(y_obs)
-    R <- length(x$mod$ts)
     y_pred <- predict(x,Xs)
     mode <- x$mode
     if(mode=="reg"){
@@ -433,6 +440,17 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       y_obs <- scale(y_obs,scale = F)
     }
     q <- ncol(y_obs)
+    if(std_Y){
+        sds <- apply(y_obs,2,sd)
+      pos_0 <- which(sds==0)
+      y_obs<- my_scale(y_obs)
+      if(length(pos_0)!=0){
+        for(jj in pos_0){
+          y_obs[,jj] <- 0
+        }
+      }
+    }
+    R <- length(x$mod$ts)
     VAR_TOT=VAR_TOT_FROB <- norm(y_obs,"f")
     VAR_COMPS=VAR_COMPS_FROB <- matrix(0,K,R)
     VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R)
@@ -453,6 +471,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     for(j in 1:q){
       Y_j <- y_obs[,j,drop=F]
       var_j <- norm(Y_j,"f")
+      if(is.na(var_j))browser()
       if(var_j!=0){
         for(r in 1:R){
           t_super_r <- scale(x$mod$T_super[,r,drop=F],scale=F)
