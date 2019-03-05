@@ -9,11 +9,14 @@
 #' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
 #' @param comp vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.
-#' @param variance character. One of \emph{Linear}, \emph{Frobenius}. Explains the type of variance shown in the graphics.
+#' @param variance character. One of \emph{Linear}, \emph{RV}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
+#' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.
 #' @param pos_legend Initialized to "topright"
+#' @param legend.cex positive float. character expansion factor relative to current par("cex") for \emph{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
 #' @param block_Y_name character. Initialized to "Block Y".
+#' @param reorder_Y logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.
 #' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
 #' @param ... Other plotting parameters to affect the plot.
 #'
@@ -47,9 +50,11 @@
 #' #res_cv_reg <- ddsPLS(Xs = X,Y = Y,lambda=0.8,R = 2)
 #' #plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
-               block=NULL,comp=NULL,variance="Linear",mar_left=2,
-               pos_legend="topright",legend_names=NULL,
+               block=NULL,comp=NULL,variance="Linear",
+               mar_left=2,mar_bottom=2,
+               pos_legend="topright",legend_names=NULL,legend.cex=1,
                values_corr=F,block_Y_name="Block Y",
+               reorder_Y=F,
                ...){
   ## Functions
   ##### HEATMAP FUNCTION #####
@@ -131,8 +136,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS[comp_in],2)*100
       main <- paste(main," (",var_here,"% var. expl.)",sep="")
     }else{
-      var_here <- signif(x$Variances$Frobenius$VAR_SUPER_COMPS[comp_in],2)*100
-      main <- paste(main," (",var_here,"% var. com.)",sep="")
+      var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS[comp_in],2)*100
+      main <- paste(main," (RV=",var_here/100,")",sep="")
     }
     if(!out){
       heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
@@ -140,7 +145,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
               main=main)
       legend("topleft",legend=levels(my_group_factor),
              fill=colors[1:nlevels(my_group_factor)],
-             border=FALSE, bty="n",cex=0.7)
+             border=FALSE, bty="n",cex=legend.cex)
     }
     output <- coco_imputed
     if(out){
@@ -229,7 +234,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     if(!super){
       if(addY){
         par(mfrow=c(length(block_in),R_in+1),
-            mar=c(5,4+mar_left,4,2)+0.1)
+            mar=c(5+mar_bottom,4+mar_left,4,2)+0.1)
       }else{
         par(mfrow=c(length(block_in),R_in),
             mar=c(5,4+mar_left,4,2)+0.1)
@@ -237,7 +242,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }else{
       if(addY){
         par(mfrow=c(R_in,1+1),
-            mar=c(5,4+mar_left,4,2)+0.1)
+            mar=c(5+mar_bottom,4+mar_left,4,2)+0.1)
       }else{
         par(mfrow=c(R_in,1),
             mar=c(5,4+mar_left,4,2)+0.1)
@@ -259,7 +264,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           main <- paste(main," (",var_here,"% var. expl.)",sep="")
         }else{
           var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
-          main <- paste(main," (",var_here,"% var. com.)",sep="")
+          main <- paste(main," (RV=",var_here/100,")",sep="")
         }
         if(length(pos_no_nul)>0){
           toplot[[k]][[r]] <- viz_k[pos_no_nul,r]
@@ -317,8 +322,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[r],2)*100
           main <- paste(main," (",var_here,"% var. expl. total Y)",sep="")
         }else{
-          var_here <- signif(x$Variances$Frobenius$VAR_SUPER_COMPS_ALL_Y[r],2)*100
-          main <- paste(main," (",var_here,"% var. com. total Y)",sep="")
+          var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS_ALL_Y[r],2)*100
+          main <- paste(main," (RV=",var_here/100,")",sep="")
         }
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
@@ -341,21 +346,26 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             }else{
               toplot_y <- x$Variances$Linear$VAR_SUPER_COMPS[r]*100
             }
-            xlab <- "Variance Explained"
+            xlab <- "Variance Explained (%)"
           }else{
-            if(!is.null(dim(x$Variances$Frobenius$VAR_SUPER_COMPS))){
-              toplot_y <- x$Variances$Frobenius$VAR_SUPER_COMPS[,r]*100
+            if(!is.null(dim(x$Variances$RV$VAR_SUPER_COMPS))){
+              toplot_y <- x$Variances$RV$VAR_SUPER_COMPS[,r]*100
             }else{
-              toplot_y <- x$Variances$Frobenius$VAR_SUPER_COMPS[r]*100
+              toplot_y <- x$Variances$RV$VAR_SUPER_COMPS[r]*100
             }
             xlab <- "Variance in Common"
           }
-          barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(0,100),
+          if(reorder_Y){
+            toplot_y <- sort(toplot_y,decreasing=T)
+          }
+          xx<-barplot(toplot_y,horiz = F,las=2,col=colors[K+1],ylim = c(0,110),
                   main=paste("Bloc Y, component ",r,sep=""),
-                  xlab=xlab)
-          abline(v=c(0.25,0.5,0.75,1)*100,lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
+                  ylab=xlab)
+          abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
+                 col=adjustcolor("black",alpha.f = 0.2))
           legeds <- c(legend_names_in,block_Y_name)
           colOut <- colors[c(block_in,K+1)]
+          text(xx,toplot_y,labels=round(toplot_y,0),pos=3)
         }else{
           legeds <- legend_names_in
           colOut <- colors[block_in]
@@ -363,7 +373,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       }
     }
     legend(pos_legend,legend = legeds,
-           fill = colOut,bty="n")
+           fill = colOut,bty="n",cex=legend.cex)
 
   }else if(vizu=="heatmap"){
     plot_heatmap(x,comp)
@@ -390,6 +400,6 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       }
     }
     legend(pos_legend,legend = legend_names_in[t_selected],
-           fill = colors[t_selected],bty="n")
+           fill = colors[t_selected],bty="n",cex=legend.cex)
   }
 }

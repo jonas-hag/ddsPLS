@@ -7,7 +7,7 @@
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
   lambdas = NULL, R = 1, L0s = NULL, kfolds = "loo",
   mode = "reg", fold_fixed = NULL, maxIter_imput = 20,
-  errMin_imput = 1e-09, NCORES = 1)
+  errMin_imput = 1e-09, NCORES = 1, NZV = 1e-09)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,
@@ -56,6 +56,8 @@ Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is
 Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
 \item{NCORES}{Integer. The number of cores. Default is \eqn{1}.}
+
+\item{NZV}{Float. The floatting value above which the weights are set to 0.}
 }
 \value{
 A result of the perf function

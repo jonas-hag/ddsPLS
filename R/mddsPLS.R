@@ -496,7 +496,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     return(list(
       Linear=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
                   VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS),
-      Frobenius=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
+      RV=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
                      VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
   }
 

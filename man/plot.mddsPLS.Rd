@@ -6,13 +6,14 @@
 \usage{
 \method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
-  mar_left = 2, pos_legend = "topright", legend_names = NULL,
-  values_corr = F, ...)
+  mar_left = 2, mar_bottom = 2, pos_legend = "topright",
+  legend_names = NULL, legend.cex = 1, values_corr = F,
+  block_Y_name = "Block Y", ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \emph{weights}, \emph{heatmap}, \emph{correlogram}.}
+\item{vizu}{character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}}
 
 \item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
 
@@ -22,15 +23,21 @@
 
 \item{comp}{vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.}
 
-\item{variance}{character. One of \emph{Linear}, \emph{Frobenius}. Explains the type of variance shown in the graphics.}
+\item{variance}{character. One of \emph{Linear}, \emph{RV}. Explains the type of variance shown in the graphics.}
 
 \item{mar_left}{positive float. Extra lines to add to the left margins, where the variable names are written.}
+
+\item{mar_bottom}{positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.}
 
 \item{pos_legend}{Initialized to "topright"}
 
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
 
+\item{legend.cex}{positive float. character expansion factor relative to current par("cex") for \emph{legend} function.}
+
 \item{values_corr}{logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE}
+
+\item{block_Y_name}{character. Initialized to "Block Y".}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }

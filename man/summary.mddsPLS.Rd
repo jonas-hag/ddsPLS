@@ -10,10 +10,6 @@
 \arguments{
 \item{object}{The object of class mddsPLS}
 
-\item{plot_present_indiv}{logical. If \emph{TRUE}, plots a venn diagram of the missing
-individuals in each \emph{X} dataset. If the dataset does not appear, it means that it
- does not have missing values}
-
 \item{main_plot_indiv}{character. Main of the Venn diagram. Initialized to NULL.}
 
 \item{fontsize}{interger. The size of the text, initialized to 10.}

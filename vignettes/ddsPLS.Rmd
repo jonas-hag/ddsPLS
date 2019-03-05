@@ -106,9 +106,9 @@ The following sections detailed the discussed method though those parametization
 
 The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
 
-```{r,fig.height=7,fig.width=10}
+```{r,fig.height=8,fig.width=10}
 plot(mddsPLS_model_reg,vizu = "weights",variance = "Linear",
-     super = T,comp = c(1,2),addY = T,mar_left = 3)
+     super = T,comp = c(1,2),addY = T,mar_left = 3,pos_legend = "topright",reorder_Y = T)
 ```
 
 ##### *Heatmap* representation
@@ -127,10 +127,10 @@ Each variable has been normalized separately. Dendrogram are used in the individ
 
 #### Summary Method
 
-A *summary* method explains more precisely the model. The parameter *plot_present_indiv* is useful only when there are missing values, so here put to **FALSE**.
+A *summary* method explains more precisely the model.
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
-summary(mddsPLS_model_reg,plot_present_indiv = F)
+summary(mddsPLS_model_reg)
 ```
 
 
@@ -240,7 +240,7 @@ The following sections detailed the discussed method though those parametization
 The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
 
 ```{r,fig.height=7,fig.width=10}
-plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_left = 2)
+plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 0.6,reorder_Y = T)
 ```
 
 ##### *Heatmap* representation {.tabset}
@@ -263,10 +263,10 @@ Each variable has been normalized separately. Dendrogram are used in the individ
 
 #### Summary Method
 
-A *summary* method explains more precisely the model. The parameter *plot_present_indiv* is useful only when there are missing values, so here put to **FALSE**.
+A *summary* method explains more precisely the model.
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
-summary(mddsPLS_model_class,plot_present_indiv = F)
+summary(mddsPLS_model_class)
 ```
 
 ### Plot the two first axes 
@@ -350,7 +350,7 @@ This model selects $4$ variables.
 
 ```{r,eval=T}
 model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla")
-plot(model_L0,super = T,addY = T,pos_legend = "right")
+plot(model_L0,super = T,addY = T,pos_legend = "right",reorder_Y = T)
 ```
 
 This model selects $3$ variables.
@@ -394,13 +394,13 @@ The following figure permits to represent the *scaled super-weights* for blocks 
 ##### Super-Component 1
 
 ```{r,fig.height=10,fig.width=10}
-plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,mar_left = 5)
+plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,mar_left = 5,reorder_Y = T)
 ```
 
 ##### Super-Component 2
 
 ```{r,fig.height=10,fig.width=10}
-plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5)
+plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5,reorder_Y = T)
 ```
 
 ##### Super-Component 3
@@ -433,12 +433,8 @@ plot(model_multi_vizu,vizu = "heatmap",comp = 2)
 A *summary* method explains more precisely the model. 
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
-summary(model_multi_vizu,plot_present_indiv = T)
+summary(model_multi_vizu)
 ```
-
-The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Euler Diagramm such as follows
-
-In each area is detailed the number of individuals present. So **Block1** has $5$ missing samples in common with **Matrix2** and **Other_Variables** has $10$ missing samples which are present in the other matrices.
 
 <!-- ## Simulation Model {.tabset} -->
 

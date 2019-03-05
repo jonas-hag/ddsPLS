@@ -3,15 +3,11 @@
 #' This function is easy to use and gives information about the dataset and the model.
 #'
 #' @param object The object of class mddsPLS
-#' @param plot_present_indiv logical. If \emph{TRUE}, plots a venn diagram of the missing
-#'  individuals in each \emph{X} dataset. If the dataset does not appear, it means that it
-#'   does not have missing values
 #' @param main_plot_indiv character. Main of the Venn diagram. Initialized to NULL.
 #' @param fontsize interger. The size of the text, initialized to 10.
 #' @param alpha real between 0 and 1. The transparency parameter.
 #' @param ... Other parameters.
 #'
-#' @importFrom eulerr euler
 #' @importFrom graphics plot
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
@@ -115,18 +111,18 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   print(signif(object$Variances$Linear$VAR_COMPS,2)*100)
   cat("\n")
   cat("\n")
-  cat("          Variance In Common (%) (Frobenius norm)    ");cat("\n")
+  cat("          Variance In Common (%) (RV coefficient)    ");cat("\n")
   cat("-------------------------------------------------------");cat("\n")
   cat("Total Y variance in common with each Super Component");cat("\n")
-  oo <- as.numeric(object$Variances$Frobenius$VAR_SUPER_COMPS_ALL_Y)
-  names(oo) <- names(object$Variances$Frobenius$VAR_SUPER_COMPS_ALL_Y)
+  oo <- as.numeric(object$Variances$RV$VAR_SUPER_COMPS_ALL_Y)
+  names(oo) <- names(object$Variances$RV$VAR_SUPER_COMPS_ALL_Y)
   print(signif(oo,2)*100)
   cat("\n")
   cat("Marginal Y variable variance in common with each Super Component");cat("\n")
-  print(signif(object$Variances$Frobenius$VAR_SUPER_COMPS,2)*100)
+  print(signif(object$Variances$RV$VAR_SUPER_COMPS,2)*100)
   cat("\n")
   cat("Total Y variance in common with each component of each block");cat("\n")
-  print(signif(object$Variances$Frobenius$VAR_COMPS,2)*100)
+  print(signif(object$Variances$RV$VAR_COMPS,2)*100)
   cat("\n")
   cat("\n")
   cat("         Missing value information    ");cat("\n")
@@ -152,27 +148,4 @@ summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
   cat("                                                Hadrien Lorenzo");cat("\n")
   cat("                                 hadrien.lorenzo.2015@gmail.com");cat("\n")
   cat("===============================================================");cat("\n")
-  if(plot_present_indiv){
-    if (!requireNamespace("eulerr", quietly = TRUE)) {
-      stop("Package \"eulerr\" needed for this function to work. Please install it.",
-           call. = FALSE)
-    }else if(requireNamespace("eulerr", quietly = TRUE)){
-      requireNamespace("eulerr")
-      if(K+1<3){
-        colors <- c("black","red","blue")[1:(K)]
-      }else if(K+1>8){
-        colors <- brewer.pal(8, "Dark2")
-        pal <- colorRampPalette(colors)
-        colors <- pal(K+1)[1:K]
-      }else{
-        colors <- brewer.pal(K+1, "Dark2")[1:K]
-      }
-      model_euler <- euler(df_miss)
-      plot(model_euler, counts = T, factor_names=T,
-           quantities=list(fontsize=fontsize),
-           labels=list(fontsize=fontsize),
-           fills=list(fill=colors,alpha=alpha),
-           main=main_plot_indiv)
-    }
-  }
 }

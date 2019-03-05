@@ -5,7 +5,8 @@
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  errMin_imput = 1e-09, maxIter_imput = 50, verbose = FALSE)
+  keep_imp_mod = F, errMin_imput = 1e-09, maxIter_imput = 50,
+  verbose = FALSE, NZV = 1e-09)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
@@ -20,11 +21,15 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
+\item{keep_imp_mod}{integer. Wether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.}
+
 \item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
 \item{maxIter_imput}{Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.}
 
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
+
+\item{NZV}{Float. The floatting value above which the weights are set to 0.}
 }
 \value{
 A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
