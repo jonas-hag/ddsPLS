@@ -7,12 +7,12 @@
 \method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
   mar_left = 2, pos_legend = "topright", legend_names = NULL,
-  values_corr = F, ...)
+  values_corr = F, block_Y_name = "Block Y", ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \emph{weights}, \emph{heatmap}, \emph{correlogram}.}
+\item{vizu}{character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}}
 
 \item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
 
@@ -31,6 +31,8 @@
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
 
 \item{values_corr}{logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE}
+
+\item{block_Y_name}{character. Initialized to "Block Y".}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }
