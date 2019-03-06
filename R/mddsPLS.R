@@ -733,6 +733,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         out_k[,mod$R+r] <- mod$u_t_super[[k]][pos_ordered,r]
       }
       var_selected[[k]] <- out_k
+    }else{
+      var_selected[[k]] <- "No variable selected"
     }
   }
   names_Xs <- names(Xs)
