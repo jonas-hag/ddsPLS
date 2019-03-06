@@ -719,18 +719,18 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     if(length(pos)>0){
       order_values <- order(values[pos],decreasing = T)
       pos_ordered <- pos[order_values]
-      out_k <- matrix(NA,length(pos),2*R)
+      out_k <- matrix(NA,length(pos),2*mod$R)
       coco_Xs_k <- colnames(Xs[[k]])
       if(is.null(coco_Xs_k)){
         rownames(out_k) <- pos_ordered
       }else{
         rownames(out_k) <- coco_Xs_k[pos_ordered]
       }
-      colnames(out_k) <- c(paste("Weights_comp_",1:R,sep=""),
-                           paste("Super_Weights_comp_",1:R,sep=""))
-      for(r in 1:R){
+      colnames(out_k) <- c(paste("Weights_comp_",1:mod$R,sep=""),
+                           paste("Super_Weights_comp_",1:mod$R,sep=""))
+      for(r in 1:mod$R){
         out_k[,r] <- mod$u[[k]][pos_ordered,r]
-        out_k[,R+r] <- mod$u_t_super[[k]][pos_ordered,r]
+        out_k[,mod$R+r] <- mod$u_t_super[[k]][pos_ordered,r]
       }
       var_selected[[k]] <- out_k
     }
