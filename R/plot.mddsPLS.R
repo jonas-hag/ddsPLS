@@ -16,6 +16,7 @@
 #' @param legend.cex positive float. character expansion factor relative to current par("cex") for \emph{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
 #' @param block_Y_name character. Initialized to "Block Y".
+#' @param alpha.Y_sel positive float. factor modifying the opacity alpha; typically in \code{[0,1]} from \code{adjustcolor} function.
 #' @param reorder_Y logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.
 #' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
 #' @param ... Other plotting parameters to affect the plot.
@@ -53,7 +54,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                block=NULL,comp=NULL,variance="Linear",
                mar_left=2,mar_bottom=2,
                pos_legend="topright",legend_names=NULL,legend.cex=1,
-               values_corr=F,block_Y_name="Block Y",
+               values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
                reorder_Y=F,
                ...){
   ## Functions
@@ -355,16 +356,26 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             }
             xlab <- "Variance in Common"
           }
+          y_selected <- which(abs(x$mod$V_super[,r])>0)
           if(reorder_Y){
-            toplot_y <- toplot_y[order(x$Variances$RV$VAR_SUPER_COMPS[,1],decreasing=T)]
+            new_order <- order(x$Variances$RV$VAR_SUPER_COMPS[,1],decreasing=T)
+            toplot_y <- toplot_y[new_order]
+            y_selected <- which(new_order %in% y_selected)
           }
-          xx<-barplot(toplot_y,horiz = F,las=2,col=colors[K+1],ylim = c(0,119),
-                  main=paste("Bloc Y, component ",r,sep=""),
+          if(length(y_selected)>0){
+            cols_y <- rep(colors[K+1],q)
+            cols_y[-y_selected] <- adjustcolor(colors[K+1],alpha.f = alpha.Y_sel)
+            legeds <- c(legend_names_in,paste(block_Y_name,c("selected","not selected")))
+            colOut <- c(colors[c(block_in,K+1)],adjustcolor(colors[K+1],alpha.f = alpha.Y_sel))
+          }else{
+            legeds <- c(legend_names_in,block_Y_name)
+            colOut <- colors[c(block_in,K+1)]
+          }
+          xx<-barplot(toplot_y,horiz = F,las=2,col=cols_y,ylim = c(0,119),
+                  main=paste("Block Y, component ",r,sep=""),
                   ylab=xlab)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
                  col=adjustcolor("black",alpha.f = 0.2))
-          legeds <- c(legend_names_in,block_Y_name)
-          colOut <- colors[c(block_in,K+1)]
           text(xx,toplot_y,labels=round(toplot_y,0),pos=3)
         }else{
           legeds <- legend_names_in

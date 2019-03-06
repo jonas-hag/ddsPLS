@@ -17,6 +17,7 @@ bibliography: bib.bib
 
 ```{r,include=FALSE}
 library(htmltools)
+library(DT)
 tagList(rmarkdown::html_dependency_font_awesome())
 ```
 
@@ -55,13 +56,6 @@ Only two parameters must to be fixed by the user :
  * **$\lambda$** which is the regularization coefficient, $\lambda\in[0,1]$. It can be directly interpreted as the minimum of correlation value under which an interaction between a variable of a block $\mathbf{X}$ and one of the $\mathbf{Y}$ variables is not taken into account.
  
 Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using **doParallel** package, see [@doparalelManual]. This is transparent for the user, which hase just to fix the number of *cpus* to be used. The corresponding parameter is denoted as **NCORES**. If it equals $1$, then no parallelization structure is deployed.
-
-Cross-validation is at the core of the method and the following figure explains, for a $T$-blocks data-set how can be spred the missing values and how is split in $train$ and $test$ parts.
-
-![Structure of a $T$-blocks data set for $train$ (resp. $test$) part, denoted by **o**
-(resp. **b**) symbol. Missing values are symbolized by hatched areas.](missing_structure.png)
- 
- 
 
 To load the **ddsPLS** package:
 ```{r, fig.show='hold',message=FALSE}
@@ -106,22 +100,20 @@ The following sections detailed the discussed method though those parametization
 
 The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
 
-```{r,fig.height=8,fig.width=10}
+```{r,fig.height=10,fig.width=10}
 plot(mddsPLS_model_reg,vizu = "weights",variance = "Linear",
-     super = T,comp = c(1,2),addY = T,mar_left = 3,pos_legend = "topright",reorder_Y = T)
+     super = T,comp = c(1,2),addY = T,mar_left = 3,mar_bottom = 3,
+     pos_legend = "topright",reorder_Y = T,legend.cex = 1.5)
 ```
 
 ##### *Heatmap* representation
 
-Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first one here
 
 ```{r,fig.height=7,fig.width=10}
 plot(mddsPLS_model_reg,vizu = "heatmap",comp = 1)
 ```
 
-```{r,fig.height=7,fig.width=10}
-plot(mddsPLS_model_reg,vizu = "heatmap",comp = 2)
-```
 
 Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
 
@@ -133,6 +125,17 @@ A *summary* method explains more precisely the model.
 summary(mddsPLS_model_reg)
 ```
 
+
+
+#### Get selected variables
+
+Output *var_selected* permits to get the selected varaibles per block.
+
+This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience.
+
+```{r}
+datatable(signif(mddsPLS_model_reg$var_selected[[1]],2))
+```
 
 ### Cross Validation {.tabset}
 
@@ -166,7 +169,8 @@ A *plot* method plots the results. *plot_mean* permits to add the mean of the **
 ##### Using $\lambda$ paradigm
 
 ```{r, fig.show='hold',message=FALSE,eval=T,fig.width=12, fig.height=12}
-plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(-0.3,1.1),alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y))
+plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(0,1.1),
+     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y))
 ```
 
 Minimum for $\lambda\approx0.85$.
@@ -240,23 +244,17 @@ The following sections detailed the discussed method though those parametization
 The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
 
 ```{r,fig.height=7,fig.width=10}
-plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 0.6,reorder_Y = T)
+plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 1,reorder_Y = T)
 ```
 
 ##### *Heatmap* representation {.tabset}
 
-Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example.
 
 ##### Component 1
 
 ```{r,fig.height=7,fig.width=10}
 plot(mddsPLS_model_class,vizu = "heatmap",comp = 1)
-```
-
-##### Component 2
-
-```{r,fig.height=7,fig.width=10}
-plot(mddsPLS_model_class,vizu = "heatmap",comp = 2)
 ```
 
 Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
@@ -267,6 +265,17 @@ A *summary* method explains more precisely the model.
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
 summary(mddsPLS_model_class)
+```
+
+
+#### Get selected variables
+
+Output *var_selected* permits to get the selected varaibles per block.
+
+This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience.
+
+```{r}
+datatable(signif(mddsPLS_model_class$var_selected[[1]],2))
 ```
 
 ### Plot the two first axes 
@@ -414,7 +423,7 @@ plot(model_multi_vizu,vizu = "weights",super = T,comp=3 ,addY = T,mar_left = 5,m
 
 #### *Heatmap* representation {.tabset}
 
-Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second her.
+Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example.
 
 Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
 
@@ -424,19 +433,24 @@ Each variable has been normalized separately. Dendrogram are used in the individ
 plot(model_multi_vizu,vizu = "heatmap",comp = 1)
 ```
 
-##### Super-Component 2
-
-```{r}
-plot(model_multi_vizu,vizu = "heatmap",comp = 2)
-```
-
-
 ### Summary Method
 
 A *summary* method explains more precisely the model. 
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
 summary(model_multi_vizu)
+```
+
+### Get selected variables
+
+Output *var_selected* permits to get the selected varaibles per block.
+
+This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience.
+
+Here is represented its value for the first block
+
+```{r}
+datatable(signif(model_multi_vizu$var_selected[[1]],2))
 ```
 
 <!-- ## Simulation Model {.tabset} -->
@@ -770,9 +784,5 @@ summary(model_multi_vizu)
 <!-- <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **The Euler diagram problem becomes hard when the number of sets is to large and in those contexts can be wrong.** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i> -->
 
 <!-- Here blocks 1 and 2 are not selected and no more than $21$ variables is used per block. -->
-
-
-
-
 
 # References

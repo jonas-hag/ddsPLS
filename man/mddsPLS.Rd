@@ -32,7 +32,7 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
 }
 \value{
-A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected varaibles, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected varaibles in every \emph{R} dimension.
+A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
 }
 \description{
 This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-
@@ -54,8 +54,8 @@ Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(t
 data("liver.toxicity")
 X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
-mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
-summary(mddsPLS_model_reg)
+#mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#summary(mddsPLS_model_reg)
 
 # Multi-block example :
 ## Classification example :
@@ -65,8 +65,8 @@ X <- scale(X[,which(apply(X,2,sd)>0)])
 Xs <- list(X[,1:1000],X[,-(1:1000)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.95,R = 2,mode = "clas",verbose = TRUE)
-summary(mddsPLS_model_class)
+#mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.95,R = 2,mode = "clas",verbose = TRUE)
+#summary(mddsPLS_model_class)
 
 ## Regression example :
 data("liver.toxicity")
@@ -74,8 +74,8 @@ X <- scale(liver.toxicity$gene)
 Xs <- list(X[,1:1910],X[,-(1:1910)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- scale(liver.toxicity$clinic)
-mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
-summary(mddsPLS_model_reg)
+#mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#summary(mddsPLS_model_reg)
 }
 \seealso{
 \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}

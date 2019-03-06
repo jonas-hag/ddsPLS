@@ -18,6 +18,6 @@ ByteCompile: true
 RoxygenNote: 6.1.1
 Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot,eulerr
 RdMacros: Rdpack
-Suggests: knitr,rmarkdown,htmltools
+Suggests: knitr,rmarkdown,htmltools,DT
 Depends: R (>= 2.10)
 VignetteBuilder: knitr

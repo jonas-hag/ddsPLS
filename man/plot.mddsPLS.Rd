@@ -8,7 +8,7 @@
   addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
   mar_left = 2, mar_bottom = 2, pos_legend = "topright",
   legend_names = NULL, legend.cex = 1, values_corr = F,
-  block_Y_name = "Block Y", reorder_Y = F, ...)
+  block_Y_name = "Y", alpha.Y_sel = 0.4, reorder_Y = F, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -38,6 +38,8 @@
 \item{values_corr}{logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE}
 
 \item{block_Y_name}{character. Initialized to "Block Y".}
+
+\item{alpha.Y_sel}{positive float. factor modifying the opacity alpha; typically in \code{[0,1]} from \code{adjustcolor} function.}
 
 \item{reorder_Y}{logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.}
 
