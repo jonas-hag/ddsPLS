@@ -27,8 +27,8 @@
 #' X4<-X[,31:40]
 #' Xs <- list(x1=X1,x2=X2,aaaa=X3,X4)
 #' # object <- mddsPLS(Xs = Xs,Y = Y[,1],lambda=0.1,R = 1, mode = "reg",verbose = TRUE)
-#' # summary(object,plot_present_indiv = T)
-summary.mddsPLS <- function (object,plot_present_indiv=TRUE,
+#' # summary(object)
+summary.mddsPLS <- function (object,
                              main_plot_indiv=NULL,
                              fontsize=10,alpha=0.7,
                              ...)

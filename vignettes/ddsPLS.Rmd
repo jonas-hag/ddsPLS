@@ -349,9 +349,9 @@ This model selects $4$ variables.
 
 #### Using $L_0$ paradigm
 
-```{r,eval=T}
+```{r,eval=T,fig.width=10,fig.height=6}
 model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla")
-plot(model_L0,super = T,addY = T,pos_legend = "right",reorder_Y = T)
+plot(model_L0,super = T,addY = T,pos_legend = "topright",reorder_Y = T,legend.cex = 1)
 ```
 
 This model selects $3$ variables.
@@ -394,20 +394,22 @@ The following figure permits to represent the *scaled super-weights* for blocks 
 
 ##### Super-Component 1
 
-```{r,fig.height=10,fig.width=10}
-plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,mar_left = 5,reorder_Y = T)
+```{r,fig.height=8,fig.width=13}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,
+     mar_left = 5,mar_bottom = 3,reorder_Y = T)
 ```
 
 ##### Super-Component 2
 
-```{r,fig.height=10,fig.width=10}
-plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5,reorder_Y = T)
+```{r,fig.height=8,fig.width=13}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5,
+     mar_bottom = 3,reorder_Y = T)
 ```
 
 ##### Super-Component 3
 
-```{r,fig.height=10,fig.width=10}
-plot(model_multi_vizu,vizu = "weights",super = T,comp=3 ,addY = T,mar_left = 5)
+```{r,fig.height=8,fig.width=13}
+plot(model_multi_vizu,vizu = "weights",super = T,comp=3 ,addY = T,mar_left = 5,mar_bottom=3,reorder_Y = T)
 ```
 
 #### *Heatmap* representation {.tabset}

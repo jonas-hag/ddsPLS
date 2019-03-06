@@ -22,7 +22,7 @@
 #'
 #' @return The plot visualisation
 #'
-#' @importFrom graphics abline arrows barplot legend par
+#' @importFrom graphics abline arrows barplot legend par text
 #' @importFrom stats heatmap model.matrix
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette adjustcolor
@@ -356,9 +356,9 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             xlab <- "Variance in Common"
           }
           if(reorder_Y){
-            toplot_y <- sort(toplot_y,decreasing=T)
+            toplot_y <- toplot_y[order(x$Variances$RV$VAR_SUPER_COMPS[,1],decreasing=T)]
           }
-          xx<-barplot(toplot_y,horiz = F,las=2,col=colors[K+1],ylim = c(0,110),
+          xx<-barplot(toplot_y,horiz = F,las=2,col=colors[K+1],ylim = c(0,119),
                   main=paste("Bloc Y, component ",r,sep=""),
                   ylab=xlab)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),

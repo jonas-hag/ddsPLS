@@ -4,8 +4,8 @@
 \alias{summary.mddsPLS}
 \title{The summary method of the \emph{mddsPLS} function.}
 \usage{
-\method{summary}{mddsPLS}(object, plot_present_indiv = TRUE,
-  main_plot_indiv = NULL, fontsize = 10, alpha = 0.7, ...)
+\method{summary}{mddsPLS}(object, main_plot_indiv = NULL,
+  fontsize = 10, alpha = 0.7, ...)
 }
 \arguments{
 \item{object}{The object of class mddsPLS}
@@ -32,7 +32,7 @@ X3<-X[,21:30];X3[4:20,]<-NA
 X4<-X[,31:40]
 Xs <- list(x1=X1,x2=X2,aaaa=X3,X4)
 # object <- mddsPLS(Xs = Xs,Y = Y[,1],lambda=0.1,R = 1, mode = "reg",verbose = TRUE)
-# summary(object,plot_present_indiv = T)
+# summary(object)
 }
 \seealso{
 \code{\link{mddsPLS}}

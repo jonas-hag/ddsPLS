@@ -357,7 +357,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
-#' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}.
+#' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
 #'
 #' @export
 #'
@@ -622,7 +622,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         err <- 2
         iter <- 0
         ## Covariate for imputation is always the same : the projected values of Y on the initial weights
-        S_super_obj <- Y#mod_0$S_super
+        #S_super_obj <- Y#mod_0$S_super
+        if(mode!="reg"){
+          S_super_obj <- Y_class_dummies
+        }else{
+          S_super_obj <- Y
+        }
         while(iter<maxIter_imput&err>errMin_imput){
           iter <- iter + 1
           for(k in 1:K){
@@ -709,7 +714,26 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   mod$mu_y <- mu_y
   var_selected <- list()
   for(k in 1:K){
-    var_selected[[k]] <- which(rowSums(abs(mod$u[[k]]))>NZV)
+    values <- rowSums((mod$u_t_super[[k]])^2)
+    pos <- which(values>NZV)
+    if(length(pos)>0){
+      order_values <- order(values[pos],decreasing = T)
+      pos_ordered <- pos[order_values]
+      out_k <- matrix(NA,length(pos),2*R)
+      coco_Xs_k <- colnames(Xs[[k]])
+      if(is.null(coco_Xs_k)){
+        rownames(out_k) <- pos_ordered
+      }else{
+        rownames(out_k) <- coco_Xs_k[pos_ordered]
+      }
+      colnames(out_k) <- c(paste("Weights_comp_",1:R,sep=""),
+                           paste("Super_Weights_comp_",1:R,sep=""))
+      for(r in 1:R){
+        out_k[,r] <- mod$u[[k]][pos_ordered,r]
+        out_k[,R+r] <- mod$u_t_super[[k]][pos_ordered,r]
+      }
+      var_selected[[k]] <- out_k
+    }
   }
   names_Xs <- names(Xs)
   if(length(names_Xs)!=0){
