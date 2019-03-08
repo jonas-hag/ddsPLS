@@ -54,7 +54,6 @@ NumericMatrix scaleC(NumericMatrix x) {
 
 // [[Rcpp::export]]
 NumericMatrix mmultC(NumericMatrix m1, NumericMatrix m2){
-  if (m1.ncol() != m2.nrow()) stop ("Incompatible matrix dimensions");
   NumericMatrix out(m1.nrow(),m2.ncol());
   NumericVector rm1, cm2;
   for (size_t i = 0; i < m1.nrow(); ++i) {

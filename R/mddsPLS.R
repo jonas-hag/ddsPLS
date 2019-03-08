@@ -113,12 +113,15 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     for(k in 1:K){
       ii <- cum_ps[k]
       if(is.null(id_na)){
-        c_k <- abs(cor(Y,Xs[[k]]))
+        c_k <- suppressWarnings(abs(cor(Y,Xs[[k]])))
+        c_k[which(is.na(c_k))] <- 0
       }else{
         if(length(id_na[[k]])>0){
-          c_k <- abs(cor(Y[-id_na[[k]],,drop=F],Xs[[k]][-id_na[[k]],,drop=F]))
+          suppressWarnings(c_k <- abs(cor(Y[-id_na[[k]],,drop=F],Xs[[k]][-id_na[[k]],,drop=F])))
+          c_k[which(is.na(c_k))] <- 0
         }else{
-          c_k <- abs(cor(Y,Xs[[k]]))
+          suppressWarnings(c_k <- abs(cor(Y,Xs[[k]])))
+          c_k[which(is.na(c_k))] <- 0
         }
       }
       all_maxs[ii+1:(ps[k])] <- apply(c_k,2,max)
@@ -136,7 +139,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     lambda_in <- rep(lambda_L0,K)
   }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
-    M0 <- cor(Y,Xs[[k]])
+    M0 <- suppressWarnings(cor(Y,Xs[[k]]))
+    M0[which(is.na(M0))] <- 0
     M <- abs(M0) - l[k]
     M[which(M<0)] <- 0
     M <- sign(M0)*M
@@ -618,9 +622,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       ps_init <- unlist(lapply(Xs,ncol))
       sum_ps_init <- sum(ps_init);cum_ps_init <- cumsum(c(0,ps_init))
       if(mode=="reg"){
-        all_maxs_init <- apply(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")),2,max)
+        coco_i <- suppressWarnings(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")))
+        coco_i[which(is.na(coco_i))] <- 0
+        all_maxs_init <- apply(coco_i,2,max)
       }else{
-        all_maxs_init <- apply(abs(cor(Y_class_dummies,do.call(cbind,Xs),use = "pairwise")),2,max)
+        coco_i <- suppressWarnings(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")))
+        coco_i[which(is.na(coco_i))] <- 0
+        all_maxs_init <- apply(coco_i,2,max)
       }
       lambda_init <- sort(all_maxs_init,decreasing = T)[min(sum_ps_init,1+L0)]
     }else{
