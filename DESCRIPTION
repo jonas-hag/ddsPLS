@@ -16,8 +16,9 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 RoxygenNote: 6.1.1
-Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot
+Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot,Rcpp (>= 0.12.18)
 RdMacros: Rdpack
 Suggests: knitr,rmarkdown,htmltools,DT
 Depends: R (>= 2.10)
 VignetteBuilder: knitr
+LinkingTo: Rcpp

@@ -5,8 +5,8 @@
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  keep_imp_mod = F, errMin_imput = 1e-09, maxIter_imput = 50,
-  verbose = FALSE, NZV = 1e-09)
+  keep_imp_mod = FALSE, errMin_imput = 1e-09, maxIter_imput = 50,
+  verbose = FALSE, NZV = 1e-09, getVariances = TRUE)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
@@ -30,6 +30,8 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
+
+\item{getVariances}{Logical. Wether or not to compute variances.}
 }
 \value{
 A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
