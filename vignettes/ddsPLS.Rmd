@@ -133,10 +133,10 @@ summary(mddsPLS_model_reg)
 
 Output *var_selected* permits to get the selected varaibles per block.
 
-This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience.
+This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way.
 
 ```{r}
-signif(mddsPLS_model_reg$var_selected[[1]],2)
+mddsPLS_model_reg$var_selected[[1]]
 ```
 
 ### Cross Validation {.tabset}
@@ -214,156 +214,161 @@ The **Cross-Validation results** is a matrix with **4** columns and **N** rows, 
 
 
 
-## Classification case {.tabset}
+<!-- ## Classification case {.tabset} -->
 
-### Build a model {.tabset}
+<!-- ### Build a model {.tabset} -->
 
-The data set penicilliumYES has 36 rows and 3754 columns, see @clemmensen2007method The variables are 1st order statistics from multi-spectral images of three species of Penicillium fungi: Melanoconidium, Polonicum, and Venetum. These are the data used in the Clemmemsen et al "Sparse Discriminant Analysis" paper. Therefore the structure is, where $\mathbf{Y}$ is the dummy matrix of the $3$ classes :
-$$\mathbf{X}\in\mathbb{R}^{36\times3754},\mathbf{Y}\in\mathbb{R}^{36\times3}$$
+<!-- The data set penicilliumYES has 36 rows and 3754 columns, see @clemmensen2007method The variables are 1st order statistics from multi-spectral images of three species of Penicillium fungi: Melanoconidium, Polonicum, and Venetum. These are the data used in the Clemmemsen et al "Sparse Discriminant Analysis" paper. Therefore the structure is, where $\mathbf{Y}$ is the dummy matrix of the $3$ classes : -->
+<!-- $$\mathbf{X}\in\mathbb{R}^{36\times3754},\mathbf{Y}\in\mathbb{R}^{36\times3}$$ -->
 
-```{r, fig.show='hold',fig.width=7, fig.height=5,message=FALSE,eval=T}
-data("penicilliumYES")
-X <- penicilliumYES$X
-X <- scale(X[,which(apply(X,2,sd)>0)])
-classes <- c("Melanoconidium","Polonicum","Venetum")
-Y <- as.factor(unlist(lapply(classes,
-                             function(tt){rep(tt,12)})))
-mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.956,R = 2,
-                               mode = "clas",verbose = TRUE)
-```
+<!-- ```{r, fig.show='hold',fig.width=7, fig.height=5,message=FALSE,eval=T} -->
+<!-- data("penicilliumYES") -->
+<!-- X <- penicilliumYES$X -->
+<!-- X <- scale(X[,which(apply(X,2,sd)>0)]) -->
+<!-- classes <- c("Melanoconidium","Polonicum","Venetum") -->
+<!-- Y <- as.factor(unlist(lapply(classes, -->
+<!--                              function(tt){rep(tt,12)}))) -->
+<!-- mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.956,R = 2, -->
+<!--                                mode = "clas",verbose = TRUE) -->
+<!-- ``` -->
 
-#### Plot Method {.tabset}
+<!-- #### Plot Method {.tabset} -->
 
-The **Plot** mehtod permits many types of representation. Among which
+<!-- The **Plot** mehtod permits many types of representation. Among which -->
 
- * *weights* which shows all the weights under barplot representations. If **super** is set to **TRUE**, then the **super-weights** are represented. In the mono-block case, **super-weights** are equal to **weights**.
- * *heatmap* which shows the selected variables (for $\mathbf{X}$ and $\mathbf{Y}$) for the all individuals.
+<!--  * *weights* which shows all the weights under barplot representations. If **super** is set to **TRUE**, then the **super-weights** are represented. In the mono-block case, **super-weights** are equal to **weights**. -->
+<!--  * *heatmap* which shows the selected variables (for $\mathbf{X}$ and $\mathbf{Y}$) for the all individuals. -->
 
-The following sections detailed the discussed method though those parametizations.
- 
-##### *Super-Weight* representation
+<!-- The following sections detailed the discussed method though those parametizations. -->
 
-The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names.
+<!-- ##### *Super-Weight* representation -->
 
-```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 1,reorder_Y = T)
-```
+<!-- The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names. -->
 
-##### *Heatmap* representation {.tabset}
+<!-- ```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 1,reorder_Y = T) -->
+<!-- ``` -->
 
-Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example.
+<!-- ##### *Heatmap* representation {.tabset} -->
 
-```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(mddsPLS_model_class,vizu = "heatmap",comp = 1)
-```
+<!-- Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example. -->
 
-Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities.
+<!-- ```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- plot(mddsPLS_model_class,vizu = "heatmap",comp = 1) -->
+<!-- ``` -->
 
-#### Summary Method
+<!-- Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities. -->
 
-A *summary* method explains more precisely the model.
+<!-- #### Summary Method -->
 
-```{r, fig.show='hold',message=FALSE,eval=T}
-summary(mddsPLS_model_class)
-```
+<!-- A *summary* method explains more precisely the model. -->
 
-
-#### Get selected variables
-
-Output *var_selected* permits to get the selected varaibles per block.
-
-This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience.
-
-```{r}
-signif(mddsPLS_model_class$var_selected[[1]],2)
-```
-
-### Plot the two first axes 
-
-```{r, fig.show='hold',fig.width=10, fig.height=5,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(mddsPLS_model_class$mod$T_super,col=Y,pch=as.numeric(Y)+15,cex=2,
-     xlab="1st X component, 2 var. selected",
-     ylab="2nd X component, 2 var. selected")
-legend(-2,0,legend=classes,col=1:3,pch=15+(1:3),box.lty=0,y.intersp=2)
-```
-
-### Cross-validation
-
-The cross-validation process is started in a fold-fixed design, because each sample is repeated $3$ times. In that sense this is a leave-one-out process. $R=2$ fixes the number of dimensions to 2. **NCORES** fixes the number of cores in the paralellized process, **n\_lambda** fixes the number of regularization terms to be tested.
-
-```{r,fig.width=7, fig.height=6,message=FALSE,eval=F}
-n_lambda <- 50
-NCORES <- 7
-res_cv_class <- perf_mddsPLS(X,Y,R = 2,lambda_min=0.95,n_lambda=n_lambda,
-                             mode = "clas",NCORES = NCORES,
-                             fold_fixed = rep(1:12,3))
-```
-
-The results can be plotted thanks to the next figure which uses the **plot** method.
-
-```{r,echo=F}
-# save(res_cv_class,file="res_cv_class_noXs.RData")
-load(file="res_cv_class_noXs.RData")
-res_cv_class$Xs <- list(X)
-```
-
-```{r,fig.width=10, fig.height=6,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(res_cv_class,legend_names = levels(Y),pos_legend="bottomleft")
-```
-
-Both of the vertical lines set the position of the sparsest models giving the maximum accuracy glogally, right one, and in mean, left one.
-
-The best suited model is chosen for $\lambda\approx0.957$. As the top ruller explains, that model selects $4$ different variables. 
-
-In the following we have performed another cross-validation but the $\lambda$ paramter is not given as an input of the method. In fact we have decided to give a parameter $L_0$ corresponding to the maximum number of variables to be selected in the final model.
-
-```{r,eval=F}
-NCORES <- 7
-res_cv_class_L0 <- perf_mddsPLS(X,Y,R = 2,L0s = 1:4,
-                             mode = "clas",NCORES = NCORES,
-                             fold_fixed = rep(1:12,3))
-```
-
-```{r,eval=T,echo=F}
-# save(res_cv_class_L0,file="res_cv_class_L0_noXs.RData")
-load(file="res_cv_class_L0_noXs.RData")
-res_cv_class_L0$Xs <- list(X)
-```
-
-Which can simply plotted with the following command
-
-```{r,eval=T,fig.height=6,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(res_cv_class_L0,legend_names = levels(Y),
-     pos_legend="bottomright",plot_mean = T)
-```
-
-This synthaxe is particularly well suited when the number of samples is low and so the $(X_j,Y_j)$ are sensible to down-sampling.
-
-It is now clear that the best model is reached for $L_0=3$.
-
-### Optimal Models {.tabset}
-
-In [@clemmensen2011sparse], only $2$ variableds are selected. 
-
-#### Using $\lambda$ paradigm
+<!-- ```{r, fig.show='hold',message=FALSE,eval=T} -->
+<!-- summary(mddsPLS_model_class) -->
+<!-- ``` -->
 
 
+<!-- #### Get selected variables -->
 
-```{r,eval=T,dpi=DPI,out.width= out.width,out.height=out.height}
-model_lambda <- mddsPLS(X,Y,R = 2,lambda = 0.957,mode = "cla" )
-plot(model_lambda,super = T)
-```
+<!-- Output *var_selected* permits to get the selected varaibles per block. -->
 
-This model selects $4$ variables.
+<!-- This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience. -->
 
-#### Using $L_0$ paradigm
+<!-- ```{r} -->
+<!-- signif(mddsPLS_model_class$var_selected[[1]],2) -->
+<!-- ``` -->
 
-```{r,eval=T,fig.width=10,fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height}
-model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla")
-plot(model_L0,super = T,addY = T,pos_legend = "topright",reorder_Y = T,legend.cex = 1)
-```
+<!-- ### Plot the two first axes  -->
 
-This model selects $3$ variables.
+<!-- ```{r, fig.show='hold',fig.width=10, fig.height=5,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- plot(mddsPLS_model_class$mod$T_super,col=Y,pch=as.numeric(Y)+15,cex=2, -->
+<!--      xlab="1st X component, 2 var. selected", -->
+<!--      ylab="2nd X component, 2 var. selected") -->
+<!-- legend(-2,0,legend=classes,col=1:3,pch=15+(1:3),box.lty=0,y.intersp=2) -->
+<!-- ``` -->
+
+<!-- ### Cross-validation -->
+
+<!-- The cross-validation process is started in a fold-fixed design, because each sample is repeated $3$ times. In that sense this is a leave-one-out process. $R=2$ fixes the number of dimensions to 2. **NCORES** fixes the number of cores in the paralellized process, **n\_lambda** fixes the number of regularization terms to be tested. -->
+
+<!-- ```{r,fig.width=7, fig.height=6,message=FALSE,eval=F} -->
+<!-- n_lambda <- 50 -->
+<!-- NCORES <- 7 -->
+<!-- res_cv_class <- perf_mddsPLS(X,Y,R = 2,lambda_min=0.95,n_lambda=n_lambda, -->
+<!--                              mode = "clas",NCORES = NCORES, -->
+<!--                              fold_fixed = rep(1:12,3)) -->
+<!-- ``` -->
+
+<!-- The results can be plotted thanks to the next figure which uses the **plot** method. -->
+
+<!-- ```{r,echo=F} -->
+<!-- # save(res_cv_class,file="res_cv_class_noXs.RData") -->
+<!-- load(file="res_cv_class_noXs.RData") -->
+<!-- res_cv_class$Xs <- list(X) -->
+<!-- ``` -->
+
+<!-- ```{r,fig.width=10, fig.height=6,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- plot(res_cv_class,legend_names = levels(Y),pos_legend="bottomleft") -->
+<!-- ``` -->
+
+<!-- Both of the vertical lines set the position of the sparsest models giving the maximum accuracy glogally, right one, and in mean, left one. -->
+
+<!-- The best suited model is chosen for $\lambda\approx0.957$. As the top ruller explains, that model selects $4$ different variables.  -->
+
+<!-- In the following we have performed another cross-validation but the $\lambda$ paramter is not given as an input of the method. In fact we have decided to give a parameter $L_0$ corresponding to the maximum number of variables to be selected in the final model. -->
+
+<!-- ```{r,eval=F} -->
+<!-- NCORES <- 7 -->
+<!-- res_cv_class_L0 <- perf_mddsPLS(X,Y,R = 2,L0s = 1:4, -->
+<!--                              mode = "clas",NCORES = NCORES, -->
+<!--                              fold_fixed = rep(1:12,3)) -->
+<!-- ``` -->
+
+<!-- ```{r,eval=T,echo=F} -->
+<!-- # save(res_cv_class_L0,file="res_cv_class_L0_noXs.RData") -->
+<!-- load(file="res_cv_class_L0_noXs.RData") -->
+<!-- res_cv_class_L0$Xs <- list(X) -->
+<!-- ``` -->
+
+<!-- Which can simply plotted with the following command -->
+
+<!-- ```{r,eval=T,fig.height=6,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- plot(res_cv_class_L0,legend_names = levels(Y), -->
+<!--      pos_legend="bottomright",plot_mean = T) -->
+<!-- ``` -->
+
+<!-- This synthaxe is particularly well suited when the number of samples is low and so the $(X_j,Y_j)$ are sensible to down-sampling. -->
+
+<!-- It is now clear that the best model is reached for $L_0=3$. -->
+
+<!-- ### Optimal Models {.tabset} -->
+
+<!-- In [@clemmensen2011sparse], only $2$ variableds are selected.  -->
+
+<!-- #### Using $\lambda$ paradigm -->
+
+
+
+<!-- ```{r,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- model_lambda <- mddsPLS(X,Y,R = 2,lambda = 0.957,mode = "cla" ) -->
+<!-- plot(model_lambda,super = T) -->
+<!-- ``` -->
+
+<!-- This model selects $4$ variables. -->
+
+<!-- #### Using $L_0$ paradigm -->
+
+<!-- ```{r,eval=T,fig.width=10,fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height} -->
+<!-- model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla") -->
+<!-- plot(model_L0,super = T,addY = T,pos_legend = "topright",reorder_Y = T,legend.cex = 1) -->
+<!-- ``` -->
+
+<!-- This model selects $3$ variables. -->
+
+
+
+
+
 
 # Multi-block
 
@@ -446,7 +451,7 @@ This is a list filled with \code{2R}-column matrices corresponding to the non nu
 Here is represented its value for the first block
 
 ```{r}
-signif(model_multi_vizu$var_selected[[1]],2)
+model_multi_vizu$var_selected[[1]]
 ```
 
 <!-- ## Simulation Model {.tabset} -->

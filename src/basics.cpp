@@ -31,7 +31,7 @@ NumericVector  sdC(NumericMatrix x) {
   int n = x.ncol();
   NumericVector out (n);
   for(int i = 0; i < n; ++i) {
-    out[i] = sd(x(_,i));
+    out[i] = sd(x(_,i))*sqrt((n-1)/n);
   }
   return out;
 }
@@ -43,7 +43,7 @@ NumericMatrix scaleC(NumericMatrix x) {
 
   for (int j = 0; j < ncol; j++) {
     NumericVector col_j = x(_,j);
-    double sd_out=sd(col_j);
+    double sd_out=sd(col_j)*sqrt((nrow-1)/nrow);
     double mu=mean(col_j);
     for(int i = 0; i < nrow; ++i) {
       out(i,j) = (col_j[i]-mu)/sd_out;
