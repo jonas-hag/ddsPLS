@@ -134,10 +134,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     rownames(my_col) <- "Block"
     main <- paste("Heatmap for component",comp_in)
     if(variance=="Linear"){
-      var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS[comp_in],2)*100
+      var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[comp_in],2)*100
       main <- paste(main," (",var_here,"% var. expl.)",sep="")
     }else{
-      var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS[comp_in],2)*100
+      var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS_ALL_Y[comp_in],2)*100
       main <- paste(main," (RV=",var_here/100,")",sep="")
     }
     if(!out){
