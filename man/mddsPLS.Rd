@@ -21,7 +21,7 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
-\item{keep_imp_mod}{integer. Wether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.}
+\item{keep_imp_mod}{Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.}
 
 \item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
@@ -31,7 +31,7 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
 
-\item{getVariances}{Logical. Wether or not to compute variances.}
+\item{getVariances}{Logical. Whether or not to compute variances.}
 }
 \value{
 A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.

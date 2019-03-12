@@ -368,13 +368,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
-#' @param keep_imp_mod integer. Wether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.
+#' @param keep_imp_mod Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.
 #' @param mode A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
-#' @param getVariances Logical. Wether or not to compute variances.
+#' @param getVariances Logical. Whether or not to compute variances.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
 #'
