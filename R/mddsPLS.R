@@ -58,7 +58,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       colnames(a_) <- levels(as.factor(a))
       a <- a_
     }
-    scaleC(a)
+    scaleRcpp(a)
   }
 
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
@@ -90,7 +90,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   }
   else{
     Y_df <- data.frame(Y)
-    Y <- my_scale(model.matrix( ~ Y - 1, data=Y_df))
+    momo <- model.matrix( ~ Y - 1, data=Y_df)
+    attr(momo,"contrasts")=attr(momo,"assign")<-NULL
+    Y <- my_scale(momo)
   }
   mu_y <- colMeans(Y)
   sd_y <- sdC(Y)#apply(Y,2,function(y){sd(y)*sqrt((n-1)/n)})
@@ -436,7 +438,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       colnames(a_) <- levels(as.factor(a))
       a <- a_
     }
-    scaleC(a)
+    scaleRcpp(a)
   }
 
   get_variances <- function(x,std_Y=T){

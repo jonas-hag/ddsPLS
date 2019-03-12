@@ -1,49 +1,23 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
-
-#include <Rcpp.h>
-using namespace Rcpp;
-
-// // [[Rcpp::export]]
-// NumericVector  standarC(NumericVector ys) {
-//   int n             = ys.size();
-//   double mu         = mean(ys);
-//   double sd_out     = sd(ys);
-//   NumericVector out = clone(ys);
-//   for(int i = 0; i < n; ++i) {
-//     out[i] = mu/sd_out;
-//   }
-//   return ys/sd_out-out;
-// }
-
 // [[Rcpp::export]]
 NumericVector  sdC(NumericMatrix x) {
   int n = x.ncol();
   NumericVector out (n);
   for(int i = 0; i < n; ++i) {
-    out[i] = sd(x(_,i))*sqrt((n-1)/n);
+    out[i] = sd(x(_,i))*sqrt((n-1.0)/n);
   }
   return out;
 }
 
 // [[Rcpp::export]]
-NumericMatrix scaleC(NumericMatrix x) {
+NumericMatrix scaleRcpp(NumericMatrix x) {
   int nrow = x.nrow(), ncol = x.ncol();
   NumericMatrix out = clone(x);
-
   for (int j = 0; j < ncol; j++) {
     NumericVector col_j = x(_,j);
-    double sd_out=sd(col_j)*sqrt((nrow-1)/nrow);
+    double sd_out=sd(col_j)*sqrt((nrow-1.0)/nrow);
     double mu=mean(col_j);
     for(int i = 0; i < nrow; ++i) {
       out(i,j) = (col_j[i]-mu)/sd_out;

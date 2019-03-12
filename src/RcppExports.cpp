@@ -16,14 +16,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// scaleC
-NumericMatrix scaleC(NumericMatrix x);
-RcppExport SEXP _ddsPLS_scaleC(SEXP xSEXP) {
+// scaleRcpp
+NumericMatrix scaleRcpp(NumericMatrix x);
+RcppExport SEXP _ddsPLS_scaleRcpp(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(scaleC(x));
+    rcpp_result_gen = Rcpp::wrap(scaleRcpp(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -42,7 +42,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ddsPLS_sdC", (DL_FUNC) &_ddsPLS_sdC, 1},
-    {"_ddsPLS_scaleC", (DL_FUNC) &_ddsPLS_scaleC, 1},
+    {"_ddsPLS_scaleRcpp", (DL_FUNC) &_ddsPLS_scaleRcpp, 1},
     {"_ddsPLS_mmultC", (DL_FUNC) &_ddsPLS_mmultC, 2},
     {NULL, NULL, 0}
 };

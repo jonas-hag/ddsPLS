@@ -5,8 +5,8 @@ sdC <- function(x) {
     .Call('_ddsPLS_sdC', PACKAGE = 'ddsPLS', x)
 }
 
-scaleC <- function(x) {
-    .Call('_ddsPLS_scaleC', PACKAGE = 'ddsPLS', x)
+scaleRcpp <- function(x) {
+    .Call('_ddsPLS_scaleRcpp', PACKAGE = 'ddsPLS', x)
 }
 
 mmultC <- function(m1, m2) {
