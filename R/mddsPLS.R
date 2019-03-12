@@ -563,6 +563,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   }
   K <- length(Xs)
   ps <- lapply(Xs,ncol)
+  for(ii in 1:K){
+    if(is.data.frame(Xs[[ii]])){
+      Xs[[ii]] <- as.matrix(Xs[[ii]])
+    }
+  }
   Y_0 <- Y
   if(!(is.matrix(Y)|is.data.frame(Y))){
     Y <- as.matrix(Y)
@@ -602,7 +607,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     if(length(pos_na_ii)>0){
       out <- sdC(na.omit(Xs[[ii]]))#apply(na.omit(Xs[[ii]]),2,sd)*sqrt((n-1-length(pos_na_ii))/(n-length(pos_na_ii)))
     }else{
-      out <- sdC(Xs[[ii]])#apply(Xs[[ii]],2,sd)*sqrt((n-1)/(n))
+      out <- sdC(Xs[[ii]])
+      #apply(Xs[[ii]],2,sd)*sqrt((n-1)/(n))
     }
     out
   })
@@ -626,7 +632,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         coco_i[which(is.na(coco_i))] <- 0
         all_maxs_init <- apply(coco_i,2,max)
       }else{
-        coco_i <- suppressWarnings(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")))
+        coco_i <- suppressWarnings(abs(cor(Y_class_dummies,do.call(cbind,Xs),use = "pairwise")))
         coco_i[which(is.na(coco_i))] <- 0
         all_maxs_init <- apply(coco_i,2,max)
       }

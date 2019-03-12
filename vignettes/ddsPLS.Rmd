@@ -45,7 +45,7 @@ The supervizion part is described by the $\mathbf{Y}\in\mathbb{R}^{n\times q}$ m
 
 In the $\mathbf{X}_s$ and $\mathbf{Y}$ data sets, the same numbers of individuals are described, $n$ and each of them are on the same row
 
-<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **No individual can be missing in all the $\mathbf{X}$ matrices and no missing entry is allowed in the $\mathbf{Y}$ dataset** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i>
+<i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **No individual can be missing in all the $\mathbf{X}$ matrices and no missing entry is allowed in the $\mathbf{Y}$ dataset**.
 
 # Introduction
 
@@ -64,7 +64,26 @@ To load the **ddsPLS** package:
 library(ddsPLS)
 ```
 
+In the following, only **regression** examples are shown. To perform classification analyses, please change the argument
 
+```{r,eval=F}
+mode
+```
+
+in any of the functions to something different from **"reg"**. In the example
+
+```{r, eval=F}
+data("penicilliumYES")
+X <- penicilliumYES$X
+X <- scale(X[,which(apply(X,2,sd)>0)])
+Xs <- list(X[,1:1000],X[,-(1:1000)])
+Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
+Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
+
+mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,R = 2,mode = "clas",verbose = TRUE)
+```
+
+is considered a mult-block classification case analysis with missing samples.
 
 # Mono-block
 The here used method can be used on mono and multi-block datasets with no missing values.
@@ -131,7 +150,7 @@ summary(mddsPLS_model_reg)
 
 #### Get selected variables
 
-Output *var_selected* permits to get the selected varaibles per block.
+Output *var_selected* permits to get the selected variables per block.
 
 This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way.
 
@@ -151,13 +170,15 @@ res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,
                            mode = "reg",NCORES = NCORES,kfolds = "loo")
 
 res_cv_reg_L0 <- perf_mddsPLS(Xs = X,Y = Y,
-                           R = 1,L0=1:20,
+                           R = 1,L0=1:50,
                            mode = "reg",NCORES = NCORES,kfolds = "loo")
 ```
 
 ```{r,echo=F}
-# save(res_cv_reg,file="res_cv_reg.RData")
-# save(res_cv_reg_L0,file="res_cv_reg_L0.RData")
+# res_cv_reg$Xs <- NULL
+# res_cv_reg_L0$Xs <- NULL
+# save(res_cv_reg,file="res_cv_reg_noXs.RData")
+# save(res_cv_reg_L0,file="res_cv_reg_L0_noXs.RData")
 load("res_cv_reg_noXs.RData")
 load("res_cv_reg_L0_noXs.RData")
 res_cv_reg$Xs <- list(X)
@@ -170,18 +191,19 @@ A *plot* method plots the results. *plot_mean* permits to add the mean of the **
 
 ##### Using $\lambda$ paradigm
 
-```{r, fig.show='hold',message=FALSE,eval=T,fig.width=12, fig.height=12,dpi=DPI,out.width= out.width,out.height=out.height}
+```{r, fig.show='hold',message=FALSE,eval=T,fig.width=10, fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height}
 plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(0,1.1),
-     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y))
+     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y),
+     no_occurence = T)
 ```
 
 Minimum for $\lambda\approx0.85$.
 
 ##### Using $L_0$ paradigm
 
-```{r, fig.show='hold',message=FALSE,eval=T,fig.width=12, fig.height=7,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(res_cv_reg_L0,which_sd_plot = c(5,7),ylim=c(-0.2,1.1),alpha.f = 0.4,
-     plot_mean = T,legend_names = colnames(Y),pos_legend = "top",no_occurence = T)
+```{r, fig.show='hold',message=FALSE,eval=T,fig.width=10, fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height}
+plot(res_cv_reg_L0,which_sd_plot = c(5,7),ylim=c(0,1.1),alpha.f = 0.4,
+     plot_mean = T,legend_names = colnames(Y),pos_legend = "bottomright",no_occurence = T)
 ```
 
 Minimum for $L_0\approx 18$.
