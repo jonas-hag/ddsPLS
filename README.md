@@ -12,7 +12,7 @@ There are two alternative ways to install **ddsPLS**
   install.packages("ddsPLS")
   ```
   
-  * From the under development repository from GitHub thanks to `r devtools`
+  * From the under development repository from GitHub thanks to `devtools`
   
   ```r
   # install.packages("devtools")
