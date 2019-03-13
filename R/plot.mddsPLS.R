@@ -357,16 +357,20 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             xlab <- "Variance in Common"
           }
           y_selected <- which(abs(x$mod$V_super[,r])>0)
+          fonts <- rep(1,length(toplot_y))
+          fonts[y_selected] <- 2
           if(reorder_Y){
             new_order <- order(x$Variances$RV$VAR_SUPER_COMPS[,1],decreasing=T)
             toplot_y <- toplot_y[new_order]
             y_selected <- which(new_order %in% y_selected)
+            fonts <- fonts[new_order]
           }
           if(length(y_selected)>0){
             cols_y <- rep(colors[K+1],q)
             cols_y[-y_selected] <- adjustcolor(colors[K+1],alpha.f = alpha.Y_sel)
             legeds <- c(legend_names_in,paste(block_Y_name,c("selected","not selected")))
             colOut <- c(colors[c(block_in,K+1)],adjustcolor(colors[K+1],alpha.f = alpha.Y_sel))
+
           }else{
             cols_y <- rep(adjustcolor(colors[K+1],alpha.f = alpha.Y_sel),q)
             legeds <- c(legend_names_in,block_Y_name)
@@ -377,7 +381,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                   ylab=xlab)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
                  col=adjustcolor("black",alpha.f = 0.2))
-          text(xx,toplot_y,labels=round(toplot_y,0),pos=3)
+          text(xx,toplot_y,labels=round(toplot_y,0),pos=3,font=fonts)
         }else{
           legeds <- legend_names_in
           colOut <- colors[block_in]
