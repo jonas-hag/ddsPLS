@@ -71,7 +71,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   mu_x_s <- lapply(Xs,colMeans)
   n <- nrow(Xs[[1]])
   sd_x_s <- lapply(Xs,sdRcpp)#function(X){apply(X,2,sd)*sqrt((n-1)/n)})
-  if(K==6)browser()
   Xs <- lapply(Xs,my_scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi<NZV)})
   if(length(unlist(pos_0))>0){
