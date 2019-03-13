@@ -70,7 +70,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   ## Standardize Xs
   mu_x_s <- lapply(Xs,colMeans)
   n <- nrow(Xs[[1]])
-  sd_x_s <- lapply(Xs,sdC)#function(X){apply(X,2,sd)*sqrt((n-1)/n)})
+  sd_x_s <- lapply(Xs,sdRcpp)#function(X){apply(X,2,sd)*sqrt((n-1)/n)})
+  if(K==6)browser()
   Xs <- lapply(Xs,my_scale)
   pos_0 <- lapply(sd_x_s,function(sdi){which(sdi<NZV)})
   if(length(unlist(pos_0))>0){
@@ -95,7 +96,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     Y <- my_scale(momo)
   }
   mu_y <- colMeans(Y)
-  sd_y <- sdC(Y)#apply(Y,2,function(y){sd(y)*sqrt((n-1)/n)})
+  sd_y <- sdRcpp(Y)#apply(Y,2,function(y){sd(y)*sqrt((n-1)/n)})
   for(q_j in 1:length(sd_y)){
     if(sd_y[q_j]!=0){
       Y[,q_j] <- my_scale(Y[,q_j,drop=F])
@@ -152,7 +153,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     M
   },Xs,Y,lambda_in,n)
-
   if(verbose){
     N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))>NZV))})))
     cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
@@ -462,7 +462,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     q <- ncol(y_obs)
     if(std_Y){
-      sds <- sdC(y_obs)#apply(y_obs,2,sd)
+      sds <- sdRcpp(y_obs)#apply(y_obs,2,sd)
       pos_0 <- which(sds==0)
       y_obs<- my_scale(y_obs)
       if(length(pos_0)!=0){
@@ -607,20 +607,20 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     p <- ps[ii]
     pos_na_ii <- which(is.na(Xs[[ii]][,1]))
     if(length(pos_na_ii)>0){
-      out <- sdC(na.omit(Xs[[ii]]))#apply(na.omit(Xs[[ii]]),2,sd)*sqrt((n-1-length(pos_na_ii))/(n-length(pos_na_ii)))
+      out <- sdRcpp(na.omit(Xs[[ii]]))#apply(na.omit(Xs[[ii]]),2,sd)*sqrt((n-1-length(pos_na_ii))/(n-length(pos_na_ii)))
     }else{
-      out <- sdC(Xs[[ii]])
+      out <- sdRcpp(Xs[[ii]])
       #apply(Xs[[ii]],2,sd)*sqrt((n-1)/(n))
     }
     out
   })
   if(mode=="reg"){
     mu_y <- colMeans(Y)
-    sd_y <- sdC(Y)#apply(Y,2,sd)*sqrt((n-1)/n)
+    sd_y <- sdRcpp(Y)#apply(Y,2,sd)*sqrt((n-1)/n)
   }else{
     Y_class_dummies <- my_scale(model.matrix( ~ y - 1, data=data.frame(y=Y)))
     mu_y <- colMeans(Y_class_dummies)
-    sd_y <- sdC(Y_class_dummies)#apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
+    sd_y <- sdRcpp(Y_class_dummies)#apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
   }
   if(length(unlist(id_na))==0){
     ## If ther is no missing sample
@@ -768,7 +768,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   mod$mu_y <- mu_y
   var_selected <- list()
   for(k in 1:K){
-    values <- (mod$u_t_super[[k]][,1])^2
+    values <- rowSums(mod$u_t_super[[k]])^2
     pos <- which(values>NZV)
     if(length(pos)>0){
       order_values <- order(values[pos],decreasing = T)

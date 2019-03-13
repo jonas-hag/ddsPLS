@@ -2,11 +2,14 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector  sdC(NumericMatrix x) {
-  int n = x.ncol();
-  NumericVector out (n);
-  for(int i = 0; i < n; ++i) {
-    out[i] = sd(x(_,i))*sqrt((n-1.0)/n);
+NumericVector  sdRcpp(NumericMatrix x) {
+  int n = x.nrow();
+  int p = x.ncol();
+  NumericVector out (p);
+  for(int i = 0; i < p; ++i) {
+    NumericVector col_i = x(_,i);
+    double sd_i = sd(col_i);
+    out[i] = sd_i*sqrt((n-1.0)/n);
   }
   return out;
 }

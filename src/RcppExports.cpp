@@ -5,14 +5,14 @@
 
 using namespace Rcpp;
 
-// sdC
-NumericVector sdC(NumericMatrix x);
-RcppExport SEXP _ddsPLS_sdC(SEXP xSEXP) {
+// sdRcpp
+NumericVector sdRcpp(NumericMatrix x);
+RcppExport SEXP _ddsPLS_sdRcpp(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(sdC(x));
+    rcpp_result_gen = Rcpp::wrap(sdRcpp(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -41,7 +41,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ddsPLS_sdC", (DL_FUNC) &_ddsPLS_sdC, 1},
+    {"_ddsPLS_sdRcpp", (DL_FUNC) &_ddsPLS_sdRcpp, 1},
     {"_ddsPLS_scaleRcpp", (DL_FUNC) &_ddsPLS_scaleRcpp, 1},
     {"_ddsPLS_mmultC", (DL_FUNC) &_ddsPLS_mmultC, 2},
     {NULL, NULL, 0}
