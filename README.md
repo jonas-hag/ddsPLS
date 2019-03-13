@@ -18,3 +18,7 @@ There are two alternative ways to install **ddsPLS**
   # install.packages("devtools")
   devtools::istall_github("ddsPLS")
   ```
+
+A vignette is updated accordingly to the package and is acessible here <https://hadrienlorenzo.netlify.com/html/ddsPLS.html>.
+
+Some examples and applications are accessible on <https://hadrienlorenzo.netlify.com/>.
