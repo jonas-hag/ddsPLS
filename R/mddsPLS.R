@@ -150,10 +150,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     M <- abs(M0) - l[k]
     M[which(M<0)] <- 0
     M <- sign(M0)*M
-    # pos <- which(is.na(M))
-    # if(length(pos)>0){
-    #   M[which(is.na(M))] <- 0
-    # }
     M
   },Xs,Y,lambda_in,n)
   if(verbose){
@@ -718,7 +714,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV,id_na=id_na)#NULL)#######################L0)#
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             # for(r in 1:R){
