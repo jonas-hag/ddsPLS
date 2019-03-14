@@ -526,9 +526,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         VAR_SUPER_COMPS_ALL_Y[r] <- (norm(mmultC(sc_r,b),"f")/VAR_TOT)^2
         # deno <- norm(tcrossprod(y_obs),'f')*norm(tcrossprod(sc_r),'f')
 
-        deno <- norm(t_y_obs,'f')*var_t_k_r_all
+        deno <- norm(t_y_obs,'f')*var_t_super_r
         numer <- sum(mmultC(y_obs,crossprod(y_obs,sc_r))*sc_r)
-
         VAR_SUPER_COMPS_ALL_Y_FROB[r] <- numer/deno#sum(diag(mmultC(tcrossprod(sc_r),tcrossprod(y_obs))))/deno
       }
     }
