@@ -657,7 +657,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }
     }
     if(K>1){
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,id_na=id_na,NZV=NZV)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,NZV=NZV)
       if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -714,7 +714,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV,id_na=id_na)#NULL)#######################L0)#
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             # for(r in 1:R){
