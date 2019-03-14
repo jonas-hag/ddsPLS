@@ -500,7 +500,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       var_j <- norm(Y_j,"f")
       if(var_j!=0){
         for(r in 1:R){
-          t_super_r <- scale(x$mod$T_super[,r,drop=F],scale=F)
+          t_super_r <- x$mod$T_super[,r,drop=F]
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
             b <- mmultC(solve(crossprod(t_super_r)),crossprod(t_super_r,Y_j))
