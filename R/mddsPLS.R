@@ -141,15 +141,19 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     lambda_in <- rep(lambda_L0,K)
   }
   Ms <- lapply(1:K,function(k,Xs,Y,l,n){
-    M0 <- suppressWarnings(cor(Y,Xs[[k]]))
+    if(length(id_na[[k]])>0){
+      M0 <- suppressWarnings(cor(Y[-id_na[[k]],],Xs[[k]][-id_na[[k]],]))
+    }else{
+      M0 <- suppressWarnings(cor(Y,Xs[[k]]))
+    }
     M0[which(is.na(M0))] <- 0
     M <- abs(M0) - l[k]
     M[which(M<0)] <- 0
     M <- sign(M0)*M
-    pos <- which(is.na(M))
-    if(length(pos)>0){
-      M[which(is.na(M))] <- 0
-    }
+    # pos <- which(is.na(M))
+    # if(length(pos)>0){
+    #   M[which(is.na(M))] <- 0
+    # }
     M
   },Xs,Y,lambda_in,n)
   if(verbose){
