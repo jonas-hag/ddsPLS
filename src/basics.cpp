@@ -31,11 +31,13 @@ NumericMatrix scaleRcpp(NumericMatrix x) {
 
 // [[Rcpp::export]]
 NumericMatrix mmultC(NumericMatrix m1, NumericMatrix m2){
-  NumericMatrix out(m1.nrow(),m2.ncol());
+  int n1 = m1.nrow();
+  int p2 = m2.ncol();
+  NumericMatrix out(n1,p2);
   NumericVector rm1, cm2;
-  for (size_t i = 0; i < m1.nrow(); ++i) {
+  for (int i = 0u; i < n1; ++i) {
     rm1 = m1(i,_);
-    for (size_t j = 0; j < m2.ncol(); ++j) {
+    for (int j = 0u; j < p2; ++j) {
       cm2 = m2(_,j);
       out(i,j) = std::inner_product(rm1.begin(), rm1.end(), cm2.begin(), 0.);
     }
