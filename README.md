@@ -19,6 +19,12 @@ There are two alternative ways to install **ddsPLS**
   devtools::install_github("hlorenzo/ddsPLS")
   ```
 
-A vignette is updated accordingly to the package and is acessible here <https://hadrienlorenzo.netlify.com/html/ddsPLS.html>.
+Once that package is installed, you can access the vignette using that command
+
+  ```r
+  vignette("ddsPLS")
+  ```
+
+or that vignette is also acessible here <https://hadrienlorenzo.netlify.com/html/ddsPLS.html>.
 
 Some examples and applications are accessible on <https://hadrienlorenzo.netlify.com/>.
