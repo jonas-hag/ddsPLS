@@ -31,7 +31,12 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       ## Create covariable matrix train
       pos_ok <- which(!id_na_test)
       t_X_here <- do.call(cbind,lapply(1:R,function(ii,ti){
-        ti[[ii]][,pos_ok]
+        if(length(pos_ok)>0){
+          out <- ti[[ii]][,pos_ok]
+        }else{
+          out <- matrix(0,n,1)
+        }
+        out
       },mod$ts))
       u_X_here <- mod$u[pos_ok]
       mu_x_here <- mod$mu_x_s[pos_ok]

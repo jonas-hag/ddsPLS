@@ -38,6 +38,7 @@
 #'  considered. Default is \eqn{5}.
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
+#' @param impAllBlock Logical. Wheteher or not to use the inforametion from all the blocks.
 #'
 #' @return A result of the perf function
 #'
@@ -70,7 +71,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                          L0s=NULL,
                          kfolds="loo",mode="reg",fold_fixed=NULL,
                          maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
-                         NZV=1e-9){
+                         NZV=1e-9,impAllBlocks=F){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -102,7 +103,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   if(is.null(lambdas)&is.null(L0s)){
     if(is.null(lambda_max)){
       MMss0 <- mddsPLS(Xs,Y,lambda = 0,R = 1,
-                       mode = mode,maxIter_imput = 0)$mod$Ms
+                       mode = mode,maxIter_imput = 0,impAllBlocks=impAllBlocks)$mod$Ms
       lambda_max <- max(unlist(lapply(MMss0,
                                       function(Mi){max(abs(Mi))})))
     }
@@ -169,12 +170,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         if(!is.null(L0s)){
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,
                                            R = R,mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput,NZV=NZV)
+                                           maxIter_imput = maxIter_imput,NZV=NZV,impAllBlocks=impAllBlocks)
 
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
                                            R = R,mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput,NZV=NZV)
+                                           maxIter_imput = maxIter_imput,NZV=NZV,impAllBlocks=impAllBlocks)
 
                         }
                         time_build[i] <- as.numeric((Sys.time()-t1))

@@ -376,6 +376,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param getVariances Logical. Whether or not to compute variances.
+#' @param impAllBlock Logical. Wheteher or not to use the inforametion from all the blocks.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
 #'
@@ -425,7 +426,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                     keep_imp_mod=FALSE,
                     errMin_imput=1e-9,maxIter_imput=50,
-                    verbose=FALSE,NZV=1E-9,getVariances=TRUE){
+                    verbose=FALSE,NZV=1E-9,getVariances=TRUE,
+                    impAllBlocks=F){
 
   my_scale <- function(a){
     if(!is.matrix(a)){
@@ -690,6 +692,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               }
               Xs_i <- S_super_obj[-i_k,,drop=FALSE]
               newX_i <- S_super_obj[i_k,,drop=FALSE]
+              if(impAllBlocks){
+                Xs_i <- c(list(Xs_i),lapply(Xs[no_k],function(x){x[-i_k,,drop=F]}))
+                newX_i <- c(list(newX_i),lapply(Xs[no_k],function(x){x[i_k,,drop=F]}))
+              }
               Var_selected[k] <- length(Var_selected_k)
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
@@ -698,7 +704,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 if(keep_imp_mod){
-                  mod_i_k$Xs <- list(Xs_i)
+                  if(impAllBlocks){
+                    mod_i_k$Xs <- Xs_i
+                  }else{
+                    mod_i_k$Xs <- list(Xs_i)
+                  }
                   mod_i_k$Y_0 <- Y_i_k
                   model_imputations[[k]] <- mod_i_k
                 }
