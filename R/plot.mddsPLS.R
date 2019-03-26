@@ -19,6 +19,7 @@
 #' @param alpha.Y_sel positive float. factor modifying the opacity alpha; typically in \code{[0,1]} from \code{adjustcolor} function.
 #' @param reorder_Y logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.
 #' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
+#' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation
@@ -55,7 +56,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                mar_left=2,mar_bottom=2,
                pos_legend="topright",legend_names=NULL,legend.cex=1,
                values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
-               reorder_Y=F,
+               reorder_Y=F,NZV=1e-9,
                ...){
   ## Functions
   ##### HEATMAP FUNCTION #####
@@ -356,7 +357,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             }
             xlab <- "Variance in Common"
           }
-          y_selected <- which(abs(x$mod$V_super[,r])>0)
+          y_selected <- which(abs(x$mod$V_super[,r])>NZV)
           fonts <- rep(1,length(toplot_y))
           fonts[y_selected] <- 2
           if(reorder_Y){
