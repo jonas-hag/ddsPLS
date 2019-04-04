@@ -337,6 +337,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     else{
+      browser()
       B <- lda(Y ~ ., data = dataf)
     }
   }
