@@ -326,7 +326,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
     }
     sds <- apply(dataf[,-1,drop=FALSE],2,function(y){sd(y)*sqrt((n-1)/n)})
-    if(any(sds==0)){
+    if(any(sds<NZV)){
       pos_sd0 <- as.numeric(which(sds<NZV))
       if(length(pos_sd0)==length(sds)){
         B <- NULL
@@ -337,7 +337,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     else{
-      browser()
       B <- lda(Y ~ ., data = dataf)
     }
   }
