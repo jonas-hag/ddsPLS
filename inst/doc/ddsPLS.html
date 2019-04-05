@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Introduction</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: #990073
+   }
+
+   pre .number {
+     color: #099;
+   }
+
+   pre .comment {
+     color: #998;
+     font-style: italic
+   }
+
+   pre .keyword {
+     color: #900;
+     font-weight: bold
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: #d14;
+   }
+</style>
+
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
+
+<!-- MathJax scripts -->
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<p>In the following \(\mathbf{X}\in\mathbb{R}^{n\times p}\) is a matrix of \(n\) rows and \(p\) columns describing the covariate part of a data set in a mono-block context. If this is a multi-block analysis, with one block for <strong>Proteomics</strong>, one block for <strong>DNA methylation</strong> for example and other \(K-2\) blocks, then the covariate data set is built on \(K\) blocks and is denoted as 
+\[
+\mathbf{X}_s=\{\mathbf{X}_{proteo},\mathbf{X}_{DNA},\cdots\}\in \mathbb{R}^{n\times p_{proteo}}\times\mathbb{R}^{n\times p_{DNA}}\times\cdots
+\]
+\(\mathbf{X}_s\) is treated with <em>list()</em> structure by the package, so in case of multi-block analysis, thanks to present your dataset such as</p>
+
+<pre><code class="r"># For no named matrices
+Xs &lt;- list(X1,X2,X3)
+
+# For names matrices
+Xs &lt;- list(X_dna=X1,X_proteo=X2,X_RNA=X3)
+</code></pre>
+
+<p>if the covariate part is filled with only one data set, it is possible to use the <em>list()</em> structure or not. </p>
+
+<p>In the other cases, the number of variables in each matrix can be different. In the previous examples we have denoted by \(p_{proteo}\) and \(p_{DNA}\) two of the different number of variables. It is knowd that <strong>Proteomics</strong> data-sets are filled with hundreds of variables while <strong>DNA methylation</strong> data sets gather hundreds of thousands of variables.</p>
+
+<p>The supervizion part is described by the \(\mathbf{Y}\in\mathbb{R}^{n\times q}\) matrix. In case of regression it can be a <em>vector</em> for univariate case (\(q=1\)) or a <em>matrix</em> or even a <em>data.frame</em>. In multi-variate regression, \(q>1\), it can be a <em>matrix</em> or a <em>data.frame</em>. In case on classification, \(\mathbf{Y}\) must be unidimensionnal but it can be a <em>vector</em> or a <em>matrix</em> or even a <em>data.frame</em>. The argument <em>mode</em> permits to choose between regression mode, then use <em>reg</em>, and classification mode, then use something else.</p>
+
+<p>In the \(\mathbf{X}_s\) and \(\mathbf{Y}\) data sets, the same numbers of individuals are described, \(n\) and each of them are on the same row</p>
+
+<p><i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> <strong>No individual can be missing in all the \(\mathbf{X}\) matrices and no missing entry is allowed in the \(\mathbf{Y}\) dataset</strong>.</p>
+
+<h1>Introduction</h1>
+
+<p>The present package is based on [@lorenzo2019supervised]. It permits to take into account missing values in a multi-block context for supervized problems. It also permits to deal with data analyses with no missing values. Regression or classification regression paradigms are accepted.</p>
+
+<p>Only two parameters must to be fixed by the user :</p>
+
+<ul>
+<li><p><strong>R</strong> which is the number of components, analogous to the number of components in PCA.</p></li>
+<li><p><strong>\(\lambda\)</strong> which is the regularization coefficient, \(\lambda\in[0,1]\). It can be directly interpreted as the minimum of correlation value under which an interaction between a variable of a block \(\mathbf{X}\) and one of the \(\mathbf{Y}\) variables is not taken into account.</p></li>
+</ul>
+
+<p>Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using <strong>doParallel</strong> package, see [@doparalelManual]. This is transparent for the user, which hase just to fix the number of <em>cpus</em> to be used. The corresponding parameter is denoted as <strong>NCORES</strong>. If it equals \(1\), then no parallelization structure is deployed.</p>
+
+<p>To load the <strong>ddsPLS</strong> package:</p>
+
+<pre><code class="r">library(ddsPLS)
+</code></pre>
+
+<p>In the following, only <strong>regression</strong> examples are shown. To perform classification analyses, please change the argument</p>
+
+<pre><code class="r">mode
+</code></pre>
+
+<p>in any of the functions to something different from <strong>&ldquo;reg&rdquo;</strong>. In the example</p>
+
+<pre><code class="r">data(&quot;penicilliumYES&quot;)
+X &lt;- penicilliumYES$X
+X &lt;- scale(X[,which(apply(X,2,sd)&gt;0)])
+Xs &lt;- list(X[,1:1000],X[,-(1:1000)])
+Xs[[1]][1:5,]=Xs[[2]][6:10,] &lt;- NA
+Y &lt;- as.factor(unlist(lapply(c(&quot;Melanoconidiu&quot;,&quot;Polonicum&quot;,&quot;Venetum&quot;),function(tt){rep(tt,12)})))
+
+mddsPLS_model_class &lt;- mddsPLS(Xs = Xs,Y = Y,L0=3,R = 2,mode = &quot;clas&quot;,verbose = TRUE)
+</code></pre>
+
+<p>is considered a mult-block classification case analysis with missing samples.</p>
+
+<h1>Mono-block</h1>
+
+<p>The here used method can be used on mono and multi-block datasets with no missing values.
+In the case on mono-block datasets, there is no current developpment to deal with missing samples. Actually this would imply that for a given individual, no covariate is known. Which block any inference.</p>
+
+<h2>Regression case {.tabset}</h2>
+
+<p>The regression case has been treated through a toy example well know dataset in that section.</p>
+
+<h3>Build a model {.tabset}</h3>
+
+<p>We have worked on the Liver Toxicity dataset, see @bushel2007simultaneous. This data set contains the expression measure of 3116 genes and 10 clinical measurements for 64 subjects (rats) that were exposed to non-toxic, moderately toxic or severely toxic doses of acetaminophen in a controlled experiment. Therefore the structure is :
+\[\mathbf{X}\in\mathbb{R}^{64\times3116},\mathbf{Y}\in\mathbb{R}^{64\times10}\]</p>
+
+<p>The following commands permit to create the model. The parameter <em>verbose</em> shows main information about the model.</p>
+
+<pre><code class="r">data(&quot;liver.toxicity&quot;)
+X &lt;- scale(liver.toxicity$gene)
+Y &lt;- scale(liver.toxicity$clinic)
+mddsPLS_model_reg &lt;- mddsPLS(Xs = X,Y = Y,lambda=0.85,R = 3,
+                             mode = &quot;reg&quot;,verbose = TRUE)
+</code></pre>
+
+<pre><code>## At most 15 variable(s) can be selected in the X part
+##     For each block of X, are selected in order of component:
+##         @ (14,1,14) variable(s)
+##     For the Y block, are selected in order of component:
+##         @ (2,2,1) variable(s)
+</code></pre>
+
+<h4>Plot Method {.tabset}</h4>
+
+<p>The <strong>Plot</strong> mehtod permits many types of representation. Among which</p>
+
+<ul>
+<li><em>weights</em> which shows all the weights under barplot representations. If <strong>super</strong> is set to <strong>TRUE</strong>, then the <strong>super-weights</strong> are represented. In the mono-block case, <strong>super-weights</strong> are equal to <strong>weights</strong>.</li>
+<li><em>heatmap</em> which shows the selected variables (for \(\mathbf{X}\) and \(\mathbf{Y}\)) for the all individuals.</li>
+</ul>
+
+<p>The following sections detailed the discussed method though those parametizations.</p>
+
+<h5><em>Super-Weight</em> representation</h5>
+
+<p>The following figure permits to represent the <em>super-weights</em> for the first and the second components for block 1 (mono-block case actually) and block Y. <strong>mar_left</strong> parameter adds extra values on the left of the plot, usefull to see variable names.</p>
+
+<pre><code class="r">plot(mddsPLS_model_reg,vizu = &quot;weights&quot;,variance = &quot;Linear&quot;,
+     super = T,comp = c(1,2),addY = T,mar_left = 3,mar_bottom = 3,
+     pos_legend = &quot;topright&quot;,reorder_Y = T,legend.cex = 1.5)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" title="plot of chunk unnamed-chunk-7" alt="plot of chunk unnamed-chunk-7" width="1000px" height="1000px" /></p>
+
+<h5><em>Heatmap</em> representation</h5>
+
+<p>Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first one here</p>
+
+<pre><code class="r">plot(mddsPLS_model_reg,vizu = &quot;heatmap&quot;,comp = 1)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" title="plot of chunk unnamed-chunk-8" alt="plot of chunk unnamed-chunk-8" width="1000px" height="1000px" /></p>
+
+<p>Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using <strong>hclust</strong> similarities.</p>
+
+<h4>Summary Method</h4>
+
+<p>A <em>summary</em> method explains more precisely the model.</p>
+
+<pre><code class="r">summary(mddsPLS_model_reg)
+</code></pre>
+
+<pre><code>## ===============================================================
+##                      ddsPLS object description              
+## ===============================================================
+## 
+## Number of blocks: 1
+## Number of dimensions: 3
+## Regularization coefficient: 0.85
+## Number of individuals: 64
+## Number of variables in Y part: 10
+## Model built in mode regression
+## Maximum number of iterations in the imputation process: 50
+## Algorithm of imputation has converged
+## 
+## 
+##           Variance Explained (%)    
+## -------------------------------------------
+## Total Y variance explained by each Super Component
+## [1] 37 33 29
+## 
+## Marginal Y variable variance explained by each Super Component
+##                    Super Comp. 1 Super Comp. 2 Super Comp. 3
+## BUN.mg.dL.                48.000         43.00         29.00
+## Creat.mg.dL.               2.200          3.30          0.82
+## TP.g.dL.                   0.088          0.84          2.20
+## ALB.g.dL.                  2.500          3.90          0.58
+## ALT.IU.L.                 92.000         79.00         71.00
+## SDH.IU.L.                  1.900          3.30          6.00
+## AST.IU.L.                 91.000         74.00         69.00
+## ALP.IU.L.                 15.000         17.00         11.00
+## TBA.umol.L.               72.000         59.00         81.00
+## Cholesterol.mg.dL.        44.000         45.00         21.00
+## 
+## Total Y variance explained by each component of each block
+##         Comp. 1 Comp. 2 Comp. 3
+## Block 1      37      29      33
+## 
+## 
+##           Variance In Common (%) (RV coefficient)    
+## -------------------------------------------------------
+## Total Y variance in common with each Super Component
+## [1] 74 66 59
+## 
+## Marginal Y variable variance in common with each Super Component
+##                    Super Comp. 1 Super Comp. 2 Super Comp. 3
+## BUN.mg.dL.                48.000         43.00         29.00
+## Creat.mg.dL.               2.200          3.30          0.82
+## TP.g.dL.                   0.088          0.84          2.20
+## ALB.g.dL.                  2.500          3.90          0.58
+## ALT.IU.L.                 92.000         79.00         71.00
+## SDH.IU.L.                  1.900          3.30          6.00
+## AST.IU.L.                 91.000         74.00         69.00
+## ALP.IU.L.                 15.000         17.00         11.00
+## TBA.umol.L.               72.000         59.00         81.00
+## Cholesterol.mg.dL.        44.000         45.00         21.00
+## 
+## Total Y variance in common with each component of each block
+##         Comp. 1 Comp. 2 Comp. 3
+## Block 1      74      59      66
+## 
+## 
+##          Missing value information    
+## -------------------------------------------
+## 
+##                                     X1 Total
+## Number of variables               3116  3116
+## Number of missing samples            0     0
+## Proportion of missing samples (%)    0     0
+## 
+## 
+##               mddsPLS results         
+## -------------------------------------------
+## 
+## At most 15 variable(s) can be selected in the X part
+##     For each block of X, are selected
+##   Super Comp. 1 Super Comp. 2 Super Comp. 3
+## 1            14            14             1
+##     For the Y block, are selected
+##         @ (2,2,1) variable(s)
+## 
+## 
+##                  Thank&#39;s for using me      
+## ---------------------------------------------------------------
+##                                                 Hadrien Lorenzo
+##                                  hadrien.lorenzo.2015@gmail.com
+## ===============================================================
+</code></pre>
+
+<h4>Get selected variables</h4>
+
+<p>Output <em>var_selected</em> permits to get the selected variables per block.</p>
+
+<p>This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first <strong>Super-Component</strong>, in a decreasing way.</p>
+
+<pre><code class="r">mddsPLS_model_reg$var_selected[[1]]
+</code></pre>
+
+<pre><code>##              Weights_comp_1 Weights_comp_2 Weights_comp_3
+## A_42_P809565     0.00000000              1     0.00000000
+## A_43_P14131     -0.59972998              0     0.35720155
+## A_43_P17415     -0.33110866              0     0.38407399
+## A_42_P610788    -0.07179133              0    -0.42664976
+## A_42_P620915    -0.51494107              0    -0.20152716
+## A_42_P802628    -0.11713487              0    -0.41810461
+## A_43_P10606     -0.14029029              0    -0.41477415
+## A_43_P11724      0.17176035              0    -0.09521232
+## A_42_P578246    -0.14279939              0     0.05666098
+## A_43_P23376     -0.21321205              0    -0.03919097
+## A_42_P758454    -0.17533343              0    -0.03346941
+## A_42_P705413    -0.02559837              0    -0.14711216
+## A_43_P22616     -0.01249312              0    -0.07424555
+## A_42_P840776    -0.26355093              0    -0.30453411
+## A_42_P675890    -0.17494527              0    -0.14343829
+##              Super_Weights_comp_1 Super_Weights_comp_2
+## A_42_P809565           0.00000000           0.00000000
+## A_43_P14131            0.59972998           0.35720155
+## A_43_P17415            0.33110866           0.38407399
+## A_42_P610788           0.07179133          -0.42664976
+## A_42_P620915           0.51494107          -0.20152716
+## A_42_P802628           0.11713487          -0.41810461
+## A_43_P10606            0.14029029          -0.41477415
+## A_43_P11724           -0.17176035          -0.09521232
+## A_42_P578246           0.14279939           0.05666098
+## A_43_P23376            0.21321205          -0.03919097
+## A_42_P758454           0.17533343          -0.03346941
+## A_42_P705413           0.02559837          -0.14711216
+## A_43_P22616            0.01249312          -0.07424555
+## A_42_P840776           0.26355093          -0.30453411
+## A_42_P675890           0.17494527          -0.14343829
+##              Super_Weights_comp_3
+## A_42_P809565                    1
+## A_43_P14131                     0
+## A_43_P17415                     0
+## A_42_P610788                    0
+## A_42_P620915                    0
+## A_42_P802628                    0
+## A_43_P10606                     0
+## A_43_P11724                     0
+## A_42_P578246                    0
+## A_43_P23376                     0
+## A_42_P758454                    0
+## A_42_P705413                    0
+## A_43_P22616                     0
+## A_42_P840776                    0
+## A_42_P675890                    0
+</code></pre>
+
+<h3>Cross Validation {.tabset}</h3>
+
+<p>The cross-validation process is started in a leave-one-out design along \(1\) dimension. <strong>NCORES</strong> fixes the number of cores in the paralellized process, <strong>n_lambda</strong> fixes the number of regularization coefficients to be tested.</p>
+
+<pre><code class="r">n_lambda &lt;- 50
+NCORES &lt;- 7
+res_cv_reg &lt;- perf_mddsPLS(Xs = X,Y = Y,
+                           R = 1,lambda_min=0.5,n_lambda=n_lambda,
+                           mode = &quot;reg&quot;,NCORES = NCORES,kfolds = &quot;loo&quot;)
+
+res_cv_reg_L0 &lt;- perf_mddsPLS(Xs = X,Y = Y,
+                           R = 1,L0s=1:50,
+                           mode = &quot;reg&quot;,NCORES = NCORES,kfolds = &quot;loo&quot;)
+</code></pre>
+
+<h4>Error Plot {.tabset}</h4>
+
+<p>A <em>plot</em> method plots the results. <em>plot_mean</em> permits to add the mean of the <strong>Y</strong> variable prediction errors. <em>legend_names</em> permits to add a legend with the names of the <strong>Y</strong> variables. <em>pos_legend</em> permits to choose the position of the legend. <em>which_sd_plot</em> picks the <strong>Y</strong> variables whose standard error must be drawn.</p>
+
+<h5>Using \(\lambda\) paradigm</h5>
+
+<pre><code class="r">plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(0,1.1),
+     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y),
+     no_occurence = T)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" title="plot of chunk unnamed-chunk-13" alt="plot of chunk unnamed-chunk-13" width="1000px" height="1000px" /></p>
+
+<p>Minimum for \(\lambda\approx0.85\).</p>
+
+<h5>Using \(L_0\) paradigm</h5>
+
+<pre><code class="r">plot(res_cv_reg_L0,which_sd_plot = c(5,7),ylim=c(0,1.1),alpha.f = 0.4,
+     plot_mean = T,legend_names = colnames(Y),pos_legend = &quot;bottomright&quot;,no_occurence = T)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" title="plot of chunk unnamed-chunk-14" alt="plot of chunk unnamed-chunk-14" width="1000px" height="1000px" /></p>
+
+<p>Minimum for \(L_0\approx 18\).</p>
+
+<h5>Observations</h5>
+
+<p>Are also plotted vertical lines representing:</p>
+
+<ul>
+<li>The global minimum,</li>
+<li>The minimum of the <strong>Mean MSEP</strong>.</li>
+</ul>
+
+<p>The two panels building this plot are headed with numbers. Red for the error curves and blue for the \(\mathbf{Y}\) variable occurence curves. It represents the number of variables selected in the \(\mathbf{X}\) and in the \(\mathbf{Y}\) respectively for the model built on the matrices given to the function.</p>
+
+<p>If one would not prefer to see the occurence plot. The parameter <em>no_occurence</em>, when set to <strong>TRUE</strong>, permits to hide it.</p>
+
+<h4>Summary Method</h4>
+
+<p>A <em>summary</em> methods explains more precisely the model. The parameter <em>plot_res_cv</em> uses the <strong>plot</strong> method. Are also presented the statistical results of the algorithm (convergence for each fold, time of computation).</p>
+
+<pre><code class="r">summary(res_cv_reg,plot_res_cv =F)
+</code></pre>
+
+<pre><code>## ======================================================
+##       Cross-Validation ddsPLS object description      
+## ======================================================
+## 
+## Number of blocks: 1
+## Number of individuals: 64
+## Number of variables in Y part: 0
+## Model built in mode regression
+## 
+## 
+##     Missing value information    
+## ---------------------------------
+## 
+##                                     X1 Total
+## Number of variables               3116  3116
+## Number of missing samples            0     0
+## Proportion of missing samples (%)    0     0
+## 
+## 
+##      Cross-Validation results    
+## ---------------------------------
+## 
+##    R    lambda Nb.of.convergences.VS.nb.of.fold
+## 1  1 0.5000000                            64/64
+## 2  1 0.5086403                            64/64
+## 3  1 0.5172806                            64/64
+## 4  1 0.5259209                            64/64
+## 5  1 0.5345611                            64/64
+## 6  1 0.5432014                            64/64
+## 7  1 0.5518417                            64/64
+## 8  1 0.5604820                            64/64
+## 9  1 0.5691223                            64/64
+## 10 1 0.5777626                            64/64
+## 11 1 0.5864029                            64/64
+## 12 1 0.5950431                            64/64
+## 13 1 0.6036834                            64/64
+## 14 1 0.6123237                            64/64
+## 15 1 0.6209640                            64/64
+## 16 1 0.6296043                            64/64
+## 17 1 0.6382446                            64/64
+## 18 1 0.6468849                            64/64
+## 19 1 0.6555251                            64/64
+## 20 1 0.6641654                            64/64
+## 21 1 0.6728057                            64/64
+## 22 1 0.6814460                            64/64
+## 23 1 0.6900863                            64/64
+## 24 1 0.6987266                            64/64
+## 25 1 0.7073669                            64/64
+## 26 1 0.7160071                            64/64
+## 27 1 0.7246474                            64/64
+## 28 1 0.7332877                            64/64
+## 29 1 0.7419280                            64/64
+## 30 1 0.7505683                            64/64
+## 31 1 0.7592086                            64/64
+## 32 1 0.7678489                            64/64
+## 33 1 0.7764891                            64/64
+## 34 1 0.7851294                            64/64
+## 35 1 0.7937697                            64/64
+## 36 1 0.8024100                            64/64
+## 37 1 0.8110503                            64/64
+## 38 1 0.8196906                            64/64
+## 39 1 0.8283309                            64/64
+## 40 1 0.8369711                            64/64
+## 41 1 0.8456114                            64/64
+## 42 1 0.8542517                            64/64
+## 43 1 0.8628920                            64/64
+## 44 1 0.8715323                            64/64
+## 45 1 0.8801726                            64/64
+## 46 1 0.8888129                            64/64
+## 47 1 0.8974531                            64/64
+## 48 1 0.9060934                            64/64
+## 49 1 0.9147337                            64/64
+## 50 1 0.9233740                            64/64
+##    Mean.sd..time.of.computation
+## 1                   0.29(0.025)
+## 2                   0.29(0.029)
+## 3                   0.29(0.029)
+## 4                   0.29(0.031)
+## 5                   0.29(0.027)
+## 6                   0.29(0.027)
+## 7                   0.29(0.024)
+## 8                   0.29(0.022)
+## 9                   0.29(0.021)
+## 10                  0.29(0.022)
+## 11                  0.29(0.023)
+## 12                   0.29(0.03)
+## 13                  0.29(0.027)
+## 14                  0.29(0.026)
+## 15                  0.29(0.024)
+## 16                   0.3(0.024)
+## 17                  0.29(0.028)
+## 18                   0.3(0.028)
+## 19                  0.29(0.028)
+## 20                  0.29(0.027)
+## 21                  0.29(0.023)
+## 22                  0.29(0.025)
+## 23                   0.3(0.025)
+## 24                  0.29(0.023)
+## 25                  0.29(0.022)
+## 26                  0.29(0.029)
+## 27                  0.29(0.021)
+## 28                  0.29(0.022)
+## 29                   0.29(0.02)
+## 30                  0.29(0.019)
+## 31                  0.29(0.024)
+## 32                  0.29(0.025)
+## 33                  0.29(0.027)
+## 34                  0.29(0.021)
+## 35                  0.29(0.024)
+## 36                  0.29(0.025)
+## 37                  0.29(0.023)
+## 38                  0.29(0.019)
+## 39                  0.29(0.027)
+## 40                  0.29(0.026)
+## 41                  0.29(0.023)
+## 42                  0.29(0.026)
+## 43                  0.29(0.021)
+## 44                  0.29(0.028)
+## 45                  0.29(0.023)
+## 46                  0.29(0.023)
+## 47                  0.29(0.029)
+## 48                  0.29(0.024)
+## 49                  0.29(0.023)
+## 50                  0.29(0.023)
+## 
+## 
+##                   Thank&#39;s for using me      
+## ------------------------------------------------------
+##                                        Hadrien Lorenzo
+##                         hadrien.lorenzo.2015@gmail.com
+## ======================================================
+</code></pre>
+
+<p>The <strong>Cross-Validation results</strong> is a matrix with <strong>4</strong> columns and <strong>N</strong> rows, each row corresponds to a couple \((R,\lambda)\) teste. Each column correpsonds to:</p>
+
+<ul>
+<li><strong>R</strong>: The number of components built,</li>
+<li><strong>lambda</strong>: The regularization coefficient,</li>
+<li><strong>Nb.of.convergences.VS.nb.of.fold</strong>: The number of models, in the cross-validation process, which have converged against the total number of models built.</li>
+<li><strong>Mean.sd..time.of.computation</strong>: The mean time of computation for bulding a model and, in parenthesis, its standard deviation.</li>
+</ul>
+
+<!-- ## Classification case {.tabset} -->
+
+<!-- ### Build a model {.tabset} -->
+
+<!-- The data set penicilliumYES has 36 rows and 3754 columns, see @clemmensen2007method The variables are 1st order statistics from multi-spectral images of three species of Penicillium fungi: Melanoconidium, Polonicum, and Venetum. These are the data used in the Clemmemsen et al "Sparse Discriminant Analysis" paper. Therefore the structure is, where $\mathbf{Y}$ is the dummy matrix of the $3$ classes : -->
+
+<!-- $$\mathbf{X}\in\mathbb{R}^{36\times3754},\mathbf{Y}\in\mathbb{R}^{36\times3}$$ -->
+
+<!-- ```{r, fig.show='hold',fig.width=7, fig.height=5,message=FALSE,eval=T} -->
+
+<!-- data("penicilliumYES") -->
+
+<!-- X <- penicilliumYES$X -->
+
+<!-- X <- scale(X[,which(apply(X,2,sd)>0)]) &ndash;>
+
+<!-- classes <- c("Melanoconidium","Polonicum","Venetum") -->
+
+<!-- Y <- as.factor(unlist(lapply(classes, -->
+
+<!--                              function(tt){rep(tt,12)}))) -->
+
+<!-- mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.956,R = 2, -->
+
+<!--                                mode = "clas",verbose = TRUE) -->
+
+<!-- ``` -->
+
+<!-- #### Plot Method {.tabset} -->
+
+<!-- The **Plot** mehtod permits many types of representation. Among which -->
+
+<!--  * *weights* which shows all the weights under barplot representations. If **super** is set to **TRUE**, then the **super-weights** are represented. In the mono-block case, **super-weights** are equal to **weights**. -->
+
+<!--  * *heatmap* which shows the selected variables (for $\mathbf{X}$ and $\mathbf{Y}$) for the all individuals. -->
+
+<!-- The following sections detailed the discussed method though those parametizations. -->
+
+<!-- ##### *Super-Weight* representation -->
+
+<!-- The following figure permits to represent the *super-weights* for the first and the second components for block 1 (mono-block case actually) and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names. -->
+
+<!-- ```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- plot(mddsPLS_model_class,vizu = "weights",super=T,comp = c(1,2),addY = T,mar_bottom = 3,mar_left = 3,legend.cex = 1,reorder_Y = T) -->
+
+<!-- ``` -->
+
+<!-- ##### *Heatmap* representation {.tabset} -->
+
+<!-- Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example. -->
+
+<!-- ```{r,fig.height=7,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- plot(mddsPLS_model_class,vizu = "heatmap",comp = 1) -->
+
+<!-- ``` -->
+
+<!-- Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities. -->
+
+<!-- #### Summary Method -->
+
+<!-- A *summary* method explains more precisely the model. -->
+
+<!-- ```{r, fig.show='hold',message=FALSE,eval=T} -->
+
+<!-- summary(mddsPLS_model_class) -->
+
+<!-- ``` -->
+
+<!-- #### Get selected variables -->
+
+<!-- Output *var_selected* permits to get the selected varaibles per block. -->
+
+<!-- This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first **Super-Component**, in a decreasing way. Only $2$ significance digits are kept here for convenience. -->
+
+<!-- ```{r} -->
+
+<!-- signif(mddsPLS_model_class$var_selected[[1]],2) -->
+
+<!-- ``` -->
+
+<!-- ### Plot the two first axes  -->
+
+<!-- ```{r, fig.show='hold',fig.width=10, fig.height=5,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- plot(mddsPLS_model_class$mod$T_super,col=Y,pch=as.numeric(Y)+15,cex=2, -->
+
+<!--      xlab="1st X component, 2 var. selected", -->
+
+<!--      ylab="2nd X component, 2 var. selected") -->
+
+<!-- legend(-2,0,legend=classes,col=1:3,pch=15+(1:3),box.lty=0,y.intersp=2) -->
+
+<!-- ``` -->
+
+<!-- ### Cross-validation -->
+
+<!-- The cross-validation process is started in a fold-fixed design, because each sample is repeated $3$ times. In that sense this is a leave-one-out process. $R=2$ fixes the number of dimensions to 2. **NCORES** fixes the number of cores in the paralellized process, **n\_lambda** fixes the number of regularization terms to be tested. -->
+
+<!-- ```{r,fig.width=7, fig.height=6,message=FALSE,eval=F} -->
+
+<!-- n_lambda <- 50 -->
+
+<!-- NCORES <- 7 -->
+
+<!-- res_cv_class <- perf_mddsPLS(X,Y,R = 2,lambda_min=0.95,n_lambda=n_lambda, -->
+
+<!--                              mode = "clas",NCORES = NCORES, -->
+
+<!--                              fold_fixed = rep(1:12,3)) -->
+
+<!-- ``` -->
+
+<!-- The results can be plotted thanks to the next figure which uses the **plot** method. -->
+
+<!-- ```{r,echo=F} -->
+
+<!-- # save(res_cv_class,file="res_cv_class_noXs.RData") -->
+
+<!-- load(file="res_cv_class_noXs.RData") -->
+
+<!-- res_cv_class$Xs <- list(X) -->
+
+<!-- ``` -->
+
+<!-- ```{r,fig.width=10, fig.height=6,message=FALSE,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- plot(res_cv_class,legend_names = levels(Y),pos_legend="bottomleft") -->
+
+<!-- ``` -->
+
+<!-- Both of the vertical lines set the position of the sparsest models giving the maximum accuracy glogally, right one, and in mean, left one. -->
+
+<!-- The best suited model is chosen for $\lambda\approx0.957$. As the top ruller explains, that model selects $4$ different variables.  -->
+
+<!-- In the following we have performed another cross-validation but the $\lambda$ paramter is not given as an input of the method. In fact we have decided to give a parameter $L_0$ corresponding to the maximum number of variables to be selected in the final model. -->
+
+<!-- ```{r,eval=F} -->
+
+<!-- NCORES <- 7 -->
+
+<!-- res_cv_class_L0 <- perf_mddsPLS(X,Y,R = 2,L0s = 1:4, -->
+
+<!--                              mode = "clas",NCORES = NCORES, -->
+
+<!--                              fold_fixed = rep(1:12,3)) -->
+
+<!-- ``` -->
+
+<!-- ```{r,eval=T,echo=F} -->
+
+<!-- # save(res_cv_class_L0,file="res_cv_class_L0_noXs.RData") -->
+
+<!-- load(file="res_cv_class_L0_noXs.RData") -->
+
+<!-- res_cv_class_L0$Xs <- list(X) -->
+
+<!-- ``` -->
+
+<!-- Which can simply plotted with the following command -->
+
+<!-- ```{r,eval=T,fig.height=6,fig.width=10,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- plot(res_cv_class_L0,legend_names = levels(Y), -->
+
+<!--      pos_legend="bottomright",plot_mean = T) -->
+
+<!-- ``` -->
+
+<!-- This synthaxe is particularly well suited when the number of samples is low and so the $(X_j,Y_j)$ are sensible to down-sampling. -->
+
+<!-- It is now clear that the best model is reached for $L_0=3$. -->
+
+<!-- ### Optimal Models {.tabset} -->
+
+<!-- In [@clemmensen2011sparse], only $2$ variableds are selected.  -->
+
+<!-- #### Using $\lambda$ paradigm -->
+
+<!-- ```{r,eval=T,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- model_lambda <- mddsPLS(X,Y,R = 2,lambda = 0.957,mode = "cla" ) -->
+
+<!-- plot(model_lambda,super = T) -->
+
+<!-- ``` -->
+
+<!-- This model selects $4$ variables. -->
+
+<!-- #### Using $L_0$ paradigm -->
+
+<!-- ```{r,eval=T,fig.width=10,fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height} -->
+
+<!-- model_L0 <- mddsPLS(X,Y,R = 2,L0 = 3,mode = "cla") -->
+
+<!-- plot(model_L0,super = T,addY = T,pos_legend = "topright",reorder_Y = T,legend.cex = 1) -->
+
+<!-- ``` -->
+
+<!-- This model selects $3$ variables. -->
+
+<h1>Multi-block</h1>
+
+<p>Two different analyses are detailed here, the first one presents the tool and the second one permits to simulate a data-set and details its analysis thanks to the <strong>ddsPLS</strong> tool.</p>
+
+<h2>Toy example {.tabset}</h2>
+
+<p>In the case of missing values it is possible to visualize the missing positions. Let us just consider a 3-blocks toy-example case, based on the previous dataset, such as</p>
+
+<pre><code class="r">data(&quot;liver.toxicity&quot;)
+X &lt;- scale(liver.toxicity$gene)
+Y &lt;- scale(liver.toxicity$clinic)
+p1=p2 &lt;- 1000
+p3 &lt;- ncol(X)-p1-p2
+Xs &lt;- list(Block1=X[,1:p1],Matrix2=X[,p1+1:p2],Other_Variables=X[,p1+p2+1:p3])
+Xs$Block1[1:10,] &lt;- NA
+Xs$Matrix2[5+1:10,] &lt;- NA
+Xs$Other_Variables[10+1:20,] &lt;- NA
+
+model_multi_vizu &lt;- mddsPLS(Xs,Y,lambda = 0.8,R = 3)
+</code></pre>
+
+<h3>Plot Method {.tabset}</h3>
+
+<p>The <strong>Plot</strong> mehtod permits many types of representation. Among which</p>
+
+<ul>
+<li><em>weights</em> which shows all the weights under barplot representations. If <strong>super</strong> is set to <strong>TRUE</strong>, then the <strong>super-weights</strong> are represented. In the mono-block case, <strong>super-weights</strong> are equal to <strong>weights</strong>.</li>
+<li><em>heatmap</em> which shows the selected variables (for \(\mathbf{X}\) and \(\mathbf{Y}\)) for the all individuals.</li>
+</ul>
+
+<p>The following sections detailed the discussed method though those parametizations.</p>
+
+<h4><em>Scaled Super-Weight</em> representation {.tabset}</h4>
+
+<p>The following figure permits to represent the <em>scaled super-weights</em> for blocks 1, 2 and block Y. <strong>mar_left</strong> parameter adds extra values on the left of the plot, usefull to see variable names. Only the first cuper-component is plotted.</p>
+
+<pre><code class="r">plot(model_multi_vizu,vizu = &quot;weights&quot;,super = T,comp=1 ,addY = T,
+     mar_left = 5,mar_bottom = 3,reorder_Y = T)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" title="plot of chunk unnamed-chunk-17" alt="plot of chunk unnamed-chunk-17" width="1000px" height="1000px" /></p>
+
+<!-- ##### Super-Component 2 -->
+
+<!-- ```{r,fig.height=8,fig.width=13} -->
+
+<!-- plot(model_multi_vizu,vizu = "weights",super = T,comp=2 ,addY = T,mar_left = 5, -->
+
+<!--      mar_bottom = 3,reorder_Y = T) -->
+
+<!-- ``` -->
+
+<!-- ##### Super-Component 3 -->
+
+<!-- ```{r,fig.height=8,fig.width=13} -->
+
+<!-- plot(model_multi_vizu,vizu = "weights",super = T,comp=3 ,addY = T,mar_left = 5,mar_bottom=3,reorder_Y = T) -->
+
+<!-- ``` -->
+
+<h4><em>Heatmap</em> representation {.tabset}</h4>
+
+<p>Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, only the first component in the case of that example.</p>
+
+<p>Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using <strong>hclust</strong> similarities.</p>
+
+<pre><code class="r">plot(model_multi_vizu,vizu = &quot;heatmap&quot;,comp = 1)
+</code></pre>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANIAAADSCAMAAAAIR25wAAABTVBMVEUAAAAbnnc6AGY6OmY6OpA6ZmY6ZpA6ZrY6kLY6kNtmADpmOgBmOjpmOmZmOpBmZgBmZjpmZmZmZpBmkGZmkJBmkLZmkNtmtpBmtrZmtttmtv91cLOQOgCQOjqQOmaQOpCQZgCQZjqQZmaQZpCQZraQkDqQkGaQkJCQkLaQkNuQtmaQtpCQtraQttuQtv+Q27aQ29uQ2/+bUgO2ZgC2Zjq2Zma2ZpC2kDq2kGa2kJC2kLa2nJy2tma2tpC2tra2try2ttu2tv+227a227y229u22/+2/7a2/9u2//+8/9vZXwLbkDrbkGbbkJDbnJzbtmbbtpDbtrbbttvb25Db27bb29vb2//b/7bb/9vb///nKYr/AAD/IAD/QAD/YAD/gAD/nwD/tmb/tpD/trb/vwD/25D/27b/29v/3wD//wD//yr//7b//9X//9v///8lKogBAAAACXBIWXMAAASdAAAEnQF8NGuhAAAQvklEQVR4nO2d/V/bxhnA1RDC2jVdkxG20q1rmgWTFbKwpgO7saZQe8kCbS1qEtzglyYUQ6j0//+4e3303JskGzDnfvwk2LJ0Evf1Pc9zzz13EkE6viTuI2FnhOsMX5KX/XS/M9x/OYzSofPchJUrkmCEX63LzvLZR50hqRLZStJOQrfIOz3yPv2U0CoMWU3YYXaMfQ8dtp+87Syn6fHvycsvS7uLcysfX7u18s+/i+oP+QVoUfIvEaV3ly8Vae7j6/dvXd9cvPn5wuc3PqBbH31+48ONNPnL9U3y/tVcM925cfM+3aSH6bEd8bN5ixZ59NVCJx1uklo+3iDfA6nz7u2VDXLpx48+u08uRi6QprTo/MJX9ETKvnCpSJ+0b364eG/l1rX7y6QOzz4jWx9v/Pw+PfJX8k6qSaqasE16mBz7Hf2ws0yOL967v0w26He+w5GSz579rZOe3fvi1vP05/mFXXoxcjQhRf/7wfJjduKlIxHF25y/cXf+2v2Fu6zO89f+ME9aiRz5YW6uSZF25+b+QTfpYXqM7qckO/M3NukbaSWuTxs789d/JNXdfUSRzj7YeDxPkKiakaJ3/3STnkwacfmXpctEsgnFGOeYqGlQLDkX4XLRSOeU4upcRImJygxpzBITlRnSmCUmKjOkMUtMVGZIY5aYqMyQxiwxUZkhjVliojJDGrPERGX6kYoHfOYpxRe9jJqWlsLfPkMqWeIyZYbktrCRLnqpMipSqdO8RbL5vWlHsmzT92LdK0B67z329kNlPebzCfQtHmVaIlfKVAwxBNn+cyNVO9VKu9I8rjyvxs3W6mSRsrcLQRKytXbvj3eSymqaPn7/XK1UPljIRcrVvdJIi5X6erX+sNraOBdS6cMWJEYRwL7zIV2YlETCrYCQ0qtGKo5JDf1RvLQbKXMW1t+bX60XL9jbd82kxicjqdL9Us4/lPy28pEAWkGi/5zGVA5pc+n4dqvSuLu4Hoft5v7ZA3yF0RvDcqpafbAaucH2qEjOupf7KqurYWV7Zala6VR/XEiTKm6lMhd2YAXqFji1QKk8/IfGuRCk1idbi0+Wtm6T/qm+8fVaU6motRECy4d8pKxpZOVtSNmGS/XGdQ86SWAesiiUtRAgYQ5c/SCwIzlqPxZSVhej91BIA2QU+JfpvCqJgZReKNKnn7I3Ejh0hrKHZZU4ZnWKyekxqqBA0L57qLOt0aCOE0aqds5W786zIK/Favi8GlSCFkGqNMnnajsg+zuqXYPfUuoigAKEP2EkLskq+V+tvFr9YmW9yq62th6sBFXyb2UpSIItUrFdiiR132ICyDBsFjJppPTNnWpz6/arB9W6QPr6UfCEAG0FT5aCOtmgPw/Hq9QVISlnxEFUUIFpQ/JeCpB++om+JmH69l8vqKRpr9eV0uvBB7bRY9LXBMrxg0qZHhL6eUCkLzeEnJwcHbGNIyInVOgG/3g0HhL30A9eeI8klyaWVLxqx1ek1kPy02w306RWqzdbjXpYgCQDgQwJAXU1yUMSBxQA4BMfKY5AAjpaddhASOIDsYlaJ4mjOKLWcdyIo73tIiQIfjxFIoYeN/hrGcVTQl1fkYTikVaqVb+MWkT1cpEwsYbE7UNgKcZiIgEUP0VHgj3cYMgLNq0BrbowKmFAXNgHoXhPww7ZSvYaVPWKkAKH4vmCpCheQpMJnQKkTHxFQopX+7LZah433UjamDFDQtVXvbliS9JKelCEvpjEvCQpIW0JcPp9qH5f8oIViQ1V8eIwfhof5CC5FM8rpJE8XuByD34hYcWrk442zFO8Ao8nfzKjkrbRzzZUEzLMrYdcuzQe9mFgCAU8OUFOnG1qikc62jDH4wV42G3xeH4gjah4gkttJUXJQKHEPtWHGeI6LAB53RGdEBTjnZ7qSJrikc522pEMxcvragFJVTzPkMZQPOictMHFqLUuPkViiQ/c/Q1ktyo625OT09NTDmkqHonx2s1CxcuYPUVSY7xt2tkWIxmK5xWSonhc9QqRpFiR1M0eqhp21Mqgt4dLaR+lRUlL6ksyYUDgxB1dbbvZJj5v2pGw4qXxQRzmjWrhSI7iXT3S6B4vG9liJz6i2MxIQxL7xBBDOnGAhNDOOarl6ZRGSKQQSW54iqSnU8K4FJLR1XqENLLioWHgOZDKCofsyzdAEqMMSnZKBcUPquJtR+2cwYWc5DOGgJ4hIcX7phN2wgP34CJIJZLvrbQeN0grNeJvWSuR9hoLyRkKFISt9lPoQEsXSOmBR5cUBElGFIZ7CEm/5I7EJVJ+JH71SCO4B0CS4iuS0S85s60iP2RHAlEydHhqQitlfgUKgBjmI1viCH0exkJehQcOJ9yscCSO+iV3V5sh5Xm8q0caVfHwag1fkfAQcK3RDt2RuEQKcnIP7iHQCMIpEGSP54cACWyJcwhbEoGEOgSkEd5eoS0FNsXzCGkMxQtsiucTkqJ4pMvNCYjykISURypTEiEptkT3HSHzyUl6hWGRxwvkKiyHx/MBaUTFgzXMDsUbU8CzwaaCBNrGkKgWItUrUDyabc11D9OApCkendosRBopxruCVlInNunUZhESiDZzYYOyT23KeQ7HvKcBxUaznEQgQR5ZSSAz0Sc2SZSX29VOA5I+sekcXMhFgu4ZdV+QDI+XOGbUUdSgt5ICUG4wgfCVYasKJKEGPKyDSQwY3CLfzYWYlZHmj+qOrjYbAPqOpC3lIONal+JpY1pbV+sHkpHmz1M851KO8Z24zCbrX4UIGThAj490he/OAr4snSINSe9qayTCK1Y875GMNL8r25rlh/KWcviApHk82t3mIuXkHpRZB7RpWhcsJuiKdQR6GWXKDOiELWXTGHJowafM7KPa5jHpbPOQUlsreYaEFO+bgzCiqpePZLElz5BktvU/8bekXwrDqF0e6VMmaap0+jCzqnhk8NHM/3bF8oG+sYYIlexpS4z4d8E2aPTKxk6Dwenpu3cnfA2bGD4Z089R6FjphR2DUDxPkUoPAbWQ1eNW0hdVO9P8FqSimYuCVQAM6fDQflB8M0DHsUQCeSDnbSFkODmBBZRatrXpXtsqkdwezxckLSByDwEByftW0tY91J3rHgKZDjdtyVXvMmKPcpVOgNHJiBgmLBgUBxIhK7Uvsq/8ugdAMj2eZ0ha7mFYpHj4oK9Iau7hOEfx0kAN8cacq1UtzD28Au+NugXqv4/kfTB4IaicuzBzDyQgcqX5AzFWdyS9PEIaoauF9MPIrQTxXLlhiJHHQ5tH/BYSPcbjHo+t8ddyD2EYtnMVT0H2FMlYYuhK8yOkkRVvwq00iuJpIdFPTDhSv1wapaQgKJ7CQx/FMKKPVvbLdB7bZcwv5bWSTuspkprmj8KcIWCaquMLX5HS4f73DVA/t+IZAZ7WSpcoRlovExHhURyaUhFLOd42alHrYbJP13jFjSiJph9peBDW12oH9TXivvfCKAntGSINyVA8n5BofpX9ORPVanKQINc/ESQ5oO3B8BiFFRzp3bt3MqYQ6ZRw/20zbUdvn0UlkeSGp0hJWI3C/U66H+4diD9Uk48UZI8P8RSJySiKFxQEROWcuRYgoD19YMgo0IkigQxIYq5Whq68q12P0lEUz38konhrdOBXUvGyhRyuGO/qkZDkxngQ3hXlHrJIE1cf9jmJ0WF+AroeinQFC8qrgC0JMDOP57h/KUMqyD1cPZKyqPq4ET91LOUw8pI+txJO80ct17qH0kju6uqbzjJQdZjhkKmUoyMoKTJ51JYIklwhZU4/b9P2KkQaOek1WSRjFrDIPaRZAV+RlPtqm8cNR+5BIuHFHCNkiMC6cny8YYQ9ZFb0EHXRsE+M2MVQ3al49DkCjlEtICHF8xSp7O2N0NWifb4i6bc3OiY2ZUBUkEDOSQFpGUmoqIGQraWiL2K1uHaSWCpFscRcLeQozTS/qng41ZBqs5u+IhnPTlEVDw1jU6Nz8hVJSfMbj7AYFals0GpajVGgp9zGwCnY3sGAP69DrMYTq1P4QN3IttLZJTV6MJAKFM8HpIKuVkcKCtxDOSgAMgrruWPbqXxDTFawjpZ3tSKxp0fix1okriGVmDK7eiRtRp34vKf5SMWDi6tGKkjzK4k7PRo/5w0KXb4cTQHVP/LlksL5iXXifA2HENG/wtI1c6WXPrgIlI3pQNLS/PpSDitSToznA1JpxZMvjkgc3b+kPxzBtAhkMbBkw5C+JuiOTSTgxM1HWAiP19ZuI7EgZTs9RdI8nraoOrAjWRTPI6R8xdORVK+XLddFtS53qxXKi7j8fl/LqsDzGKVhCSRlcGF6PP1pURqSBuwpkn7/0nae4kFLqYrnGVL+qNaKZGmlbP5fA7IDymrZAwQoog6EJRQ8oAMvE5CztfqMOlvNr3g8C1Le4zP9QMKLqjvf/0+7f8mGZLMlr5BwtpW2kpr0ykeSU2YiBuDVp6OZrlyLIpblspEpcu1omYruqqWg9J1YsWbaEuUQE2fckszntqY05aXkHgKLVzDXPXiGlA7BPWQNoiVRXOIpUlILoze342d01UOUxmuRktkqh2S3hgKBusFnexmeJ+7zxeHCiIS7/vVX24WJuoVr8fq/n4XtKFxP4rWwoyLliK9IdNWDqH/8EhQvzylMQSu1w9af4+fK9POISMgVwya/56Wf7e1LYxMmNBB1ld4aKs+FRaA0tODDKjEOHwwOqdB9zI4OD+EkjjqgSa+9+lpr/e1zZfq5AElXPM+QmAzVGhci+d1KdN1DUiO+Trg7A8nqGHQkxbn2uN82kXryCCCh0bmMCACJOWXu7gUfBRNADLPff/0aVgxI5gFb90A62APp7kykMornFVI6fMni7zhbc6M5cavuGYqHpIvEecDyOCikcdy79WXJI15fcZAfgWuKwyBsiWGtg9ROn0SaQqThQUi0L1M7C1JRV+sbUqqpnYHk1j3D4/FrQs/ZVVZgyBtB0N4eNQxhQJAtQbegd7sw1SQMRdqbGGXwHEqfGpUMAol7iI5X6aLW1QSiPOPezClDSsPWWtior0UJRHkmUgnF8wmJikx3cf2z3EFb1Er6QwtgTIBGDzJk6/E1GcIxHx2hIQY6H4asImvMr4C6VWZmh4evX7POl39bbFN0tbWOPcabSiTe1aapPcbLVT5fkbjHU2tvRbK0kkynDCyi5Hn7mkBKBCqflYKzxfcivgtZoIuSht0uBRJQMqroUo9Xoav442a8vxo3amHD9HhThsQ83l5IPHirEYYNshmZd6MrfVO2x1ekTLjfc/wZnCDDgX3vMYGwFdUFGQZUF6EqJAhI+yYgt4y+BVZ1MUahHK+JCLMSoxdzbavjz+AE8Jq1kqdI6tpWAhTntpKyz1Mk5YHB9Ubouq9WtygdSbcao7p9VGdUeSiZfSV4HxdmQMrKIhHSUqBDKTwY6erPbQ1zH2SvhuW+IpVd25ohed9KxtrWvAfZayONDImJMmpBFVX2ijqjPJ4LSVyEXrUns9DCtQMmt6VDblSqe0BrW/MeZC+pDMXzCmnEvwuoiK9I6pOq6zkPDJ4W0Tze3rb7gcHTI5b5pd+czJCmQWZI0yAzpGmQGdI0yAxpGmSGNA0yQaSYDtGSiL7FnSRCOy9WJoj03ZeV5puVpdb6WTNurSzFB9GbSrNaX71oqEkiLb5aXT17UK3Wn2/dIe+vHrRXlqpbU470oLq1VG3fSauVraWtlTuVJ0tblScPL/j3/Abdw/8BCMAcUMTed5kAAAAASUVORK5CYII=" title="plot of chunk unnamed-chunk-18" alt="plot of chunk unnamed-chunk-18" width="1000px" height="1000px" /></p>
+
+<h3>Summary Method</h3>
+
+<p>A <em>summary</em> method explains more precisely the model. </p>
+
+<pre><code class="r">summary(model_multi_vizu)
+</code></pre>
+
+<pre><code>## ===============================================================
+##                      ddsPLS object description              
+## ===============================================================
+## 
+## Number of blocks: 3
+## Number of dimensions: 3
+## Regularization coefficient: 0.8
+## Number of individuals: 64
+## Number of variables in Y part: 10
+## Model built in mode regression
+## Maximum number of iterations in the imputation process: 50
+## Algorithm of imputation has converged
+## 
+## 
+##           Variance Explained (%)    
+## -------------------------------------------
+## Total Y variance explained by each Super Component
+## [1] 37 31 30
+## 
+## Marginal Y variable variance explained by each Super Component
+##                    Super Comp. 1 Super Comp. 2 Super Comp. 3
+## BUN.mg.dL.                 51.00          50.0          49.0
+## Creat.mg.dL.                3.00           2.5           5.1
+## TP.g.dL.                    0.47           1.1           3.9
+## ALB.g.dL.                   3.90           5.4          10.0
+## ALT.IU.L.                  91.00          70.0          68.0
+## SDH.IU.L.                   2.50           1.6           2.3
+## AST.IU.L.                  89.00          70.0          61.0
+## ALP.IU.L.                  17.00          21.0          18.0
+## TBA.umol.L.                72.00          56.0          49.0
+## Cholesterol.mg.dL.         43.00          35.0          36.0
+## 
+## Total Y variance explained by each component of each block
+##                 Comp. 1 Comp. 2 Comp. 3
+## Block1               32    21.0      19
+## Matrix2              37    24.0      31
+## Other_Variables      37     9.5      26
+## 
+## 
+##           Variance In Common (%) (RV coefficient)    
+## -------------------------------------------------------
+## Total Y variance in common with each Super Component
+## [1] 75 63 61
+## 
+## Marginal Y variable variance in common with each Super Component
+##                    Super Comp. 1 Super Comp. 2 Super Comp. 3
+## BUN.mg.dL.                 51.00          50.0          49.0
+## Creat.mg.dL.                3.00           2.5           5.1
+## TP.g.dL.                    0.47           1.1           3.9
+## ALB.g.dL.                   3.90           5.4          10.0
+## ALT.IU.L.                  91.00          70.0          68.0
+## SDH.IU.L.                   2.50           1.6           2.3
+## AST.IU.L.                  89.00          70.0          61.0
+## ALP.IU.L.                  17.00          21.0          18.0
+## TBA.umol.L.                72.00          56.0          49.0
+## Cholesterol.mg.dL.         43.00          35.0          36.0
+## 
+## Total Y variance in common with each component of each block
+##                 Comp. 1 Comp. 2 Comp. 3
+## Block1               63      42      38
+## Matrix2              73      48      63
+## Other_Variables      73      19      51
+## 
+## 
+##          Missing value information    
+## -------------------------------------------
+## 
+##                                   Block1 Matrix2 Other_Variables  Total
+## Number of variables               1000.0  1000.0          1116.0 3116.0
+## Number of missing samples           10.0    10.0            20.0   40.0
+## Proportion of missing samples (%)   15.6    15.6            31.2   20.8
+## 
+## 
+##               mddsPLS results         
+## -------------------------------------------
+## 
+## At most 39 variable(s) can be selected in the X part
+##     For each block of X, are selected
+##                 Super Comp. 1 Super Comp. 2 Super Comp. 3
+## Block1                      3             3             3
+## Matrix2                    29            28            29
+## Other_Variables             7             7             7
+##     For the Y block, are selected
+##         @ (4,3,4) variable(s)
+## 
+## 
+##                  Thank&#39;s for using me      
+## ---------------------------------------------------------------
+##                                                 Hadrien Lorenzo
+##                                  hadrien.lorenzo.2015@gmail.com
+## ===============================================================
+</code></pre>
+
+<h3>Get selected variables</h3>
+
+<p>Output <em>var_selected</em> permits to get the selected varaibles per block.</p>
+
+<p>This is a list filled with \code{2R}-column matrices corresponding to the non nul coefficients of each block on the \emph{Super-Components}. They are ordered according to their absolute value on the first <strong>Super-Component</strong>, in a decreasing way. Only \(2\) significance digits are kept here for convenience.</p>
+
+<p>Here is represented its value for the first block</p>
+
+<pre><code class="r">model_multi_vizu$var_selected[[1]]
+</code></pre>
+
+<pre><code>##              Weights_comp_1 Weights_comp_2 Weights_comp_3
+## A_43_P18824       0.2021202      0.3106499     0.92878632
+## A_43_P16842       0.8112084     -0.5844501     0.01894704
+## A_42_P470649      0.5487152      0.7496097    -0.37013102
+##              Super_Weights_comp_1 Super_Weights_comp_2
+## A_43_P18824           -0.02591159           -0.3312496
+## A_43_P16842           -0.05547870           -0.4429440
+## A_42_P470649          -0.07391688           -0.2621193
+##              Super_Weights_comp_3
+## A_43_P18824           -0.21819422
+## A_43_P16842           -0.03013106
+## A_42_P470649           0.02654694
+</code></pre>
+
+<!-- ## Simulation Model {.tabset} -->
+
+<!-- In the following is considerd a simulated dataset to have an idea of the behavior of the method in the multi-block context with missing values. This part is based on the theoretical aspects of the methodology. -->
+
+<!-- ### Notations -->
+
+<!-- According to what have been proposed in [@johnstone2004sparse], the following simulations follow the spike covariance models -->
+
+<!-- $$\left\{\begin{aligned} -->
+
+<!-- {\bf X}_1&= {\bf L}{\bf \Omega}_1^{1/2}{\bf U}^T_{1,mod}+{\bf E}_1\\ -->
+
+<!-- &\vdots\\ -->
+
+<!-- {\bf X}_T&= {\bf L}{\bf \Omega}_T^{1/2}{\bf U}^T_{T,mod}+{\bf E}_T\\ -->
+
+<!-- {\bf Y}&= {\bf L}{\bf \Omega}_y^{1/2}{\bf V}^T_{mod}+{\bf E}_y\\ -->
+
+<!-- \end{aligned} -->
+
+<!-- \right.,$$ -->
+
+<!-- where $({\bf \Omega}_t)_{t=1\cdots T}$ and ${\bf \Omega}_y$ are $R$-dimensional diagonal matrices with strictly positive diagonal elements. $({\bf U}_{t,mod}\in\mathbb{R}^{p_t\times R})_{t=1\cdots T}$ and ${\bf V}_{mod}\in\mathbb{R}^{q\times R}$ are  matrices with orthonormal columns. ${\bf L}\in\mathbb{R}^{n\times R}$ is a matrix where elements are i.i.d. standard Gaussian random effects, $({\bf E}_t\in\mathbb{R}^{n\times p_t})_{t=1\cdots T}$ (respectively ${\bf E}_y\in\mathbb{R}^{n\times q}$) are matrices such that each row follows the standard multivariate normal distribution $(N_{p_t}(0,\mathbb{I}_{p_t}))_{t=1\cdots T}$ (respectively $N_q(0,\mathbb{I}_q)$) and the $n$ rows are independent and mutually independent noise vectors. Let us mention that the matrix ${\bf L}$ does not depend of $t$ and thus introduces a common structure between the ${\bf X}_t$'s and $\bf Y$ models. -->
+
+<!-- ### Fix the Parameters -->
+
+<!-- Usual parameters used to simulate datasets -->
+
+<!-- ```{r,fig.width=7, fig.height=6,message=FALSE,eval=F} -->
+
+<!-- n <- 50 # number of individuals -->
+
+<!-- R <- 5 # number of created dimensions in __L__ -->
+
+<!-- T_ <- 5 # number of blocks -->
+
+<!-- sd_error <- 0.1 # Standard-deviation of the spike-covariance model element matrices of $E_t$ and $E_y$ -->
+
+<!-- p_s <- sample(x = 100:200,size = T_,replace = T) # number of variables per block $X_t$ -->
+
+<!-- q <- 10  # number of variable in $Y$ -->
+
+<!-- R_real <- 3 # number of components of __L__ described in __Y__ -->
+
+<!-- p_missing <- 0.3 # the proportion of missing values -->
+
+<!-- ``` -->
+
+<!-- Possible values for $({\bf \Omega}_t^{1/2})_{t=1\cdots T}$ and ${\bf \Omega}_y^{1/2}$ diagonal elements are then chosen. It has been chosen to consider low elements, close to $0$, and high elements, $\approx 1$. -->
+
+<!-- ```{r,fig.width=7, fig.height=6,message=FALSE,eval=F} -->
+
+<!-- o_x <- seq(0,1,length.out = 1000) -->
+
+<!-- o_y <- (o_x-0.5)^2 -->
+
+<!-- o_y[which(o_y<0.2)] <- 0 # keep only low or high potential diagonal elements -->
+
+<!-- all_omegas <- sample(o_x,prob = o_y,size = R*T_) # Select R*T_ elements -->
+
+<!-- all_omegas_y <- sample(o_x,prob = o_y,size = R_real) # Select R_real elements -->
+
+<!-- Omegas_y <- diag(c(all_omegas_y,rep(0,R-R_real))) # Create the Omega_y diagonal matrix -->
+
+<!-- ``` -->
+
+<!-- ### Generate Covariate Dataset -->
+
+<!-- __Xs__ is a list of matrices corresponding to the defined spike-covariance model. -->
+
+<!-- ```{r,message=FALSE,eval=F} -->
+
+<!-- Xs <- list() -->
+
+<!-- L <- matrix(rnorm(n*R),nrow = n) -->
+
+<!-- for(k in 1:T_){ -->
+
+<!--     Omegas <- diag(all_omegas[1:R+(k-1)*R]) -->
+
+<!--     Us <- svd(matrix(rnorm(p_s[k]*n),nrow = n))$v[,1:R] -->
+
+<!--     E_k <- matrix(rnorm(n*p_s[k],sd = sd_error),nrow = n) -->
+
+<!--     Xs[[k]]<- scale(E_k + tcrossprod(L%*%Omegas,Us)) -->
+
+<!-- } -->
+
+<!-- ``` -->
+
+<!-- A proportion $p_{missing}$ of the data is missing, the following script permits to remove that proportion of samplestaking into account that a given participant must not be missing for all blocks. -->
+
+<!-- ```{r,message=FALSE,eval=F} -->
+
+<!-- values <- expand.grid(1:n,1:T_) -->
+
+<!-- values_id <- 1:(n*T_) -->
+
+<!-- probas <- rep(1,n*T_)/(n*T_) -->
+
+<!-- number_miss_samp <- floor(n*T_*p_missing) -->
+
+<!-- missin_samp <- matrix(NA,nrow = number_miss_samp,ncol = 2) -->
+
+<!-- for(sam in 1:number_miss_samp){ -->
+
+<!--   curr_id <- values_id[sample(values_id,size = 1,prob = probas)] -->
+
+<!--   missin_samp[sam,1] <- values[curr_id,1] -->
+
+<!--   missin_samp[sam,2] <- values[curr_id,2] -->
+
+<!--   probas[curr_id] <- 0 -->
+
+<!--   if(length(which(na.omit(missin_samp[,1])==missin_samp[sam,1]))==n){ -->
+
+<!--     probas[which(values[,1]==missin_samp[sam,1])] <- 0 -->
+
+<!--   } -->
+
+<!--   Xs[[missin_samp[sam,2]]][missin_samp[sam,1],] <- NA ## Remove individual value -->
+
+<!-- } -->
+
+<!-- ``` -->
+
+<!-- ### Generate Response Matrix -->
+
+<!-- __Y__ is a matrix also corresponding to the defined spike-covariance model. -->
+
+<!-- ```{r,message=FALSE,eval=F} -->
+
+<!-- V <- svd(matrix(rnorm(q*n),nrow = n))$v[,1:R] -->
+
+<!-- E_y <- matrix(rnorm(q*n,sd = sd_error),nrow = n) -->
+
+<!-- Y <- tcrossprod(L%*%Omegas_y,V) -->
+
+<!-- Y <- scale(E_y + Y) -->
+
+<!-- ``` -->
+
+<!-- ### Build a model {.tabset} -->
+
+<!-- ```{r,echo=F} -->
+
+<!-- # save(Xs,Y,file="Xs_y_multi.RData") -->
+
+<!-- load("Xs_y_multi.RData") -->
+
+<!-- ``` -->
+
+<!-- A model is simply built as follows -->
+
+<!-- ```{r} -->
+
+<!-- model <- mddsPLS(Xs,Y,lambda = 0.75,R = 3,verbose = T) -->
+
+<!-- ``` -->
+
+<!-- #### Plot Method {.tabset} -->
+
+<!-- The **Plot** mehtod permits many types of representation. Among which -->
+
+<!--  * *weights* which shows all the weights under barplot representations. If **super** is set to **TRUE**, then the **super-weights** are represented. In the mono-block case, **super-weights** are equal to **weights**. -->
+
+<!--  * *heatmap* which shows the selected variables (for $\mathbf{X}$ and $\mathbf{Y}$) for the all individuals. -->
+
+<!-- The following sections detailed the discussed method though those parametizations. -->
+
+<!-- ##### *Scaled Super-Weight* representation {.tabset} -->
+
+<!-- The following figure permits to represent the *scaled super-weights* for blocks **X** and block **Y**. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names. -->
+
+<!-- ###### Super-Component 1 -->
+
+<!-- ```{r,fig.height=10,fig.width=10} -->
+
+<!-- plot(model,vizu = "weights",super = T, -->
+
+<!--      comp=1 ,addY = T,mar_left = 0) -->
+
+<!-- ``` -->
+
+<!-- ###### Super-Component 2 -->
+
+<!-- ```{r,fig.height=10,fig.width=10} -->
+
+<!-- plot(model,vizu = "weights",super = T, -->
+
+<!--      comp=2 ,addY = T,mar_left = 0) -->
+
+<!-- ``` -->
+
+<!-- ###### Super-Component 3 -->
+
+<!-- ```{r,fig.height=10,fig.width=10} -->
+
+<!-- plot(model,vizu = "weights",super = T, -->
+
+<!--      comp=3 ,addY = T,mar_left = 0) -->
+
+<!-- ``` -->
+
+<!-- ##### *Heatmap* representation {.tabset} -->
+
+<!-- Heatmap permit to appreciate the discriminative aspect of variables according to their individual representations. It has been decided to plot heatmaps component per component, first and second only here. -->
+
+<!-- ###### Super-Component 1 -->
+
+<!-- ```{r,fig.height=13} -->
+
+<!-- plot(model,vizu = "heatmap",comp = 1) -->
+
+<!-- ``` -->
+
+<!-- ###### Super-Component 2 -->
+
+<!-- ```{r,fig.height=13} -->
+
+<!-- plot(model,vizu = "heatmap",comp = 2) -->
+
+<!-- ``` -->
+
+<!-- Each variable has been normalized separately. Dendrogram are used in the individual and in the variable directions using **hclust** similarities. -->
+
+<!-- #### Summary Method -->
+
+<!-- A *summary* method explains more precisely the model. -->
+
+<!-- ```{r, fig.show='hold',message=FALSE,eval=T} -->
+
+<!-- summary(model,plot_present_indiv = T) -->
+
+<!-- ``` -->
+
+<!-- The package **eulerr** described in [@eulerrpackage], permits to visualize the missing values through Euler Diagramm such as follows -->
+
+<!-- In each area is detailed the number of individuals present. So **Block1** has $5$ missing samples in common with **Matrix2** and **Other_Variables** has $10$ missing samples which are present in the other matrices. -->
+
+<!-- ## Cross-validation {.tabset} -->
+
+<!-- The cross-validation process is started in a leave-one-out design along $R\in\{1,2,3\}$ dimensions. -->
+
+<!-- ```{r,message=FALSE,eval=F} -->
+
+<!-- n_lambda <- 20 -->
+
+<!-- NCORES <- 7 -->
+
+<!-- cross_valid <- perf_mddsPLS(Xs,Y,lambda_min = 0.2, -->
+
+<!--                             n_lambda = n_lambda, -->
+
+<!--                             R = 1,kfolds = "loo",NCORES = NCORES) -->
+
+<!-- cross_valid_2 <- perf_mddsPLS(Xs,Y,lambda_min = 0.2, -->
+
+<!--                             n_lambda = n_lambda, -->
+
+<!--                             R = 2,kfolds = "loo",NCORES = NCORES) -->
+
+<!-- cross_valid_3 <- perf_mddsPLS(Xs,Y,lambda_min = 0.2, -->
+
+<!--                             n_lambda = n_lambda, -->
+
+<!--                             R = 3,kfolds = "loo",NCORES = NCORES) -->
+
+<!-- ``` -->
+
+<!-- ```{r,echo=F} -->
+
+<!-- # save(cross_valid,cross_valid_2,cross_valid_3,file="cross_valid_multi.RData") -->
+
+<!-- load("cross_valid_multi_noXs.RData") -->
+
+<!-- cross_valid$Xs=cross_valid_3$Xs=cross_valid_3$Xs <- Xs -->
+
+<!-- cross_valid$Y=cross_valid_3$Y=cross_valid_3$Y <- Y -->
+
+<!-- ``` -->
+
+<!-- ### Comparison of Results for Varying *R* {.tabset} -->
+
+<!-- In the following we compare the results for the different values of $\lambda$, classically, but also $R$. -->
+
+<!-- #### One component {.tabset} -->
+
+<!-- ##### Error Plot -->
+
+<!-- ```{r,fig.width=12, fig.height=7} -->
+
+<!-- plot(cross_valid,plot_mean = T,ylim=c(0,1.2),no_occurence = T, -->
+
+<!--      which_sd_plot = c(3,5,6,8,10),alpha.f = 0.2, -->
+
+<!--      legend_names = 1:10,pos_legend="topleft") -->
+
+<!-- ``` -->
+
+<!-- ##### Summary Information -->
+
+<!-- ```{r} -->
+
+<!-- summary(cross_valid,plot_res_cv = F) -->
+
+<!-- ``` -->
+
+<!-- ##### Conclusion for One Component -->
+
+<!-- The error curves admit errors around $\lambda=0.4$ and almost all calculus have converged. -->
+
+<!-- #### Two components {.tabset} -->
+
+<!-- ##### Error Plot -->
+
+<!-- ```{r,fig.width=12, fig.height=7} -->
+
+<!-- plot(cross_valid_2,plot_mean = T,ylim=c(0,1.2),no_occurence = T, -->
+
+<!--      which_sd_plot = c(3,5,6,8,10),alpha.f = 0.2, -->
+
+<!--      legend_names = 1:10,pos_legend="topleft") -->
+
+<!-- ``` -->
+
+<!-- ##### Summary Information -->
+
+<!-- ```{r} -->
+
+<!-- summary(cross_valid_2,plot_res_cv = F) -->
+
+<!-- ``` -->
+
+<!-- ##### Conclusion for Two Components -->
+
+<!-- Errors are smaller for *low valued regularization coefficients* than in the case $R=1$. It means that the model can learn the general structure of the **Y** dataset. The **mean MSEP** is around $0.2$ in that region while it was around $0.5$ for the case $R=1$. -->
+
+<!-- For larger $\lambda$, it is interesting to notice that some variables are well predicted until $\lambda=0.75$. -->
+
+<!-- Looking at the **summary** shows that the algorithm found information almost all the time. -->
+
+<!-- #### Three components {.tabset} -->
+
+<!-- ##### Error Plot -->
+
+<!-- ```{r,fig.width=12, fig.height=7} -->
+
+<!-- plot(cross_valid_3,plot_mean = T,ylim=c(0,1.2),no_occurence = T, -->
+
+<!--      which_sd_plot = c(3,5,6,8,10),alpha.f = 0.2, -->
+
+<!--      legend_names = 1:10,pos_legend="topleft") -->
+
+<!-- ``` -->
+
+<!-- ##### Summary Information -->
+
+<!-- ```{r} -->
+
+<!-- summary(cross_valid_3,plot_res_cv = F) -->
+
+<!-- ``` -->
+
+<!-- ##### Conclusion for Three Components -->
+
+<!-- Most of the calculus for low $\lambda$ have not converged and the errors are not interestingly shrinked. -->
+
+<!-- One would say that there is no information in that third component. -->
+
+<!-- But for large values of $\lambda$, around $0.6$, the algorithm converges quite often and it seems that a group of $6$ variables is very finely predicted, while $2$ others are averagely predicted and the laste$2$ ones are poorly described. -->
+
+<!-- ### Conclusion of the Comparisons -->
+
+<!-- According to the previous part it seems interesting to fix -->
+
+<!--  * $R=2$ and low $\lambda$ permits to describe accurately the structure of the $\mathbf{Y}$ data set. -->
+
+<!--  * $R=3$ and $\lambda\approx0.6$ permits to more precisely predict $6$ variables and not the others. -->
+
+<!-- We will now build the corresponding models and see its specificities. -->
+
+<!-- ## Two Models, a General and a Specific {.tabset} -->
+
+<!-- In the following we have built the two models discussed before -->
+
+<!-- ### A General Model -->
+
+<!-- The one defined for $R=2$ and $\lambda\approx0.2$ which is built as follows -->
+
+<!-- ```{r} -->
+
+<!-- model_general <- mddsPLS(Xs,Y,R=2,lambda=0.2,verbose = T) -->
+
+<!-- ``` -->
+
+<!-- More precise information can be found using the summary method -->
+
+<!-- ```{r} -->
+
+<!-- summary(model_general) -->
+
+<!-- ``` -->
+
+<!-- The Euler diagramm represents the missing samples positions and overlappings among the different data sets. -->
+
+<!-- ### A Specific Model -->
+
+<!-- The one defined for $R=3$ and $\lambda\approx0.6$ which is built as follows -->
+
+<!-- ```{r} -->
+
+<!-- model_specific <- mddsPLS(Xs,Y,R=3,lambda=0.6,verbose = T) -->
+
+<!-- ``` -->
+
+<!-- More precise information can be found using the summary method -->
+
+<!-- ```{r} -->
+
+<!-- summary(model_specific) -->
+
+<!-- ``` -->
+
+<!-- The Euler diagramm represents the missing samples positions and overlappings among the different data sets. -->
+
+<!-- <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i> **The Euler diagram problem becomes hard when the number of sets is to large and in those contexts can be wrong.** <i class="fa fa-exclamation-triangle fa-1x" aria-hidden="true"></i> &ndash;>
+
+<!-- Here blocks 1 and 2 are not selected and no more than $21$ variables is used per block. -->
+
+<h1>References</h1>
+
+</body>
+
+</html>

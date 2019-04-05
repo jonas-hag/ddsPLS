@@ -40,7 +40,8 @@ summary.mddsPLS <- function (object,
   }else{
     sent_lambda <- paste("Regularization coefficient:",object$lambda)
   }
-  n <- nrow(object$Xs[[1]]);    sent_n <- paste("Number of individuals:",n)
+  n <- nrow(object$Xs[[1]])
+  sent_n <- paste("Number of individuals:",n)
   ps <- unlist(lapply(object$Xs,ncol))
   na_x <- unlist(lapply(object$id_na,function(oo){if(length(oo)==0){out <- 0}else{out <- length(oo)};out}))
   prop_na <- signif(na_x/n*100,3)
@@ -66,7 +67,9 @@ summary.mddsPLS <- function (object,
   for(k in 1:K){popo <- as.numeric(object$id_na[[k]]);if(length(popo)>0){df_miss[popo,k]<-0};
   df_miss[,k] <- factor(df_miss[,k],levels = c(0,1))}
   names(df_miss) <- paste(names_X_block," (",unlist(lapply(object$id_na,length)),")",sep="")
-  q <- ncol(object$Y_0); if(is.null(q)){q <- length(object$Y_0)};    sent_q <- paste("Number of variables in Y part:",q)
+  q <- ncol(object$Y_0)
+  if(is.null(q)){q <- 1}
+  sent_q <- paste("Number of variables in Y part:",q)
   mode <- object$mode;if(mode=="reg"){mode <- "regression"}else{mode <- "classification"}
   sent_mode <- paste("Model built in mode",mode)
   maxit <- object$maxIter_imput;    sent_maxit <- paste("Maximum number of iterations in the imputation process:",maxit)

@@ -472,9 +472,22 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     R <- length(x$mod$ts)
     VAR_TOT=VAR_TOT_FROB <- norm(y_obs,"f")
+    VAR_GEN=VAR_GEN_FROB <- 0
     VAR_COMPS=VAR_COMPS_FROB <- matrix(0,K,R)
     VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R)
     VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB <- matrix(0,1,R)
+
+    T_GEN <- scale(x$mod$T_super)
+    VAR_T_GEN <- norm(T_GEN,"f")
+    if(VAR_T_GEN!=0){
+      b <- mmultC(solve(crossprod(T_GEN)),crossprod(T_GEN,y_obs))
+      VAR_GEN <- (norm(mmultC(T_GEN,b),"f")/VAR_TOT)^2
+      t_y_obs <- tcrossprod(y_obs)
+      deno <- sum(diag(t_y_obs))*sum(diag(crossprod(T_GEN)))
+      numer <- sum(diag(tcrossprod(mmultC(y_obs,crossprod(y_obs,T_GEN)),T_GEN)))
+      VAR_GEN_FROB <- numer/deno
+    }
+
     for(r in 1:R){
       for(k in 1:K){
         t_r <- x$mod$ts[[r]]
@@ -483,15 +496,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         if(var_t_k_r_all!=0){
           b <- mmultC(solve(crossprod(t_k_r)),crossprod(t_k_r,y_obs))
           VAR_COMPS[k,r] <- (norm(mmultC(t_k_r,b),"f")/VAR_TOT)^2
-          t_y_obs <- tcrossprod(y_obs)
-          # t_t_k_r <- tcrossprod(t_k_r)
-          # prod_num <- mmultC(t_y_obs,t_t_k_r)
-
           deno <- norm(t_y_obs,'f')*var_t_k_r_all
           numer <- sum(mmultC(y_obs,crossprod(y_obs,t_k_r))*t_k_r)
-
-          # deno <- norm(t_y_obs,'f')*var_t_k_r_all^2
-          VAR_COMPS_FROB[k,r] <- numer/deno#sum(diag(prod_num))/deno
+          VAR_COMPS_FROB[k,r] <- numer/deno
         }
       }
     }
@@ -543,13 +550,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     }
     rownames(VAR_COMPS)=rownames(VAR_COMPS_FROB) <- legend_names_in;
     colnames(VAR_COMPS)=colnames(VAR_COMPS_FROB) <- paste("Comp.",1:R)
-    colnames(VAR_SUPER_COMPS)= names(VAR_SUPER_COMPS_ALL_Y) =
-      colnames(VAR_SUPER_COMPS_FROB)= names(VAR_SUPER_COMPS_ALL_Y_FROB)<- paste("Super Comp.",1:R)
+    colnames(VAR_SUPER_COMPS)= colnames(VAR_SUPER_COMPS_ALL_Y) =
+      colnames(VAR_SUPER_COMPS_FROB)= colnames(VAR_SUPER_COMPS_ALL_Y_FROB)<- paste("Super Comp.",1:R)
     rownames(VAR_SUPER_COMPS)=rownames(VAR_SUPER_COMPS_FROB) <- colnames(y_obs)
     return(list(
-      Linear=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
+      Linear=list(VAR_GEN=VAR_GEN,VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
                   VAR_SUPER_COMPS=VAR_SUPER_COMPS,VAR_COMPS=VAR_COMPS),
-      RV=list(VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
+      RV=list(VAR_GEN=VAR_GEN_FROB,VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB,
               VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
   }
 
