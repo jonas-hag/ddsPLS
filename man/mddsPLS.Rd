@@ -34,7 +34,17 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{getVariances}{Logical. Whether or not to compute variances.}
 }
 \value{
-A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
+A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block.
+They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions.
+The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given.
+Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
+If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \emph{Y} vraiables, taken together or splitted.
+Both of the types of variances are computed as follows:
+\enumerate{
+\item \emph{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
+This represents the variance of the to be predicted parts by the predictors under a linear model.
+\item \emph{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
+}
 }
 \description{
 This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-
@@ -78,6 +88,11 @@ Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- scale(liver.toxicity$clinic)
 #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 #summary(mddsPLS_model_reg)
+}
+\references{
+{
+  \insertAllCited{}
+}
 }
 \seealso{
 \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}

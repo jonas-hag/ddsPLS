@@ -384,11 +384,11 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
 #' If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \emph{Y} vraiables, taken together or splitted.
 #' Both of the types of variances are computed as follows:
-#'\begin{itemize}
-#'\item \emph{Linear}. Multivariate-linear regression matrix, \emph{B}, minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
-#'This represents the variance of the to be predicted parts by the predictors under a linear model.
-#'\item \emph{RV}. That coefficient has been introduced in @robert1976unifying and permits to extend the correlation notion to matrices with the same number of rows.
-#'\end{itemize}
+#' \enumerate{
+#' \item \emph{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
+#' This represents the variance of the to be predicted parts by the predictors under a linear model.
+#' \item \emph{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
+#' }
 #'
 #' @export
 #' @useDynLib ddsPLS
@@ -396,6 +396,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @importFrom stats na.omit
 #'
 #' @seealso \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
+#'
+#' @references{
+#'   \insertAllCited{}
+#' }
 #'
 #' @examples
 #' # Single-block example :
@@ -452,6 +456,17 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   }
 
   get_variances <- function(x,std_Y=T){
+    get_var_line <- function(x,y){
+      numer <- norm(mmultC(x,mmultC(solve(crossprod(x)),crossprod(x,y))),"f")
+      denom <- norm(y,"f")
+      numer/denom
+    }
+    get_rv <- function(x,y){
+      numer <- sum(diag(tcrossprod(mmultC(x,crossprod(x,y)),y)))
+      denom <- sum(diag(crossprod(x)))*sum(diag(crossprod(y)))
+      numer/denom
+    }
+
     Xs <- x$Xs
     K <- length(Xs)
     y_obs <- x$Y_0
@@ -488,15 +503,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R)
     VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB <- matrix(0,1,R)
 
+    t_y_obs <- tcrossprod(y_obs)
+
     T_GEN <- scale(x$mod$T_super)
-    VAR_T_GEN <- norm(T_GEN,"f")
+    VAR_T_GEN <- norm(x$mod$T_super,"f")
     if(VAR_T_GEN!=0){
-      b <- mmultC(solve(crossprod(T_GEN)),crossprod(T_GEN,y_obs))
-      VAR_GEN <- (norm(mmultC(T_GEN,b),"f")/VAR_TOT)^2
-      t_y_obs <- tcrossprod(y_obs)
-      deno <- sum(diag(t_y_obs))*sum(diag(crossprod(T_GEN)))
-      numer <- sum(diag(tcrossprod(mmultC(y_obs,crossprod(y_obs,T_GEN)),T_GEN)))
-      VAR_GEN_FROB <- numer/deno
+      # b <- mmultC(solve(crossprod(T_GEN)),crossprod(T_GEN,y_obs))
+      VAR_GEN <- get_var_line(T_GEN,scale(y_obs))#(norm(mmultC(T_GEN,b),"f")/VAR_TOT)^2
+      VAR_GEN_FROB <- get_rv(T_GEN,scale(y_obs))
     }
 
     for(r in 1:R){
@@ -505,11 +519,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         t_k_r <- scale(t_r[,k,drop=F],scale=F)
         var_t_k_r_all <- sum(t_k_r^2)
         if(var_t_k_r_all!=0){
-          b <- mmultC(solve(crossprod(t_k_r)),crossprod(t_k_r,y_obs))
-          VAR_COMPS[k,r] <- (norm(mmultC(t_k_r,b),"f")/VAR_TOT)^2
-          deno <- norm(t_y_obs,'f')*var_t_k_r_all
-          numer <- sum(mmultC(y_obs,crossprod(y_obs,t_k_r))*t_k_r)
-          VAR_COMPS_FROB[k,r] <- numer/deno
+          VAR_COMPS[k,r] <-  get_var_line(t_k_r,scale(y_obs))#(norm(mmultC(t_k_r,b),"f")/VAR_TOT)^2
+          # deno <- sum(diag(t_y_obs))*var_t_k_r_all
+          # numer <- sum(mmultC(y_obs,crossprod(y_obs,t_k_r))*t_k_r)
+          # VAR_COMPS_FROB[k,r] <- numer/deno
+          VAR_COMPS_FROB[k,r] <- get_rv(t_k_r,scale(y_obs))
         }
       }
     }
@@ -521,8 +535,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           t_super_r <- x$mod$T_super[,r,drop=F]
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
-            b <- mmultC(solve(crossprod(t_super_r)),crossprod(t_super_r,Y_j))
-            VAR_SUPER_COMPS[j,r] <- (norm(mmultC(t_super_r,b),"f")/var_j)^2
+            VAR_SUPER_COMPS[j,r] <- get_var_line(scale(t_super_r),scale(y_obs))#(norm(mmultC(t_super_r,b),"f")/var_j)^2
             # t_Y_j <- tcrossprod(Y_j)
             # t_t_super_r <- tcrossprod(t_super_r)
             # prod_num <- mmultC(t_Y_j,t_t_super_r)
@@ -530,8 +543,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             coef_r <- sum(Y_j*t_super_r)
             prod_num <- coef_r^2#*tcrossprod(Y_j,t_super_r)
             ###
-            deno <- sum(Y_j^2)*sum(t_super_r^2)#norm(t_t_super_r,'f')*norm(t_Y_j,'f')
-            VAR_SUPER_COMPS_FROB[j,r] <- prod_num/deno#sum(diag(prod_num))/deno
+            VAR_SUPER_COMPS_FROB[j,r] <- get_rv(scale(t_super_r),scale(Y_j))
           }
         }
       }
@@ -540,13 +552,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       sc_r <- scale(x$mod$T_super[,r,drop=F],scale=F)
       var_t_super_r <- sum(sc_r^2)
       if(var_t_super_r!=0){
-        b <- mmultC(solve(crossprod(sc_r)),crossprod(sc_r,y_obs))
-        VAR_SUPER_COMPS_ALL_Y[r] <- (norm(mmultC(sc_r,b),"f")/VAR_TOT)^2
-        # deno <- norm(tcrossprod(y_obs),'f')*norm(tcrossprod(sc_r),'f')
-
-        deno <- norm(t_y_obs,'f')*var_t_super_r
-        numer <- sum(mmultC(y_obs,crossprod(y_obs,sc_r))*sc_r)
-        VAR_SUPER_COMPS_ALL_Y_FROB[r] <- numer/deno#sum(diag(mmultC(tcrossprod(sc_r),tcrossprod(y_obs))))/deno
+        VAR_SUPER_COMPS_ALL_Y[r] <- get_var_line(sc_r,scale(y_obs))#(norm(mmultC(sc_r,b),"f")/VAR_TOT)^2
+        VAR_SUPER_COMPS_ALL_Y_FROB[r] <- get_rv(sc_r,scale(y_obs))
       }
     }
     if(is.null(names(Xs))){
