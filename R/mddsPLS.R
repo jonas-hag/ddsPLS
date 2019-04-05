@@ -364,6 +364,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
 #' \eqn{X} and \eqn{Y} datasets.
 #'
+#'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
 #' @param Y A matrix of \emph{n} rows of a vector of length \emph{n} detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
@@ -377,7 +378,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param getVariances Logical. Whether or not to compute variances.
 #'
-#' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block. They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions. The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given. Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
+#' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block.
+#' They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions.
+#' The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given.
+#' Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
+#' If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \emph{Y} vraiables, taken together or splitted.
+#' Both of the types of variances are computed as follows:
+#'\begin{itemize}
+#'\item \emph{Linear}. Multivariate-linear regression matrix, \emph{B}, minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
+#'This represents the variance of the to be predicted parts by the predictors under a linear model.
+#'\item \emph{RV}. That coefficient has been introduced in @robert1976unifying and permits to extend the correlation notion to matrices with the same number of rows.
+#'\end{itemize}
 #'
 #' @export
 #' @useDynLib ddsPLS

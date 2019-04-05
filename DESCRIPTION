@@ -21,7 +21,7 @@ RoxygenNote: 6.1.1
 Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot,Rcpp (>= 0.12.18)
 RdMacros: Rdpack
 Suggests: knitr,rmarkdown,htmltools
-Depends: R (>= 2.10)
 VignetteBuilder: knitr
+Depends: R (>= 2.10)
 LinkingTo: Rcpp
 URL: https://hadrienlorenzo.netlify.com/
