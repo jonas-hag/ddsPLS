@@ -49,7 +49,7 @@ In the $\mathbf{X}_s$ and $\mathbf{Y}$ data sets, the same numbers of individual
 
 # Introduction
 
-The present package [based on @lorenzo2019supervised]. It permits to take into account missing values in a multi-block context for supervized problems. It also permits to deal with data analyses with no missing values. Regression or classification regression paradigms are accepted.
+The present package is based on [@lorenzo2019supervised]. It permits to take into account missing values in a multi-block context for supervized problems. It also permits to deal with data analyses with no missing values. Regression or classification regression paradigms are accepted.
 
 Only two parameters must to be fixed by the user :
 
@@ -57,7 +57,7 @@ Only two parameters must to be fixed by the user :
  
  * **$\lambda$** which is the regularization coefficient, $\lambda\in[0,1]$. It can be directly interpreted as the minimum of correlation value under which an interaction between a variable of a block $\mathbf{X}$ and one of the $\mathbf{Y}$ variables is not taken into account.
  
-Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using **doParallel** package [see @doparalelManual]. This is transparent for the user, which hase just to fix the number of *cpus* to be used. The corresponding parameter is denoted as **NCORES**. If it equals $1$, then no parallelization structure is deployed.
+Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using **doParallel** package, see [@doparalelManual]. This is transparent for the user, which hase just to fix the number of *cpus* to be used. The corresponding parameter is denoted as **NCORES**. If it equals $1$, then no parallelization structure is deployed.
 
 To load the **ddsPLS** package:
 ```{r, fig.show='hold',message=FALSE}
@@ -95,7 +95,7 @@ The regression case has been treated through a toy example well know dataset in 
 
 ### Build a model {.tabset}
 
-We have worked on the Liver Toxicity dataset [see @bushel2007simultaneous]. This data set contains the expression measure of 3116 genes and 10 clinical measurements for 64 subjects (rats) that were exposed to non-toxic, moderately toxic or severely toxic doses of acetaminophen in a controlled experiment. Therefore the structure is :
+We have worked on the Liver Toxicity dataset, see @bushel2007simultaneous. This data set contains the expression measure of 3116 genes and 10 clinical measurements for 64 subjects (rats) that were exposed to non-toxic, moderately toxic or severely toxic doses of acetaminophen in a controlled experiment. Therefore the structure is :
 $$\mathbf{X}\in\mathbb{R}^{64\times3116},\mathbf{Y}\in\mathbb{R}^{64\times10}$$
 
 The following commands permit to create the model. The parameter *verbose* shows main information about the model.
