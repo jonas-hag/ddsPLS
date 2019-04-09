@@ -5,8 +5,9 @@
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  keep_imp_mod = FALSE, errMin_imput = 1e-09, maxIter_imput = 50,
-  verbose = FALSE, NZV = 1e-09, getVariances = TRUE)
+  keep_imp_mod = FALSE, reg_imp_model = TRUE, errMin_imput = 1e-09,
+  maxIter_imput = 50, verbose = FALSE, NZV = 1e-09,
+  getVariances = TRUE)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
@@ -17,11 +18,13 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{R}{A strictly positive integer detailing the number of components to build in the model.}
 
-\item{mode}{A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".}
+\item{mode}{A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.}
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
-\item{keep_imp_mod}{Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.}
+\item{keep_imp_mod}{Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.}
+
+\item{reg_imp_model}{Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.}
 
 \item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 

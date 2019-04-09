@@ -41,14 +41,14 @@
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
 #' function(tt){rep(tt,12)})))
-#' # x <- mddsPLS(Xs = X,Y = Y,R = 3, mode = "clas",lambda=0.8)
+#' # x <- mddsPLS(Xs = X,Y = Y,R = 3, mode = "lda",L0=20)
 #' # plot(x)
 #'
 #' # Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' # res_cv_reg <- ddsPLS(Xs = X,Y = Y,lambda=0.8,R = 2)
+#' # res_cv_reg <- ddsPLS(Xs = X,Y = Y,L0=10,R = 2)
 #' # plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                block=NULL,comp=NULL,variance="Linear",

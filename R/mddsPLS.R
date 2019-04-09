@@ -7,7 +7,7 @@
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
-#' @param mode A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".
+#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
@@ -332,12 +332,21 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         B <- NULL
       }else{
         dataf <- dataf[,-c(1+pos_sd0)]
-        B <- lda(Y ~ ., data = dataf)
-        B <- list(B=B,sds=sds)
+        if(mode=="lda"){
+          B <- lda(Y ~ ., data = dataf)
+          B <- list(B=B,sds=sds)
+        }else if(mode=="logit"){
+          B <- glm(Y ~ ., data = dataf,family = "binomial")
+        }
       }
     }
     else{
-      B <- lda(Y ~ ., data = dataf)
+      if(mode=="lda"){
+        B <- lda(Y ~ ., data = dataf)
+      }else if(mode=="logit"){
+        B <- glm(Y ~ ., data = dataf,family = "binomial")
+      }
+
     }
   }
   if(verbose){
@@ -369,8 +378,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
-#' @param keep_imp_mod Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \emph{FALSE} due to the potential size of those models.
-#' @param mode A character chain. Possibilities are "\emph{reg}", which implies  regression problem or anything else which means clustering is considered.  Default is "\emph{reg}".
+#' @param keep_imp_mod Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
+#' @param reg_imp_model Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.
+#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
@@ -382,7 +392,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @export
 #' @useDynLib ddsPLS
 #' @importFrom Rcpp sourceCpp
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit glm
 #'
 #' @seealso \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
 #'
@@ -393,14 +403,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' # mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,lambda = 0.958,R = 2,mode = "clas",verbose = TRUE)
+#' # mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,R = 2,L0=3,mode = "lda",verbose = TRUE)
 #' # summary(mddsPLS_model_class,plot_present_indiv = FALSE)
 #'
 #' ## Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' #mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#' #mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg",verbose = TRUE)
 #' #summary(mddsPLS_model_reg)
 #'
 #' # Multi-block example :
@@ -411,7 +421,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' Xs <- list(X[,1:1000],X[,-(1:1000)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' #mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,lambda = 0.95,R = 2,mode = "clas",verbose = TRUE)
+#' #mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,mode = "logit",R = 2,verbose = TRUE)
 #' #summary(mddsPLS_model_class)
 #'
 #' ## Regression example :
@@ -423,7 +433,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 #' #summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
-                    keep_imp_mod=FALSE,
+                    keep_imp_mod=FALSE,reg_imp_model=TRUE,
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE,NZV=1E-9,getVariances=TRUE){
 
@@ -694,7 +704,16 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               if(length(Var_selected_k)>0){
                 ## ## ## ## Impute on the selected variables
                 Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,R=R,L0=NULL,NZV=NZV)
+                if(reg_imp_model){
+                  ## In that case the value of lambda is computed according to the initial model.
+                  model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,
+                                             R=R,L0=NULL,NZV=NZV)
+                }else{
+                  ## In that case the value of lambda is taken equal to 0. And so
+                  ## all the variables are taken in the model
+                  model_here <- MddsPLS_core(Xs_i,Y_i_k,
+                                             R=R,L0=NULL,NZV=NZV)
+                }
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
                 if(keep_imp_mod){
@@ -794,7 +813,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     names(var_selected) <- names_Xs
     names(mod$u) <- names_Xs
     names(mod$u_t_super) <- names_Xs
-    names(mod$B) <- names_Xs
+    if(mode=="regression")names(mod$B) <- names_Xs
     names(mod$Ms) <- names_Xs
   }
   out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,

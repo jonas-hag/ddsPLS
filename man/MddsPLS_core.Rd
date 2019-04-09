@@ -16,7 +16,7 @@ MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{R}{A strictly positive integer detailing the number of components to build in the model.}
 
-\item{mode}{A character chain. Possibilities are "\emph{reg}", which implies regression problem or anything else which means clustering is considered. Default is "\emph{reg}".}
+\item{mode}{A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.}
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 

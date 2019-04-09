@@ -22,12 +22,12 @@
 #' perf process. Default is \eqn{NULL} and is then not taken nto account.
 #' @param R A strictly positive integer detailing the number of components to
 #' build in the model.
+#' @param reg_imp_model Logical. Whether or not to regularize the imputation models.
+#' Initialized to \code{TRUE}.
 #' @param kfolds character or integer. If equals to "loo" then a \emph{leave-one-out}
 #' cross-validation is started. No other character is understood. Any strictly
 #' positive integer gives the number of folds to make in the \emph{cross-validation process}
-#' @param mode A character chain. Possibilities are "\emph{reg}", which implies
-#'  regression problem or anything else which means clustering is considered.
-#'   Default is "\emph{reg}".
+#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
 #' @param fold_fixed Vector of length \eqn{n}. Each element corresponds to the
 #' fold of the corresponding fold. If NULL then that argument is not considerd.
 #' Default to NULL.
@@ -57,17 +57,17 @@
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
 #' function(tt){rep(tt,12)})))
-#' #res_cv_class <- perf_mddsPLS(X,Y,lambda_min=0.85,n_lambda=2,R = 2,
-#' #mode = "clas",NCORES = 1,fold_fixed = rep(1:12,3))
+#' #res_cv_class <- perf_mddsPLS(X,Y,L0s=1:5,R = 2,
+#' #mode = "logit",NCORES = 1,fold_fixed = rep(1:12,3))
 #'
 #' # Regression example :
 #' data("liver.toxicity")
 #' X <- scale(liver.toxicity$gene)
 #' Y <- scale(liver.toxicity$clinic)
-#' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,lambda_min=0.8,n_lambda=2,R = 1,
+#' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,25,50),R = 1,
 #' # mode = "reg")
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,
-                         L0s=NULL,
+                         reg_imp_model=TRUE,L0s=NULL,
                          kfolds="loo",mode="reg",fold_fixed=NULL,
                          maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
                          NZV=1e-9){
@@ -86,6 +86,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
     n<-nrow(Y);q <- ncol(Y)
   }else{
+    if(!is.factor(factor(Y))) Y <- as.factor(Y)
     n <- length(Y);q <- 1
     q_out <- nlevels(Y)
   }
@@ -168,12 +169,14 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         }
                         if(!is.null(L0s)){
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,
-                                           R = R,mode = mode,errMin_imput = errMin_imput,
+                                           R = R,reg_imp_model=reg_imp_model,
+                                           mode = mode,errMin_imput = errMin_imput,
                                            maxIter_imput = maxIter_imput,NZV=NZV)
 
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
-                                           R = R,mode = mode,errMin_imput = errMin_imput,
+                                           R = R,reg_imp_model=reg_imp_model,
+                                           mode = mode,errMin_imput = errMin_imput,
                                            maxIter_imput = maxIter_imput,NZV=NZV)
 
                         }

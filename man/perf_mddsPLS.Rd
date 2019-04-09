@@ -5,9 +5,10 @@
 \title{Function to compute cross-validation performances.}
 \usage{
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
-  lambdas = NULL, R = 1, L0s = NULL, kfolds = "loo",
-  mode = "reg", fold_fixed = NULL, maxIter_imput = 20,
-  errMin_imput = 1e-09, NCORES = 1, NZV = 1e-09)
+  lambdas = NULL, R = 1, reg_imp_model = TRUE, L0s = NULL,
+  kfolds = "loo", mode = "reg", fold_fixed = NULL,
+  maxIter_imput = 20, errMin_imput = 1e-09, NCORES = 1,
+  NZV = 1e-09)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,
@@ -33,6 +34,9 @@ perf process. Default is \eqn{NULL}, when that parameter is not taken into accou
 \item{R}{A strictly positive integer detailing the number of components to
 build in the model.}
 
+\item{reg_imp_model}{Logical. Whether or not to regularize the imputation models.
+Initialized to \code{TRUE}.}
+
 \item{L0s}{A vector of non null positive integers. The values tested by the
 perf process. Default is \eqn{NULL} and is then not taken nto account.}
 
@@ -40,9 +44,7 @@ perf process. Default is \eqn{NULL} and is then not taken nto account.}
 cross-validation is started. No other character is understood. Any strictly
 positive integer gives the number of folds to make in the \emph{cross-validation process}}
 
-\item{mode}{A character chain. Possibilities are "\emph{reg}", which implies
-regression problem or anything else which means clustering is considered.
- Default is "\emph{reg}".}
+\item{mode}{A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.}
 
 \item{fold_fixed}{Vector of length \eqn{n}. Each element corresponds to the
 fold of the corresponding fold. If NULL then that argument is not considerd.
