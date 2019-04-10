@@ -254,7 +254,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
   }else{
     TAB <- table(Y)
-    Precision <- cbind(paras,1-rowSums(ERRORS_OUT)/sum(TAB))
+    Precision <- cbind(paras_out,1-rowSums(ERRORS_OUT)/sum(TAB))
     colnames(Precision)[3] <- "Mean Precision"
     out <- list(ERROR=cbind(paras_out,ERRORS_OUT),
                 SDEP=cbind(paras_out,SDEP_OUT),
