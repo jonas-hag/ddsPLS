@@ -323,10 +323,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   }else{
     dataf <- data.frame(cbind(Y_0,T_super));colnames(dataf)[1]<-"Y"
     for( cc in 2:ncol(dataf)){
-      dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
+      if(!is.numeric(dataf[,cc])){
+        dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
+      }
     }
     sds <- apply(dataf[,-1,drop=FALSE],2,function(y){sd(y)*sqrt((n-1)/n)})
-    if(any(sds==0)){
+    if(any(abs(sds)<NZV)){
       pos_sd0 <- as.numeric(which(sds<NZV))
       if(length(pos_sd0)==length(sds)){
         B <- NULL
@@ -758,7 +760,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
               }
             }
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
+          if(mode!="reg"){
+            if(!is.factor(Y))Y <- factor(Y)
+          }
+          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,
+                              mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
             # for(r in 1:R){

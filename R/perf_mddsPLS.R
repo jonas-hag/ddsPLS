@@ -243,7 +243,19 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
           mat_errors[i_fold_ii[jj],] <- unlist(strsplit(hihi[jj],split = "/",fixed = TRUE))
         }
       }
-      ERRORS_OUT[i,] <- abs(diag(table(mat_errors[,1],mat_errors[,2]))-table(mat_errors[,2]))
+      result = tryCatch({
+        classes <- unique(mat_errors[,2])
+        q_err <- length(classes)
+        OUT_VEC <- rep(NA,q_err)
+        for(i_q in 1:q_err){
+          cla <- classes[i_q]
+          pos <- which(mat_errors[,2]==cla)
+          OUT_VEC_i_q <- length(which(mat_errors[pos,1]==cla))
+          ERRORS_OUT[i,i_q] <- length(pos)-OUT_VEC_i_q
+        }
+      }, warning = function(w) {
+        browser()
+      })
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=FALSE])
     }
   }
