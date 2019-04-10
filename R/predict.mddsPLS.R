@@ -172,8 +172,8 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
 
       df_new <- data.frame(T_super_new)# df_new <- data.frame(do.call(cbind,T_super_new))#%*%mod_0$mod$beta_comb)
       colnames(df_new) <- paste("X",2:(ncol(df_new)+1),sep="")
-      if(class(mod_0$mod$B)[1]=="list"){
-        colnames(mod_0$mod$B$B$means) -> colnames(df_new)
+      if(mod_0$mode=="lda"){
+        colnames(df_new) <- paste("V",2:(ncol(df_new)+1),sep="")
         if(is.null(mod_0$mod$B)){
           newY <- list(class=sample(1:nlevels(mod_0$Y_0),size = 1,
                                     prob = table(mod_0$Y_0)/sum(table(mod_0$Y_0))))$'class'
@@ -185,7 +185,8 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
         else{
           newY <- predict(mod_0$mod$B,df_new)$'class'
         }
-      }else if(class(mod_0$mod$B)[1]=="glm"){
+      }
+      else if(mod_0$mode=="logit"){
         if(is.null(mod_0$mod$B)){
           newY <- list(class=sample(1:nlevels(mod_0$Y_0),size = 1,
                                     prob = table(mod_0$Y_0)/sum(table(mod_0$Y_0))))$'class'
