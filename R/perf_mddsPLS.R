@@ -253,7 +253,10 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
   }else{
-    out <- list(ERROR=cbind(paras_out,ERRORS_OUT),SDEP=cbind(paras_out,SDEP_OUT),
+    TAB <- table(Y)
+    out <- list(ERROR=cbind(paras_out,ERRORS_OUT),
+                SDEP=cbind(paras_out,SDEP_OUT),
+                Precision=1-rowSums(ERRORS_OUT)/sum(TAB),
                 FREQ=cbind(paras_out,FREQ_OUT),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
