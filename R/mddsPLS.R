@@ -338,6 +338,11 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
           B <- lda(Y ~ ., data = dataf)
           B <- list(B=B,sds=sds)
         }else if(mode=="logit"){
+          if(!is.factor(dataf$Y)){
+            if(min(dataf$Y)!=0){
+              dataf$Y <- dataf$Y - 1
+            }
+          }
           B <- glm(Y ~ ., data = dataf,family = "binomial")
         }
       }
@@ -346,9 +351,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       if(mode=="lda"){
         B <- lda(Y ~ ., data = dataf)
       }else if(mode=="logit"){
+        if(!is.factor(dataf$Y)){
+          if(min(dataf$Y)!=0){
+            dataf$Y <- dataf$Y - 1
+          }
+        }
         B <- glm(Y ~ ., data = dataf,family = "binomial")
       }
-
     }
   }
   if(verbose){
