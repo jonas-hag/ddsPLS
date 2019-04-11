@@ -55,7 +55,7 @@ Only two parameters must to be fixed by the user :
 
  * **R** which is the number of components, analogous to the number of components in PCA.
  
- * **$\lambda$** which is the regularization coefficient, $\lambda\in[0,1]$. It can be directly interpreted as the minimum of correlation value under which an interaction between a variable of a block $\mathbf{X}$ and one of the $\mathbf{Y}$ variables is not taken into account.
+ * **$L_0\in\mathbb{N}^\star$** (or **$\lambda\in[0,1]$**) which is the regularization coefficient. $L_0$ can be directly interpreted as the maximum number of variables to be selected in the model.and $\lambda$ is the minimum of correlation value under which an interaction between a variable of a block $\mathbf{X}$ and one of the $\mathbf{Y}$ variables is not taken into account.
  
 Those two parameters are to be fixed with cross validation. We have developped a parallelizable code, using **doParallel** package [see @doparalelManual]. This is transparent for the user, which hase just to fix the number of *cpus* to be used. The corresponding parameter is denoted as **NCORES**. If it equals $1$, then no parallelization structure is deployed.
 
@@ -70,7 +70,9 @@ In the following, only **regression** examples are shown. To perform classificat
 mode
 ```
 
-in any of the functions to something different from **"reg"**. In the example
+to **lda** of **logit** if you want to perform classification thanks to linear discriminant analysis or logistic regression (only 2 classes allowed for **logit**).
+
+## Classification case
 
 ```{r, eval=F}
 data("penicilliumYES")
@@ -80,10 +82,10 @@ Xs <- list(X[,1:1000],X[,-(1:1000)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
 
-mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,R = 2,mode = "clas",verbose = TRUE)
+mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,R = 2,mode = "lda",verbose = TRUE)
 ```
 
-is considered a mult-block classification case analysis with missing samples.
+is considered a mult-block classification case analysis with missing samples. **mode="lda"** is used since there are 3 classes to discriminate.
 
 # Mono-block
 The here used method can be used on mono and multi-block datasets with no missing values.
@@ -104,7 +106,7 @@ The following commands permit to create the model. The parameter *verbose* shows
 data("liver.toxicity")
 X <- scale(liver.toxicity$gene)
 Y <- scale(liver.toxicity$clinic)
-mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,lambda=0.85,R = 3,
+mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 3,
                              mode = "reg",verbose = TRUE)
 ```
 
@@ -165,12 +167,13 @@ The cross-validation process is started in a leave-one-out design along $1$ dime
 ```{r,message=FALSE,eval=F}
 n_lambda <- 50
 NCORES <- 7
-res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,
-                           R = 1,lambda_min=0.5,n_lambda=n_lambda,
-                           mode = "reg",NCORES = NCORES,kfolds = "loo")
 
 res_cv_reg_L0 <- perf_mddsPLS(Xs = X,Y = Y,
                            R = 1,L0s=1:50,
+                           mode = "reg",NCORES = NCORES,kfolds = "loo")
+
+res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,
+                           R = 1,lambda_min=0.5,n_lambda=n_lambda,
                            mode = "reg",NCORES = NCORES,kfolds = "loo")
 ```
 
@@ -189,15 +192,6 @@ res_cv_reg_L0$Xs <- list(X)
 
 A *plot* method plots the results. *plot_mean* permits to add the mean of the **Y** variable prediction errors. *legend_names* permits to add a legend with the names of the **Y** variables. *pos_legend* permits to choose the position of the legend. *which_sd_plot* picks the **Y** variables whose standard error must be drawn.
 
-##### Using $\lambda$ paradigm
-
-```{r, fig.show='hold',message=FALSE,eval=T,fig.width=10, fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height}
-plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(0,1.1),
-     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y),
-     no_occurence = T)
-```
-
-Minimum for $\lambda\approx0.85$.
 
 ##### Using $L_0$ paradigm
 
@@ -207,6 +201,16 @@ plot(res_cv_reg_L0,which_sd_plot = c(5,7),ylim=c(0,1.1),alpha.f = 0.4,
 ```
 
 Minimum for $L_0\approx 18$.
+
+##### Using $\lambda$ paradigm
+
+```{r, fig.show='hold',message=FALSE,eval=T,fig.width=10, fig.height=6,dpi=DPI,out.width= out.width,out.height=out.height}
+plot(res_cv_reg,which_sd_plot = c(5,7),ylim=c(0,1.1),
+     alpha.f = 0.4,plot_mean = T,legend_names = colnames(Y),
+     no_occurence = T)
+```
+
+Minimum for $\lambda\approx0.85$.
 
 ##### Observations
 

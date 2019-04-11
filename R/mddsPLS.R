@@ -547,7 +547,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           t_super_r <- x$mod$T_super[,r,drop=F]
           var_t_super_r <- sum(t_super_r^2)
           if(var_t_super_r!=0){
-            VAR_SUPER_COMPS[j,r] <- get_var_line(scale(t_super_r),scale(y_obs))#(norm(mmultC(t_super_r,b),"f")/var_j)^2
+            VAR_SUPER_COMPS[j,r] <- get_var_line(scale(t_super_r),scale(Y_j))#(norm(mmultC(t_super_r,b),"f")/var_j)^2
             # t_Y_j <- tcrossprod(Y_j)
             # t_t_super_r <- tcrossprod(t_super_r)
             # prod_num <- mmultC(t_Y_j,t_t_super_r)
