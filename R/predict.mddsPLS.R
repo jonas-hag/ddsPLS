@@ -173,7 +173,11 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       df_new <- data.frame(T_super_new)# df_new <- data.frame(do.call(cbind,T_super_new))#%*%mod_0$mod$beta_comb)
       colnames(df_new) <- paste("X",2:(ncol(df_new)+1),sep="")
       if(mod_0$mode=="lda"){
-        colnames(df_new) <- colnames(mod_0$mod$B$means)
+        if(class(mod_0$mod$B)=="list"){
+          colnames(df_new) <- colnames(mod_0$mod$B$B$means)
+        }else{
+          colnames(df_new) <- colnames(mod_0$mod$B$means)
+        }
         if(is.null(mod_0$mod$B)){
           newY <- list(class=sample(1:nlevels(mod_0$Y_0),size = 1,
                                     prob = table(mod_0$Y_0)/sum(table(mod_0$Y_0))))$'class'

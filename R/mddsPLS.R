@@ -352,9 +352,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         B <- lda(Y ~ ., data = dataf)
       }else if(mode=="logit"){
         if(!is.factor(dataf$Y)){
-          if(min(dataf$Y)!=0){
-            dataf$Y <- dataf$Y - 1
-          }
+          dataf$Y <- factor(dataf$Y)
         }
         B <- glm(Y ~ ., data = dataf,family = "binomial")
       }
@@ -719,6 +717,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           S_super_obj <- Y
         }
         Var_selected <- rep(NA,K)
+
+        # ####################
+        # Y_proj <- Y_class_dummies[,-1,drop=F]
+        # phi <- tcrossprod(mmultC(Y_proj,solve(crossprod(Y_proj))),Y_proj)
+        # ####################
+
         while(iter<maxIter_imput&err>errMin_imput){
           iter <- iter + 1
           for(k in 1:K){
@@ -734,6 +738,14 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                 # newX_i <- mod_0$S_super[i_k,,drop=FALSE]
                 Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))>NZV)
               }
+
+              # for(no_k_i in no_k){
+              #   Var_selected_no_k <- which(rowSums(abs(mod_0$u[[no_k_i]]))>NZV)
+              #   mat_here <- Xs[[no_k_i]][,Var_selected_no_k,drop=F]
+              #   mat_here <- mat_here-mmultC(phi,mat_here)
+              #   S_super_obj <- cbind(S_super_obj,mat_here)
+              # }
+
               Xs_i <- S_super_obj[-i_k,,drop=FALSE]
               newX_i <- S_super_obj[i_k,,drop=FALSE]
               Var_selected[k] <- length(Var_selected_k)
