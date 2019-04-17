@@ -207,14 +207,22 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     }
   }
   else{
-    newY <- matrix(NA,n_new,q)
+    if(mod_0$mode=="reg"){
+      newY <- matrix(NA,n_new,q)
+    }else{
+      newY <- rep(NA,n_new)
+    }
     for(i_new in 1:n_new){
       # Solved by Soso
       RES <- predict.mddsPLS(mod_0,lapply(newX,
                                           function(nx,ix){
                                             nx[ix,,drop=FALSE]
                                           },i_new),type="both")
-      newY[i_new,] <- RES$y
+      if(mod_0$mode=="reg"){
+        newY[i_new,] <- RES$y
+      }else{
+        newY[i_new] <- RES$y
+      }
       if(type=="x"|type=="both"){
         for(k in 1:length(newX)){
           if(anyNA(newX[[k]][i_new,])){

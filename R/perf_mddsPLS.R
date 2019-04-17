@@ -38,6 +38,7 @@
 #'  considered. Default is \eqn{5}.
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
+#' @param plot_result Logical. Wether or not to plot the result. Initialized to **TRUE**.
 #'
 #' @return A result of the perf function
 #'
@@ -70,7 +71,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                          reg_imp_model=TRUE,L0s=NULL,
                          kfolds="loo",mode="reg",fold_fixed=NULL,
                          maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
-                         NZV=1e-9){
+                         NZV=1e-9,plot_result=T){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -197,6 +198,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       }
                       out <- cbind(paras_here,errors,select_y,has_converged,time_build)
                     }
+  colnames(ERRORS)[1:3] <- c("R","L0","fold")
   if(NCORES_w!=1){
     stopCluster(cl)
   }
@@ -233,29 +235,27 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                             function(y){sd(y)*sqrt((n-1)/n)})
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
     }else{
+      ## err_char is structured as "Y_est/Y_observed"
       err_char <- ERRORS[pos_in_errors,1:(q)+3]
       mat_errors <- matrix(NA,length(fold),2)
       lev_Y <- levels(Y)
       for(ii in 1:max(fold)){
         i_fold_ii <- which(fold==ii)
         hihi <- unlist(strsplit(as.character(err_char[ii]),split = " ",fixed = TRUE))
-        for(jj in 1:length (i_fold_ii)){#(hihi)){
+        for(jj in 1:length (i_fold_ii)){
           mat_errors[i_fold_ii[jj],] <- unlist(strsplit(hihi[jj],split = "/",fixed = TRUE))
         }
       }
-      result = tryCatch({
-        classes <- unique(mat_errors[,2])
-        q_err <- length(classes)
-        OUT_VEC <- rep(NA,q_err)
-        for(i_q in 1:q_err){
-          cla <- classes[i_q]
-          pos <- which(mat_errors[,2]==cla)
-          OUT_VEC_i_q <- length(which(mat_errors[pos,1]==cla))
-          ERRORS_OUT[i,i_q] <- length(pos)-OUT_VEC_i_q
-        }
-      }, warning = function(w) {
-        browser()
-      })
+      classes <- lev_Y
+      q_err <- length(classes)
+      OUT_VEC <- rep(NA,q_err)
+      for(i_q in 1:q_err){
+        cla <- lev_Y[i_q]
+        pos <- which(mat_errors[,2]==cla)
+        OUT_VEC_i_q <- length(which(mat_errors[pos,1]==cla))
+        ERRORS_OUT[i,i_q] <- length(pos)-OUT_VEC_i_q
+      }
+      colnames(ERRORS_OUT) <- classes
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:nlevels(Y)+4,drop=FALSE])
     }
   }
@@ -263,7 +263,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),SDEP=cbind(paras_out,SDEP_OUT),
                 FREQ=cbind(paras_out,FREQ_OUT),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
-                mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
+                mode=mode,Xs=Xs,Y=Y,kfolds=kfolds,fold=fold,BackUp=ERRORS)
   }else{
     TAB <- table(Y)
     Precision <- cbind(paras_out,1-rowSums(ERRORS_OUT)/sum(TAB))
@@ -273,8 +273,9 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                 Precision=Precision,
                 FREQ=cbind(paras_out,FREQ_OUT),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
-                mode=mode,Xs=Xs,Y=Y,kfolds=kfolds)
+                mode=mode,Xs=Xs,Y=Y,kfolds=kfolds,fold=fold,BackUp=ERRORS)
   }
   class(out) <- "perf_mddsPLS"
+  if(plot_result) plot(out,no_occurence=T,plot_mean = T)
   out
 }
