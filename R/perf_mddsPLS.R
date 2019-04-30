@@ -39,6 +39,7 @@
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param plot_result Logical. Wether or not to plot the result. Initialized to **TRUE**.
+#' @param legend_label Logical. Wether or not to add the legend names to the plot. Initialized to **TRUE**.
 #'
 #' @return A result of the perf function
 #'
@@ -71,7 +72,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                          reg_imp_model=TRUE,L0s=NULL,
                          kfolds="loo",mode="reg",fold_fixed=NULL,
                          maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
-                         NZV=1e-9,plot_result=T){
+                         NZV=1e-9,plot_result=T,legend_label=T){
   ## Xs shaping
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
@@ -276,6 +277,11 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds,fold=fold,BackUp=ERRORS)
   }
   class(out) <- "perf_mddsPLS"
-  if(plot_result) plot(out,no_occurence=T,plot_mean = T)
+  if(plot_result){
+    if(legend_label){
+      plot(out,no_occurence=T,plot_mean = T,legend_names=colnames(out$ERROR)[-c(1:2)])
+    }else{
+      plot(out,no_occurence=T,plot_mean = T)
+    }
   out
 }
