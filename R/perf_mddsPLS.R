@@ -283,5 +283,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }else{
       plot(out,no_occurence=T,plot_mean = T)
     }
+  }
   out
 }
