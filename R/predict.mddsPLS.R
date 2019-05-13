@@ -221,7 +221,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       if(mod_0$mode=="reg"){
         newY[i_new,] <- RES$y
       }else{
-        newY[i_new] <- RES$y
+        newY[i_new] <- as.character(RES$y)
       }
       if(type=="x"|type=="both"){
         for(k in 1:length(newX)){
