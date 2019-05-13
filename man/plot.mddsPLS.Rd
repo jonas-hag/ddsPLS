@@ -13,7 +13,7 @@
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}}
+\item{vizu}{character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}. \emph{coeffs} does not work in the case of classification (\emph{lda} or \emph{logit})}
 
 \item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
 

@@ -4,7 +4,7 @@
 #'  avalaible to control the plot quality.
 #'
 #' @param x The perf_mddsPLS object.
-#' @param vizu character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}
+#' @param vizu character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}. \emph{coeffs} does not work in the case of classification (\emph{lda} or \emph{logit})
 #' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
 #' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
 #' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
@@ -180,6 +180,12 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
          call. = FALSE)
   }
   isReg <- x$mode=="reg"
+  if(!isReg){
+    if(vizu %in% c("coeffs")){
+      stop("Cannot be performed for classification",
+           call. = FALSE)
+    }
+  }
   Y_in <- x$Y_0
   if(!isReg){
     names_Y <- levels(Y_in)
