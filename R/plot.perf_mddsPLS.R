@@ -156,7 +156,13 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
   }
   DELTAS <- matrix(rep(delta,nrow(y1)),ncol=length(delta),byrow = T)
   if(is.null(ylim)){
-    ylim <- c(min(y1-SDEP[,-c(1:2)]*DELTAS),max(y1+SDEP[,-c(1:2)]*DELTAS))
+    min_y <- min(y1-SDEP[,-c(1:2)]*DELTAS)
+    max_y <- max(y1+SDEP[,-c(1:2)]*DELTAS)
+    if(is.na(max_y)|is.na(min_y)){
+      ylim <- c(0,1)
+    }else{
+      ylim <- c(min_y,max_y)
+    }
   }
   for(jq in 1:q){
     dat <- data.frame(list(lambda=lam_plot,MSEP=y1[ord,jq],sd=SDEP[ord,2+jq]))

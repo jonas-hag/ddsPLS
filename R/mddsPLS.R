@@ -229,7 +229,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   ## Big SVD solution ######################### -----------------
   U_t_super <- list()
   Z <- do.call(cbind,z_t)
-  R_opt <- min(dim(Z))
+  R_opt <- R#min(min(dim(Z)),R)
   svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
   # ## Reorder well ## -----
   # crosY_T <- crossprod(Y,do.call(cbind,t_t))

@@ -191,7 +191,11 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1
                         }else{
-                          Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
+                          # if(mode!="lda"){
+                          # Y_est <- factor(levels(Y)[Y_est],levels=levels(Y))
+                          # }else{
+                          Y_est <- factor(Y_est,levels=levels(Y))
+                          # }
                           errors[i] <- paste(Y_est,Y_test,sep="/",collapse = " ")
                           v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1

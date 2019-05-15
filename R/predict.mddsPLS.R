@@ -197,7 +197,12 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
         }
         else{
           colnames(df_new) <- names(mod_0$mod$B$coefficients)[-1]
-          newY <- round(predict(mod_0$mod$B,df_new,type = "response"))
+          newY <- predict(mod_0$mod$B,df_new)
+          if(newY<0){
+            newY <- levels(mod_0$Y_0)[1]
+          }else{
+            newY <- levels(mod_0$Y_0)[2]
+          }
         }
       }
     }
