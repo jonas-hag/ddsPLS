@@ -82,7 +82,7 @@ X <- scale(X[,which(apply(X,2,sd)>0)])
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),
 function(tt){rep(tt,12)})))
 #res_cv_class <- perf_mddsPLS(X,Y,L0s=1:5,R = 2,
-#mode = "logit",NCORES = 1,fold_fixed = rep(1:12,3))
+#mode = "lda",NCORES = 1,fold_fixed = rep(1:12,3))
 
 # Regression example :
 data("liver.toxicity")
