@@ -51,12 +51,12 @@
 #' # res_cv_reg <- ddsPLS(Xs = X,Y = Y,L0=10,R = 2)
 #' # plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
-               block=NULL,comp=NULL,variance="Linear",
-               mar_left=2,mar_bottom=2,
-               pos_legend="topright",legend_names=NULL,legend.cex=1,
-               values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
-               reorder_Y=F,
-               ...){
+                         block=NULL,comp=NULL,variance="Linear",
+                         mar_left=2,mar_bottom=2,
+                         pos_legend="topright",legend_names=NULL,legend.cex=1,
+                         values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
+                         reorder_Y=F,
+                         ...){
   ## Functions
   ##### HEATMAP FUNCTION #####
   plot_heatmap <- function(x,comp=NULL,out=F){
@@ -182,7 +182,13 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
   isReg <- x$mode=="reg"
   if(!isReg){
     if(vizu %in% c("coeffs")){
-      stop("Cannot be performed for classification",
+      stop("Cannot be performed for classification. \n
+           Consider changing 'vizu' to something different from 'coeffs'.",
+           call. = FALSE)
+    }
+    if(addY){
+      stop("Do not print Y variance explanation for classification. \n
+           Consider putting 'addY' to FALSE for example.",
            call. = FALSE)
     }
   }
@@ -266,12 +272,14 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         viz_k_r <- viz_k[,r]
         pos_no_nul <- which(abs(viz_k_r)>1e-12)
         main <- paste(legend_names_in[i_k],", component ",r,sep="")
-        if(variance=="Linear"){
-          var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
-          main <- paste(main," (",var_here,"% var. expl.)",sep="")
-        }else{
-          var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
-          main <- paste(main," (RV=",var_here/100,")",sep="")
+        if(isReg){
+          if(variance=="Linear"){
+            var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
+            main <- paste(main," (",var_here,"% var. expl.)",sep="")
+          }else{
+            var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
+            main <- paste(main," (RV=",var_here/100,")",sep="")
+          }
         }
         if(length(pos_no_nul)>0){
           toplot[[k]][[r]] <- viz_k[pos_no_nul,r]
@@ -325,12 +333,14 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           }
         }
         main <- paste("Block Xs, Super Component ",r,sep="")
-        if(variance=="Linear"){
-          var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[r],2)*100
-          main <- paste(main," (",var_here,"% var. expl. total Y)",sep="")
-        }else{
-          var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS_ALL_Y[r],2)*100
-          main <- paste(main," (RV=",var_here/100,")",sep="")
+        if(isReg){
+          if(variance=="Linear"){
+            var_here <- signif(x$Variances$Linear$VAR_SUPER_COMPS_ALL_Y[r],2)*100
+            main <- paste(main," (",var_here,"% var. expl. total Y)",sep="")
+          }else{
+            var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS_ALL_Y[r],2)*100
+            main <- paste(main," (RV=",var_here/100,")",sep="")
+          }
         }
         if(is.null(plotR)){
           plot(1, type="n", axes=F, xlab="", ylab="",main=main)
@@ -383,8 +393,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             colOut <- colors[c(block_in,K+1)]
           }
           xx<-barplot(toplot_y,horiz = F,las=2,col=cols_y,ylim = c(0,119),
-                  main=paste("Block Y, component ",r,sep=""),
-                  ylab=xlab)
+                      main=paste("Block Y, component ",r,sep=""),
+                      ylab=xlab)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
                  col=adjustcolor("black",alpha.f = 0.2))
           text(xx,toplot_y,labels=round(toplot_y,0),pos=3,font=fonts)
