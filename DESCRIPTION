@@ -9,6 +9,8 @@ Description: Allows to build Multi-Data-Driven Sparse PLS models. Multi-blocks w
     See https://hadrienlorenzo.netlify.com/ for more information, documentation and examples.
 Authors@R: c(person("Hadrien","Lorenzo", role = c("aut", "cre"),
                      email = "hadrien.lorenzo.2015@gmail.com"),
+             person("Misbah","Razzaq", role = "ctb",
+                     email = "misbah.razzaq@u-bordeaux.fr"),
              person("Jerome","Saracco", role = c("aut"),
                      email = "jerome.saracco@math.u-bordeaux1.fr"),
              person("Rodolphe","Thiebaut", role = c("aut"),
