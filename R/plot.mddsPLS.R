@@ -12,7 +12,7 @@
 #' @param variance character. One of \emph{Linear}, \emph{RV}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.
-#' @param pos_legend Initialized to "topright"
+#' @param pos_legend Initialized to "topright". If equals NULL, then no legend is given.
 #' @param legend.cex positive float. character expansion factor relative to current par("cex") for \emph{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
 #' @param block_Y_name character. Initialized to "Block Y".
@@ -404,8 +404,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
       }
     }
+    if(!is.null(pos_legend)){
     legend(pos_legend,legend = legeds,
            fill = colOut,bty="n",cex=legend.cex)
+    }
 
   }else if(vizu=="heatmap"){
     plot_heatmap(x,comp)
@@ -431,7 +433,9 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
       }
     }
+    if(!is.null(pos_legend)){
     legend(pos_legend,legend = legend_names_in[t_selected],
            fill = colors[t_selected],bty="n",cex=legend.cex)
+    }
   }
 }
