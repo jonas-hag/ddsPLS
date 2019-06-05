@@ -277,7 +277,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
             main <- paste(main," (",var_here,"% var. expl.)",sep="")
           }else{
-            var_here <- signif(x$Variances$Linear$VAR_COMPS[k,r],2)*100
+            var_here <- signif(x$Variances$RV$VAR_COMPS[k,r],2)*100
             main <- paste(main," (RV=",var_here/100,")",sep="")
           }
         }
