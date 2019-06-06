@@ -87,7 +87,7 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
   for(i in 1:nrow(MAT_FINAL_RES)){
     r <- MAT_FINAL_RES$R[i]
     lambda <- MAT_FINAL_RES$lambda[i]
-    id <- which(Conv$Var1==r&Conv$Var2==lambda )
+    id <- which(Conv[1]==r&Conv[2]==lambda )
     ## Convergence
     num_conv <- Conv$has_converged[id]
     num_conv <- paste(sum(num_conv!=0),kfolds,sep="/")
@@ -119,6 +119,7 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
   cat("     Cross-Validation results    ");cat("\n")
   cat("---------------------------------");cat("\n")
   cat("\n")
+  colnames(MAT_FINAL_RES)[4] <- "Mean AND sd time of computation"
   print(data.frame(MAT_FINAL_RES));cat("\n")
   cat("\n")
   cat("                  Thank's for using me      ");cat("\n")
