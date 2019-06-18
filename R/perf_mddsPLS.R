@@ -19,7 +19,7 @@
 #' @param lambdas A vector of reals in \eqn{[0,1]}. The values tested by the
 #' perf process. Default is \eqn{NULL}, when that parameter is not taken into account.
 #' @param L0s A vector of non null positive integers. The values tested by the
-#' perf process. Default is \eqn{NULL} and is then not taken nto account.
+#' perf process. Default is \eqn{NULL} and is then not taken into account.
 #' @param R A strictly positive integer detailing the number of components to
 #' build in the model.
 #' @param reg_imp_model Logical. Whether or not to regularize the imputation models.
