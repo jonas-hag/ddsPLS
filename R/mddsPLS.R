@@ -17,7 +17,7 @@
 #'   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
 #'    weights per block per axis.}
 #'   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
-#'    weights per block per axis scaled on the super description of the dataset. Denoted as
+#'    weights per block per axis scaled on the super description of the data set. Denoted as
 #'    \emph{scaled super-weights}.}
 #'   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
 #'   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
@@ -32,7 +32,7 @@
 #'    mean and standard deviation variables per block.}
 #'   \item{(mu_y,sd_y)}{Two vectors of length \emph{q} : the mean and the standard deviation variables for \emph{Y} part.}
 #'   \item{R}{Given as an input.}
-#'   \item{q}{A non negatvie integer : the number of variables of \emph{Y} matrix. }
+#'   \item{q}{A non negative integer : the number of variables of \emph{Y} matrix. }
 #'   \item{Ms}{A list of length \emph{K}. Each element is a \emph{qXp_k} matrix : the
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
@@ -381,7 +381,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-
 #' ber of components \eqn{R}, the user fixes the number of components the model
 #' must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
-#' \eqn{X} and \eqn{Y} datasets.
+#' \eqn{X} and \eqn{Y} data sets.
 #'
 #'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
@@ -739,7 +739,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                 # newX_i <- mod_0$S_super[i_k,,drop=FALSE]
                 Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))>NZV)
               }
-
               # for(no_k_i in no_k){
               #   Var_selected_no_k <- which(rowSums(abs(mod_0$u[[no_k_i]]))>NZV)
               #   mat_here <- Xs[[no_k_i]][,Var_selected_no_k,drop=F]
