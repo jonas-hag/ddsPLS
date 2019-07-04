@@ -32,7 +32,7 @@ A list containing the following objects:
   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
    weights per block per axis.}
   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
-   weights per block per axis scaled on the super description of the dataset. Denoted as
+   weights per block per axis scaled on the super description of the data set. Denoted as
    \emph{scaled super-weights}.}
   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
@@ -47,7 +47,7 @@ A list containing the following objects:
    mean and standard deviation variables per block.}
   \item{(mu_y,sd_y)}{Two vectors of length \emph{q} : the mean and the standard deviation variables for \emph{Y} part.}
   \item{R}{Given as an input.}
-  \item{q}{A non negatvie integer : the number of variables of \emph{Y} matrix. }
+  \item{q}{A non negative integer : the number of variables of \emph{Y} matrix. }
   \item{Ms}{A list of length \emph{K}. Each element is a \emph{qXp_k} matrix : the
    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
   \item{lambda}{Given as an input.}

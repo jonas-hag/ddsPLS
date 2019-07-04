@@ -38,7 +38,7 @@ build in the model.}
 Initialized to \code{TRUE}.}
 
 \item{L0s}{A vector of non null positive integers. The values tested by the
-perf process. Default is \eqn{NULL} and is then not taken nto account.}
+perf process. Default is \eqn{NULL} and is then not taken into account.}
 
 \item{kfolds}{character or integer. If equals to "loo" then a \emph{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly

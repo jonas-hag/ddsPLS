@@ -53,7 +53,7 @@ This represents the variance of the to be predicted parts by the predictors unde
 This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} individuals and a matrix \eqn{Y} defining also those individuals. According to the num-
 ber of components \eqn{R}, the user fixes the number of components the model
 must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
-\eqn{X} and \eqn{Y} datasets.
+\eqn{X} and \eqn{Y} data sets.
 }
 \examples{
 # Single-block example :

@@ -29,7 +29,7 @@
 
 \item{mar_bottom}{positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.}
 
-\item{pos_legend}{Initialized to "topright"}
+\item{pos_legend}{Initialized to "topright". If equals NULL, then no legend is given.}
 
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
 
