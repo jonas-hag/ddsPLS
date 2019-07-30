@@ -262,7 +262,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     sc_r <- T_super[,r,drop=F]#scale(x$mod$t[,r,drop=F],scale=F)
     var_t_super_r <- sum(sc_r^2)
     if(var_t_super_r!=0){
-      deno <- norm(tcrossprod(Y),'f')*sum(sc_r^2)
+      if(n>q){
+        deno_left <- norm(crossprod(Y),'f')
+      }else{
+        deno_left <- norm(tcrossprod(Y),'f')
+      }
+      deno <- deno_left*sum(sc_r^2)
       numer <- sum(mmultC(Y,crossprod(Y,sc_r))*sc_r)
       vars_current[r] <- numer/deno#sum(diag(mmultC(tcrossprod(Y),tcrossprod(sc_r))))/deno
     }
