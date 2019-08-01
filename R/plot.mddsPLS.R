@@ -130,7 +130,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }else{
       colors <- brewer.pal(K+1, "Dark2")
     }
-    my_col <- matrix(colors[my_group_factor],nrow=1)
+    my_group_factor_plot <- factor(as.character(my_group_factor),levels=c(names(Xs),"Y"))
+    my_col <- matrix(colors[my_group_factor_plot],nrow=1)
     rownames(my_col) <- "Block"
     main <- paste("Heatmap for component",comp_in)
     if(variance=="Linear"){
@@ -145,7 +146,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
               xlab = "Individuals",RowSideColors=my_col,
               main=main)
       legend("topleft",legend=levels(my_group_factor),
-             fill=colors[1:nlevels(my_group_factor)],
+             fill=colors[sort(unique(as.numeric(my_group_factor_plot)))],
              border=FALSE, bty="n",cex=legend.cex)
     }
     output <- coco_imputed
