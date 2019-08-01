@@ -130,7 +130,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }else{
       colors <- brewer.pal(K+1, "Dark2")
     }
-    my_group_factor_plot <- factor(as.character(my_group_factor),levels=c(names(Xs),"Y"))
+    my_group_factor_plot <- factor(as.character(my_group_factor),levels=c(names(Xs),block_Y_name))
     my_col <- matrix(colors[my_group_factor_plot],nrow=1)
     rownames(my_col) <- "Block"
     main <- paste("Heatmap for component",comp_in)
@@ -141,11 +141,12 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       var_here <- signif(x$Variances$RV$VAR_SUPER_COMPS_ALL_Y[comp_in],2)*100
       main <- paste(main," (RV=",var_here/100,")",sep="")
     }
+    level_present <- as.character(unique(my_group_factor))
     if(!out){
       heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
               xlab = "Individuals",RowSideColors=my_col,
               main=main)
-      legend("topleft",legend=levels(my_group_factor),
+      legend("topleft",legend=level_present,
              fill=colors[sort(unique(as.numeric(my_group_factor_plot)))],
              border=FALSE, bty="n",cex=legend.cex)
     }
@@ -155,11 +156,88 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }
   }
   plot_corcor <- function(x,comp=NULL,values=F){
-    if(values){
-      corrplot(cor(plot_heatmap(x,comp=comp,out=T)),method="number")
+    Xs <- x$Xs
+    K <- length(Xs)
+    if(!is.null(names(Xs))){
+      for(k in 1:K){
+        if(nchar(names(Xs)[k])==0){
+          names(Xs)[k] <- paste("Block",k)
+        }
+      }
     }else{
-      corrplot(cor(plot_heatmap(x,comp=comp,out=T)))
+      for(k in 1:K){
+        names(Xs)[k] <- paste("Block",k)
+      }
     }
+    Y_1 <- x$Y_0
+    R <- length(x$mod$T_super)
+    comp_in<-comp
+    if(is.null(comp_in)){
+      comp_in <- 1
+    }
+    if(x$mode!="reg"){
+      Y_1 <- as.matrix(model.matrix( ~ Y - 1, data=data.frame(x$Y_0,ncol=1)))
+      colnames(Y_1) <- levels(as.factor(x$Y_0))
+      q <- ncol(Y_1)
+    }else if(!is.matrix(Y_1)){
+      Y_1 <- matrix(Y_1,ncol=1)
+    }
+    n <- nrow(Y_1)
+    q <- ncol(Y_1)
+    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>1e-9)})
+    p_sel <- sum(unlist(lapply(which_sel,length)))
+    coco_imputed <- data.frame(matrix(NA,n,p_sel+q))
+    coeffs <- matrix(rep(0,p_sel),nrow = 1)
+    colnames(coeffs) <- rep("OOO",p_sel)
+    count <- 0
+    my_group <- rep(block_Y_name,p_sel+q)
+    for(k in 1:K){
+      Xs_k <- Xs[[k]]
+      if(!is.matrix(Xs_k)){
+        Xs_k <- matrix(Xs_k,nrow=1)
+      }
+      ls <- which_sel[[k]]
+      if(length(ls)!=0){
+        my_group[count + 1:length(ls)] <- names(Xs)[k]
+        coco_imputed[,count + 1:length(ls)] <- Xs[[k]][,ls,drop=F]
+        coeffs[1,count + 1:length(ls)] <- x$mod$u_t_super[[k]][ls,1]
+        colNames <- colnames(Xs[[k]])[ls]
+        if(!is.null(colNames)){
+          names(coco_imputed)[count + 1:length(ls)] <- colNames
+        }else{
+          names(coco_imputed)[count + 1:length(ls)] <- paste(names(Xs)[k],", Var. ",ls,sep="")
+        }
+      }
+      count <- count + length(ls)
+    }
+    coco_imputed[,count + 1:q] <- Y_1
+    names_Y <- colnames(Y_1)
+    if(is.null(colnames(Y_1))){
+      names_Y <- paste("Y, Var.",1:q)
+    }
+    colnames(coco_imputed)[count +1:q] <- names_Y
+    my_group_factor <- factor(my_group)
+    if(K+1<3){
+      colors <- c("black","red","blue")[1:(K+1)]
+    }else if(K+1>8){
+      colors <- brewer.pal(8, "Dark2")
+      pal <- colorRampPalette(colors)
+      colors <- pal(K+1)
+    }else{
+      colors <- brewer.pal(K+1, "Dark2")
+    }
+    my_group_factor_plot <- factor(as.character(my_group_factor),levels=c(names(Xs),block_Y_name))
+    my_col <- matrix(colors[my_group_factor_plot],nrow=1)
+    rownames(my_col) <- "Block"
+    level_present <- as.character(unique(my_group_factor))
+    if(values){
+      corrplot(cor(plot_heatmap(x,comp=comp,out=T)),method="number",tl.col = my_col)
+    }else{
+      corrplot(cor(plot_heatmap(x,comp=comp,out=T)),tl.col = my_col)
+    }
+    legend("topleft",legend=level_present,
+           fill=colors[sort(unique(as.numeric(my_group_factor_plot)))],
+           border=FALSE, bty="n",cex=legend.cex)
   }
   R <- x$mod$R
   if(is.null(comp)){
