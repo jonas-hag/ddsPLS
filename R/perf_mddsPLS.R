@@ -38,7 +38,7 @@
 #'  considered. Default is \eqn{5}.
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
-#' @param plot_result Logical. Wether or not to plot the result. Initialized to **TRUE**.
+#' @param plot_result Logical. Wether or not to plot the result. Initialized to **TRUE**. The \emph{reg_error} argument of the \emph{plot.perf_mddsPLS} function is left to its default value.
 #' @param legend_label Logical. Wether or not to add the legend names to the plot. Initialized to **TRUE**.
 #'
 #' @return A result of the perf function
@@ -215,7 +215,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     paras_out <- expand.grid(R,Lambdas)
     colnames(paras_out) <- c("R","Lambdas")
   }
-  ERRORS_OUT  <- matrix(NA,nrow(paras_out),q)
+  ERRORS_OUT=MPE  <- matrix(NA,nrow(paras_out),q)
   SDEP_OUT  <- matrix(0,nrow(paras_out),q)
   if(mode=="reg"){
     FREQ_OUT <- matrix(NA,nrow(paras_out),q)
@@ -236,6 +236,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
     }
     if(mode=="reg"){
       ERRORS_OUT[i,] <- sqrt(colMeans(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2))
+      MPE[i,] <- colMeans(abs(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]))
       SDEP_OUT[i,] <- apply(ERRORS[pos_in_errors,1:(q)+3,drop=FALSE]^2,2,
                             function(y){sd(y)*sqrt((n-1)/n)})
       FREQ_OUT[i,] <- colSums(ERRORS[pos_in_errors,1:(q)+3+q,drop=FALSE])
@@ -267,6 +268,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   if(mode=="reg"){
     out <- list(RMSEP=cbind(paras_out,ERRORS_OUT),SDEP=cbind(paras_out,SDEP_OUT),
                 FREQ=cbind(paras_out,FREQ_OUT),
+                MPE=cbind(paras_out,MPE),
                 Conv=ERRORS[,c(1:3,ncol(ERRORS)-1)],time=ERRORS[,c(1:3,ncol(ERRORS))],
                 mode=mode,Xs=Xs,Y=Y,kfolds=kfolds,fold=fold,BackUp=ERRORS)
   }else{

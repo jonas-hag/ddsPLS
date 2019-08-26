@@ -4,14 +4,17 @@
 \alias{plot.perf_mddsPLS}
 \title{Function to plot cross-validation performance results.}
 \usage{
-\method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, legend_names = NULL,
-  pos_legend = "bottomleft", which_sd_plot = NULL, ylim = NULL,
-  alpha.f = 0.4, no_occurence = T, main = NULL, ...)
+\method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, reg_error = "MSEP",
+  legend_names = NULL, pos_legend = "bottomleft",
+  which_sd_plot = NULL, ylim = NULL, alpha.f = 0.4,
+  no_occurence = T, main = NULL, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
 \item{plot_mean}{logical. Whether or not to plot the mean curve.}
+
+\item{reg_error}{character. One of "MSEP" (Mean Squared Error in Prediction) or "MPE" (Mean Prediction Error). Default is "MSEP".}
 
 \item{legend_names}{vector of characters. Each element is the name of one of the q response variables.}
 

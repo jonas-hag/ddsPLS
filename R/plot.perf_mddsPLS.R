@@ -5,6 +5,7 @@
 #'
 #' @param x The perf_mddsPLS object.
 #' @param plot_mean logical. Whether or not to plot the mean curve.
+#' @param reg_error character. One of "MSEP" (Mean Squared Error in Prediction) or "MPE" (Mean Prediction Error). Default is "MSEP".
 #' @param pos_legend character. One of "bottomleft", "topright",....
 #' @param legend_names vector of characters. Each element is the name of one of the q response variables.
 #' @param which_sd_plot vector of integers of length the number of columns in Y. Indicates which area of standard error must be drawn.
@@ -42,7 +43,9 @@
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,15,20),R = 1,
 #' # mode = "reg")
 #' #plot(res_cv_reg)
-plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
+plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
+                              reg_error="MSEP",
+                              legend_names=NULL,
                               pos_legend="bottomleft",
                               which_sd_plot=NULL,
                               ylim=NULL,alpha.f=0.4,
@@ -50,10 +53,21 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                               main=NULL,
                               ...){
   res_perf_mdd <- x
-  names(res_perf_mdd)[1] <- "RMSEP"
   is_L0 <- names(res_perf_mdd$RMSEP)[2]
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
+    if(reg_error=="MPE"){
+      names(res_perf_mdd)[1] <- "OUT"
+      names(res_perf_mdd)[4] <- "RMSEP"
+      ylab1<-"MPE"
+      main1 <- "MPE versus regularization coefficient mdd-sPLS"
+      legend_0 <- "Mean MPE"
+    }else{
+      names(res_perf_mdd)[1] <- "RMSEP"
+      ylab1<-"MSEP"
+      main1 <- "MSEP versus regularization coefficient mdd-sPLS"
+      legend_0 <- "Mean MSEP"
+    }
     cc <- matrix(NA,nrow = ncol(res_perf_mdd$Y),ncol = ncol(X_all))
     for(j in 1:ncol(X_all)){
       cc[,j] <- abs(cor(res_perf_mdd$Y,X_all[,j],use = "pairwise.complete.obs"))
@@ -64,6 +78,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
       cc <- cc[,-col_na,drop=F]
     }
   }else{
+    names(res_perf_mdd)[1] <- "RMSEP"
     Y_df <- data.frame(res_perf_mdd$Y)
     colnames(Y_df) <- "Y"
     Y <- scale(model.matrix( ~ Y - 1, data=Y_df))
@@ -110,13 +125,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
     colors <- brewer.pal(q, "Dark2")
   }
   if(res_perf_mdd$mod=="reg"){
-    ylab1<-"MSEP"
     ylab2<-"Occurences per variable (%)"
     ylim1 <- range(abs(RMSEP[,3:ncol(RMSEP)]))^2
     y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2
     y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2)
     if(is.null(main)){
-      main1 <- "MSEP versus regularization coefficient mdd-sPLS"
       main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
     }else{
       main1 <- main
@@ -243,7 +256,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,legend_names=NULL,
                        lwd=c(rep(2,length(colors),1.5)),bty = "n")
     }else{
       if(!is.null(plot_mean)){
-        legend_names <- c(legend_names, "Mean MSEP")
+        legend_names <- c(legend_names, legend_0)
         col <- c(colors,"black")
         lty <- c(rep(1,length(colors)),3)
         lwd <- c(rep(2,length(colors)),3)
