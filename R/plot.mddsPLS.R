@@ -1,23 +1,23 @@
-#' Function to plot \emph{mddsPLS}
+#' Function to plot \strong{mddsPLS}
 #'
-#' That function must be applied to a \emph{mddsPLS} object. Extra parameters are
+#' That function must be applied to a \strong{mddsPLS} object. Extra parameters are
 #'  avalaible to control the plot quality.
 #'
 #' @param x The perf_mddsPLS object.
-#' @param vizu character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}. \emph{coeffs} does not work in the case of classification (\emph{lda} or \emph{logit})
-#' @param super logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.
-#' @param addY logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.
-#' @param block vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.
-#' @param comp vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.
-#' @param variance character. One of \emph{Linear}, \emph{RV}. Explains the type of variance shown in the graphics.
+#' @param vizu character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit})
+#' @param super logical. If \strong{TRUE} barplots are filled with **Super-Weights** in the case of \strong{vizu=weights} of with général **X** and **Y** components else.
+#' @param addY logical. Whether or not to plot **Block Y**. Initialized to \strong{FALSE}.
+#' @param block vector of intergers indicating which components must be plotted. If equals \strong{NULL} then all the components are plotted. Initialized to \strong{NULL}.
+#' @param comp vector of intergers indicating which blocks must be plotted. If equals \strong{NULL} then all the blocks are plotted. Initialized to \strong{NULL}.
+#' @param variance character. One of \strong{Linear}, \strong{RV}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
-#' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.
+#' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \strong{addY}=TRUE.
 #' @param pos_legend Initialized to "topright". If equals NULL, then no legend is given.
-#' @param legend.cex positive float. character expansion factor relative to current par("cex") for \emph{legend} function.
+#' @param legend.cex positive float. character expansion factor relative to current par("cex") for \strong{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
 #' @param block_Y_name character. Initialized to "Block Y".
 #' @param alpha.Y_sel positive float. factor modifying the opacity alpha; typically in \code{[0,1]} from \code{adjustcolor} function.
-#' @param reorder_Y logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.
+#' @param reorder_Y logical. In case \strong{addY}=TRUE. Order the \strong{Y} variances according to proportion of varaince explained on the first component.
 #' @param values_corr logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE
 #' @param ... Other plotting parameters to affect the plot.
 #'

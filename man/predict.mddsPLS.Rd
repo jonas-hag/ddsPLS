@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.mddsPLS.R
 \name{predict.mddsPLS}
 \alias{predict.mddsPLS}
-\title{The predict method associated to the \emph{mddsPLS} class.}
+\title{The predict method associated to the \strong{mddsPLS} class.}
 \usage{
 \method{predict}{mddsPLS}(object, newdata, type = "y", ...)
 }
@@ -11,7 +11,7 @@
 
 \item{newdata}{A data-set where individuals are described by the same as for mod_0}
 
-\item{type}{charcter. It can be \emph{y} to return Y estimated value of \emph{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.}
+\item{type}{charcter. It can be \strong{y} to return Y estimated value of \strong{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }
@@ -19,7 +19,7 @@
 Requested predicted values
 }
 \description{
-The predict method associated to the \emph{mddsPLS} class.
+The predict method associated to the \strong{mddsPLS} class.
 }
 \examples{
 data("liver.toxicity")

@@ -5,16 +5,16 @@
 #' of parameters.
 #'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,
-#'  if there is more than one block, of \emph{n} rows each, the number of individuals.
+#'  if there is more than one block, of \strong{n} rows each, the number of individuals.
 #'   Some rows must be missing. The different matrices can have different numbers of columns.
-#'    The length of Xs is denoted by \emph{K}.
+#'    The length of Xs is denoted by \strong{K}.
 #' @param Y A matrix of n rows of a vector of length n detailing the
 #' response matrix. No missing values are allowed in that matrix.
 #' @param lambda_min A real in \eqn{[0,1]}. The minimum value considered.
 #'  Default is \eqn{0}.
 #' @param lambda_max A real in \eqn{[0,1]}. The maximum value considered.
 #' Default is \eqn{NULL}, interpreted to the largest correlation between
-#' \emph{X} and \emph{Y}.
+#' \strong{X} and \strong{Y}.
 #' @param n_lambda A strictly positive integer. Default to \eqn{1}.
 #' @param lambdas A vector of reals in \eqn{[0,1]}. The values tested by the
 #' perf process. Default is \eqn{NULL}, when that parameter is not taken into account.
@@ -24,10 +24,10 @@
 #' build in the model.
 #' @param reg_imp_model Logical. Whether or not to regularize the imputation models.
 #' Initialized to \code{TRUE}.
-#' @param kfolds character or integer. If equals to "loo" then a \emph{leave-one-out}
+#' @param kfolds character or integer. If equals to "loo" then a \strong{leave-one-out}
 #' cross-validation is started. No other character is understood. Any strictly
-#' positive integer gives the number of folds to make in the \emph{cross-validation process}
-#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
+#' positive integer gives the number of folds to make in the \strong{cross-validation process}
+#' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param fold_fixed Vector of length \eqn{n}. Each element corresponds to the
 #' fold of the corresponding fold. If NULL then that argument is not considerd.
 #' Default to NULL.
@@ -38,8 +38,8 @@
 #'  considered. Default is \eqn{5}.
 #' @param NCORES Integer. The number of cores. Default is \eqn{1}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
-#' @param plot_result Logical. Wether or not to plot the result. Initialized to **TRUE**. The \emph{reg_error} argument of the \emph{plot.perf_mddsPLS} function is left to its default value.
-#' @param legend_label Logical. Wether or not to add the legend names to the plot. Initialized to **TRUE**.
+#' @param plot_result Logical. Wether or not to plot the result. Initialized to \strong{TRUE}. The \strong{reg_error} argument of the \strong{plot.perf_mddsPLS} function is left to its default value.
+#' @param legend_label Logical. Wether or not to add the legend names to the plot. Initialized to \strong{TRUE}.
 #'
 #' @return A result of the perf function
 #'

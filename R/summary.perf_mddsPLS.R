@@ -1,9 +1,9 @@
-#' The summary method of the \emph{perf_mddsPLS} function.
+#' The summary method of the \strong{perf_mddsPLS} function.
 #'
 #' This function is easy to use and gives information about the dataset and the model.
 #'
 #' @param object The object of class mddsPLS
-#' @param plot_res_cv logical. If \emph{TRUE}, plots the results of the cross-validation
+#' @param plot_res_cv logical. If \strong{TRUE}, plots the results of the cross-validation
 #' @param ... Other parameters.
 #'
 #' @importFrom graphics plot

@@ -9,10 +9,10 @@
 #' @param pos_legend character. One of "bottomleft", "topright",....
 #' @param legend_names vector of characters. Each element is the name of one of the q response variables.
 #' @param which_sd_plot vector of integers of length the number of columns in Y. Indicates which area of standard error must be drawn.
-#' @param alpha.f factor modifying the opacity alpha; typically in [0,1]. Used by \emph{adjustcolor}
+#' @param alpha.f factor modifying the opacity alpha; typically in [0,1]. Used by \strong{adjustcolor}
 #' @param ylim numeric vectors of length 2, giving the error plot range.
-#' @param no_occurence logical. Whether or not to plot the occurence plot of the **Y** variables. Initialized to **TRUE**.
-#' @param main character of \emph{NULL}. If null the title is given to the willing of the software. If \emph{""}, no title is given. Else is what the user wants.
+#' @param no_occurence logical. Whether or not to plot the occurence plot of the \strong{Y} variables. Initialized to \strong{TRUE}.
+#' @param main character of \strong{NULL}. If null the title is given to the willing of the software. If \strong{""}, no title is given. Else is what the user wants.
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation

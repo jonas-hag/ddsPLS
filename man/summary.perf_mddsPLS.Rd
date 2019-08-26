@@ -2,14 +2,14 @@
 % Please edit documentation in R/summary.perf_mddsPLS.R
 \name{summary.perf_mddsPLS}
 \alias{summary.perf_mddsPLS}
-\title{The summary method of the \emph{perf_mddsPLS} function.}
+\title{The summary method of the \strong{perf_mddsPLS} function.}
 \usage{
 \method{summary}{perf_mddsPLS}(object, plot_res_cv = T, ...)
 }
 \arguments{
 \item{object}{The object of class mddsPLS}
 
-\item{plot_res_cv}{logical. If \emph{TRUE}, plots the results of the cross-validation}
+\item{plot_res_cv}{logical. If \strong{TRUE}, plots the results of the cross-validation}
 
 \item{...}{Other parameters.}
 }

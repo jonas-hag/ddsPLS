@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.mddsPLS.R
 \name{plot.mddsPLS}
 \alias{plot.mddsPLS}
-\title{Function to plot \emph{mddsPLS}}
+\title{Function to plot \strong{mddsPLS}}
 \usage{
 \method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
@@ -13,27 +13,27 @@
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \emph{weights}, \emph{coeffs}, \emph{heatmap}, \emph{correlogram}. \emph{coeffs} does not work in the case of classification (\emph{lda} or \emph{logit})}
+\item{vizu}{character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit})}
 
-\item{super}{logical. If \emph{TRUE} barplots are filled with **Super-Weights** in the case of \emph{vizu=weights} of with général **X** and **Y** components else.}
+\item{super}{logical. If \strong{TRUE} barplots are filled with **Super-Weights** in the case of \strong{vizu=weights} of with général **X** and **Y** components else.}
 
-\item{addY}{logical. Whether or not to plot **Block Y**. Initialized to \emph{FALSE}.}
+\item{addY}{logical. Whether or not to plot **Block Y**. Initialized to \strong{FALSE}.}
 
-\item{block}{vector of intergers indicating which components must be plotted. If equals \emph{NULL} then all the components are plotted. Initialized to \emph{NULL}.}
+\item{block}{vector of intergers indicating which components must be plotted. If equals \strong{NULL} then all the components are plotted. Initialized to \strong{NULL}.}
 
-\item{comp}{vector of intergers indicating which blocks must be plotted. If equals \emph{NULL} then all the blocks are plotted. Initialized to \emph{NULL}.}
+\item{comp}{vector of intergers indicating which blocks must be plotted. If equals \strong{NULL} then all the blocks are plotted. Initialized to \strong{NULL}.}
 
-\item{variance}{character. One of \emph{Linear}, \emph{RV}. Explains the type of variance shown in the graphics.}
+\item{variance}{character. One of \strong{Linear}, \strong{RV}. Explains the type of variance shown in the graphics.}
 
 \item{mar_left}{positive float. Extra lines to add to the left margins, where the variable names are written.}
 
-\item{mar_bottom}{positive float. Extra lines to add to the bottom margins. Useful when \emph{addY}=TRUE.}
+\item{mar_bottom}{positive float. Extra lines to add to the bottom margins. Useful when \strong{addY}=TRUE.}
 
 \item{pos_legend}{Initialized to "topright". If equals NULL, then no legend is given.}
 
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
 
-\item{legend.cex}{positive float. character expansion factor relative to current par("cex") for \emph{legend} function.}
+\item{legend.cex}{positive float. character expansion factor relative to current par("cex") for \strong{legend} function.}
 
 \item{values_corr}{logical. Wether of noth to write the correlation calues in the correlogram. Initialized to FALSE}
 
@@ -41,7 +41,7 @@
 
 \item{alpha.Y_sel}{positive float. factor modifying the opacity alpha; typically in \code{[0,1]} from \code{adjustcolor} function.}
 
-\item{reorder_Y}{logical. In case \emph{addY}=TRUE. Order the \emph{Y} variances according to proportion of varaince explained on the first component.}
+\item{reorder_Y}{logical. In case \strong{addY}=TRUE. Order the \strong{Y} variances according to proportion of varaince explained on the first component.}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }
@@ -49,7 +49,7 @@
 The plot visualisation
 }
 \description{
-That function must be applied to a \emph{mddsPLS} object. Extra parameters are
+That function must be applied to a \strong{mddsPLS} object. Extra parameters are
  avalaible to control the plot quality.
 }
 \examples{

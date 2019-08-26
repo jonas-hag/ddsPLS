@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.mddsPLS.R
 \name{summary.mddsPLS}
 \alias{summary.mddsPLS}
-\title{The summary method of the \emph{mddsPLS} function.}
+\title{The summary method of the \strong{mddsPLS} function.}
 \usage{
 \method{summary}{mddsPLS}(object, main_plot_indiv = NULL,
   fontsize = 10, alpha = 0.7, ...)

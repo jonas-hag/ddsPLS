@@ -1,4 +1,4 @@
-#' The summary method of the \emph{mddsPLS} function.
+#' The summary method of the \strong{mddsPLS} function.
 #'
 #' This function is easy to use and gives information about the dataset and the model.
 #'

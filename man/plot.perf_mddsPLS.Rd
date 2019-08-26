@@ -24,11 +24,11 @@
 
 \item{ylim}{numeric vectors of length 2, giving the error plot range.}
 
-\item{alpha.f}{factor modifying the opacity alpha; typically in [0,1]. Used by \emph{adjustcolor}}
+\item{alpha.f}{factor modifying the opacity alpha; typically in [0,1]. Used by \strong{adjustcolor}}
 
-\item{no_occurence}{logical. Whether or not to plot the occurence plot of the **Y** variables. Initialized to **TRUE**.}
+\item{no_occurence}{logical. Whether or not to plot the occurence plot of the \strong{Y} variables. Initialized to \strong{TRUE}.}
 
-\item{main}{character of \emph{NULL}. If null the title is given to the willing of the software. If \emph{""}, no title is given. Else is what the user wants.}
+\item{main}{character of \strong{NULL}. If null the title is given to the willing of the software. If \strong{""}, no title is given. Else is what the user wants.}
 
 \item{...}{Other plotting parameters to affect the plot.}
 }

@@ -1,8 +1,8 @@
-#' The predict method associated to the \emph{mddsPLS} class.
+#' The predict method associated to the \strong{mddsPLS} class.
 #'
 #' @param object A mdd-sPLS object, output from the mddsPLS function.
 #' @param newdata A data-set where individuals are described by the same as for mod_0
-#' @param type charcter. It can be \emph{y} to return Y estimated value of \emph{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.
+#' @param type charcter. It can be \strong{y} to return Y estimated value of \strong{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return Requested predicted values

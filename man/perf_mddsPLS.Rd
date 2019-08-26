@@ -12,9 +12,9 @@ perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,
-if there is more than one block, of \emph{n} rows each, the number of individuals.
+if there is more than one block, of \strong{n} rows each, the number of individuals.
  Some rows must be missing. The different matrices can have different numbers of columns.
-  The length of Xs is denoted by \emph{K}.}
+  The length of Xs is denoted by \strong{K}.}
 
 \item{Y}{A matrix of n rows of a vector of length n detailing the
 response matrix. No missing values are allowed in that matrix.}
@@ -24,7 +24,7 @@ Default is \eqn{0}.}
 
 \item{lambda_max}{A real in \eqn{[0,1]}. The maximum value considered.
 Default is \eqn{NULL}, interpreted to the largest correlation between
-\emph{X} and \emph{Y}.}
+\strong{X} and \strong{Y}.}
 
 \item{n_lambda}{A strictly positive integer. Default to \eqn{1}.}
 
@@ -40,11 +40,11 @@ Initialized to \code{TRUE}.}
 \item{L0s}{A vector of non null positive integers. The values tested by the
 perf process. Default is \eqn{NULL} and is then not taken into account.}
 
-\item{kfolds}{character or integer. If equals to "loo" then a \emph{leave-one-out}
+\item{kfolds}{character or integer. If equals to "loo" then a \strong{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly
-positive integer gives the number of folds to make in the \emph{cross-validation process}}
+positive integer gives the number of folds to make in the \strong{cross-validation process}}
 
-\item{mode}{A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.}
+\item{mode}{A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.}
 
 \item{fold_fixed}{Vector of length \eqn{n}. Each element corresponds to the
 fold of the corresponding fold. If NULL then that argument is not considerd.
@@ -61,7 +61,7 @@ Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
 
-\item{plot_result}{Logical. Wether or not to plot the result. Initialized to **TRUE**. The \emph{reg_error} argument of the \emph{plot.perf_mddsPLS} function is left to its default value.}
+\item{plot_result}{Logical. Wether or not to plot the result. Initialized to **TRUE**. The \strong{reg_error} argument of the \strong{plot.perf_mddsPLS} function is left to its default value.}
 
 \item{legend_label}{Logical. Wether or not to add the legend names to the plot. Initialized to **TRUE**.}
 }

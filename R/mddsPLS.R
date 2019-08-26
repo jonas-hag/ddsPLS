@@ -2,38 +2,38 @@
 #'
 #' This function should not be used directly by the user.
 #'
-#' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
+#' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.
 #' @param Y A matrix of n rows of a vector of length n detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
-#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
+#' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
 #' @return A list containing the following objects:
 #' \describe{
-#'   \item{u}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
+#'   \item{u}{A list of length \strong{K}. Each element is a \strong{p_kXR} matrix : the
 #'    weights per block per axis.}
-#'   \item{u_t_super}{A list of length \emph{K}. Each element is a \emph{p_kXR} matrix : the
+#'   \item{u_t_super}{A list of length \strong{K}. Each element is a \strong{p_kXR} matrix : the
 #'    weights per block per axis scaled on the super description of the data set. Denoted as
-#'    \emph{scaled super-weights}.}
-#'   \item{v}{A \emph{qXR} matrix : the weights for the \emph{Y} part.}
-#'   \item{ts}{A list of length \emph{R}. Each element is a \emph{nXK} matrix : the
+#'    \strong{scaled super-weights}.}
+#'   \item{v}{A \strong{qXR} matrix : the weights for the \strong{Y} part.}
+#'   \item{ts}{A list of length \strong{R}. Each element is a \strong{nXK} matrix : the
 #'    scores per axis per block.}
-#'   \item{(t,s)}{Two \emph{nXR} matrices, super-scores of the \emph{X} and \emph{Y} parts.}
-#'   \item{(t_ort,s_ort)}{Two \emph{nXR} matrices, final scores of the \emph{X} and \emph{Y} part.
-#'    They correspond to \emph{PLS} scores of \emph{(t,s)} scores and so \emph{t_ort^T s_ort} is diagonal,
-#'    \emph{t_ort}, respectively \emph{s_ort}, carries the same information as \emph{t}, respectively \emph{s}.}
-#'   \item{B}{A list of length \emph{K}. Each element is a \emph{p_kXq} matrix : the
+#'   \item{(t,s)}{Two \strong{nXR} matrices, super-scores of the \strong{X} and \strong{Y} parts.}
+#'   \item{(t_ort,s_ort)}{Two \strong{nXR} matrices, final scores of the \strong{X} and \strong{Y} part.
+#'    They correspond to \strong{PLS} scores of \strong{(t,s)} scores and so \strong{t_ort^T s_ort} is diagonal,
+#'    \strong{t_ort}, respectively \strong{s_ort}, carries the same information as \strong{t}, respectively \strong{s}.}
+#'   \item{B}{A list of length \strong{K}. Each element is a \strong{p_kXq} matrix : the
 #'    regression matrix per block.}
-#'   \item{(mu_x_s,sd_x_s)}{Two lists of length \emph{K}. Each element is a \emph{p_k} vector : the
+#'   \item{(mu_x_s,sd_x_s)}{Two lists of length \strong{K}. Each element is a \strong{p_k} vector : the
 #'    mean and standard deviation variables per block.}
-#'   \item{(mu_y,sd_y)}{Two vectors of length \emph{q} : the mean and the standard deviation variables for \emph{Y} part.}
+#'   \item{(mu_y,sd_y)}{Two vectors of length \strong{q} : the mean and the standard deviation variables for \strong{Y} part.}
 #'   \item{R}{Given as an input.}
-#'   \item{q}{A non negative integer : the number of variables of \emph{Y} matrix. }
-#'   \item{Ms}{A list of length \emph{K}. Each element is a \emph{qXp_k} matrix : the
+#'   \item{q}{A non negative integer : the number of variables of \strong{Y} matrix. }
+#'   \item{Ms}{A list of length \strong{K}. Each element is a \strong{qXp_k} matrix : the
 #'    soft-thresholded empirical variance-covariance matrix \eqn{Y^TX_k/(n-1)}.}
 #'   \item{lambda}{Given as an input.}
 #' }
@@ -389,14 +389,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' \eqn{X} and \eqn{Y} data sets.
 #'
 #'
-#' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.
-#' @param Y A matrix of \emph{n} rows of a vector of length \emph{n} detailing the response matrix. No missing values are allowed in that matrix.
+#' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.
+#' @param Y A matrix of \strong{n} rows of a vector of length \strong{n} detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
-#' @param keep_imp_mod Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
+#' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param reg_imp_model Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.
-#' @param mode A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.
+#' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
@@ -404,15 +404,15 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param getVariances Logical. Whether or not to compute variances.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block.
-#' They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions.
-#' The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given.
-#' Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
-#' If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \emph{Y} vraiables, taken together or splitted.
+#' They are oredered according to the sum of the square values of the \strong{Super-Weights} along the \code{R} dimensions.
+#' The \code{rownames} give the names of the selected variables, if no name is given to the columns of \strong{Xs}, simply the indices are given.
+#' Plus the \strong{Weights} and \strong{Super-Weights} are given for each of the selected variables in every \strong{R} dimension.
+#' If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \strong{Y} vraiables, taken together or splitted.
 #' Both of the types of variances are computed as follows:
 #' \enumerate{
-#' \item \emph{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
+#' \item \strong{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
 #' This represents the variance of the to be predicted parts by the predictors under a linear model.
-#' \item \emph{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
+#' \item \strong{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
 #' }
 #'
 #' @export

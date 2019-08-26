@@ -10,19 +10,19 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
   getVariances = TRUE)
 }
 \arguments{
-\item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \emph{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \emph{K}.}
+\item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}
 
-\item{Y}{A matrix of \emph{n} rows of a vector of length \emph{n} detailing the response matrix. No missing values are allowed in that matrix.}
+\item{Y}{A matrix of \strong{n} rows of a vector of length \strong{n} detailing the response matrix. No missing values are allowed in that matrix.}
 
 \item{lambda}{A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.}
 
 \item{R}{A strictly positive integer detailing the number of components to build in the model.}
 
-\item{mode}{A character chain. Possibilities are "\emph{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \emph{reg}.}
+\item{mode}{A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.}
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
 
-\item{keep_imp_mod}{Logical. Whether or not to keep imputation \emph{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.}
+\item{keep_imp_mod}{Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.}
 
 \item{reg_imp_model}{Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.}
 
@@ -38,15 +38,15 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 }
 \value{
 A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block.
-They are oredered according to the sum of the square values of the \emph{Super-Weights} along the \code{R} dimensions.
-The \code{rownames} give the names of the selected variables, if no name is given to the columns of \emph{Xs}, simply the indices are given.
-Plus the \emph{Weights} and \emph{Super-Weights} are given for each of the selected variables in every \emph{R} dimension.
-If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \emph{Y} vraiables, taken together or splitted.
+They are oredered according to the sum of the square values of the \strong{Super-Weights} along the \code{R} dimensions.
+The \code{rownames} give the names of the selected variables, if no name is given to the columns of \strong{Xs}, simply the indices are given.
+Plus the \strong{Weights} and \strong{Super-Weights} are given for each of the selected variables in every \strong{R} dimension.
+If \code{getVariances} is \code{TRUE} then the \code{Variances} is filled with two types of variances corresponding to bounds between components, or super-components and \strong{Y} vraiables, taken together or splitted.
 Both of the types of variances are computed as follows:
 \enumerate{
-\item \emph{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
+\item \strong{Linear}. Multivariate-linear regression matrix minimizing the Ordinary Least Squares problem is computed. Is then returned the fraction of the variance of the therefore model divide by the variance observed.
 This represents the variance of the to be predicted parts by the predictors under a linear model.
-\item \emph{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
+\item \strong{RV}. That coefficient has permits to extend the correlation notion to matrices with the same number of rows but not necessarilye with the same number of columns \insertCite{@see @robert1976unifying}{ddsPLS}.
 }
 }
 \description{
