@@ -1,11 +1,11 @@
-#' Data set of Liver Toxicity Data, from \strong{mixOmics}
+#' Data set of Liver Toxicity Data, from \emph{mixOmics}
 #'
 #' This data set contains the expression measure of \eqn{3116} genes
 #' and \eqn{10} clinical measurements for \eqn{64} subjects (rats) that
 #'  were exposed to non-toxic, moderately toxic or severely toxic doses
 #'   of acetaminophen in a controlled experiment.
 #'
-#'   The data come from a liver toxicity study (Bushel \strong{et al.}, 2007) in
+#'   The data come from a liver toxicity study (Bushel \emph{et al.}, 2007) in
 #'   which 64 male rats of the inbred strain Fisher 344 were exposed to
 #'   non-toxic (50 or 150 mg/kg), moderately toxic (1500 mg/kg) or severely
 #'   toxic (2000 mg/kg) doses of acetaminophen (paracetamol) in a controlled
@@ -13,7 +13,7 @@
 #'   exposure and the mRNA from the liver was extracted. Ten clinical chemistry
 #'    measurements of variables containing markers for liver injury are available
 #'     for each subject and the serum enzymes levels are measured numerically.
-#'      The data were further normalized and pre-processed by Bushel \strong{et al.} (2007).
+#'      The data were further normalized and pre-processed by Bushel \emph{et al.} (2007).
 #'
 #' @format A list containing the following components:
 #' \describe{
@@ -38,11 +38,11 @@
 #' @importFrom Rdpack reprompt
 "liver.toxicity"
 
-#' Data set of three species of Penicillium fungi, from \strong{sparseLDA}
+#' Data set of three species of Penicillium fungi, from \emph{sparseLDA}
 #'
-#' The data set \code{penicilliumYES} has \strong{36} rows and \strong{3754} columns. The variables
+#' The data set \code{penicilliumYES} has \emph{36} rows and \emph{3754} columns. The variables
 #' are 1st order statistics from multi-spectral images of three species of Penicillium fungi:
-#'  \strong{Melanoconidium}, \strong{Polonicum}, and \strong{Venetum}. These are the data used in
+#'  \emph{Melanoconidium}, \emph{Polonicum}, and \emph{Venetum}. These are the data used in
 #'  the Clemmemsen et al "Sparse Discriminant Analysis" paper.
 #'
 #'@usage
@@ -51,8 +51,8 @@
 #' @format This data set contains the following matrices:
 #' \describe{
 #'   \item{X}{A matrix with 36 columns and 3754 rows. The training and test data. The first 12
-#'    rows are \strong{P. Melanoconidium} species, rows 13-24 are \strong{P. Polonicum} species,
-#'     and the last 12 rows are \strong{P. Venetum} species. The samples are ordered so that
+#'    rows are \emph{P. Melanoconidium} species, rows 13-24 are \emph{P. Polonicum} species,
+#'     and the last 12 rows are \emph{P. Venetum} species. The samples are ordered so that
 #'     each pair of three is from the same isolate.}
 #'   \item{Y}{A matrix of dummy variables for the training data.}
 #'   \item{Z}{Z matrix of probabilities for the subcalsses of the training data.}

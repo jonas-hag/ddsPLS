@@ -1,13 +1,13 @@
 Package: ddsPLS
-Version: 1.0.9
-Date: 2019-07-04
+Version: 1.0.91
+Date: 2019-08-27
 Title: Data-Driven Sparse PLS Robust to Missing Samples for Mono and Multi-Block Data Sets
 Description: Allows to build Multi-Data-Driven Sparse PLS models. Multi-blocks with 
-    high-dimensional settings are particularly sensible to this. It comes with vizualisation
+    high-dimensional settings are particularly sensible to this. It comes with visualization
     functions and uses Rcpp functions and is based on 
     H Lorenzo, J Saracco, R Thiebaut (2019) <arXiv:1901.04380>.
     2 applications have been successfully realized
-    See https://hadrienlorenzo.netlify.com/ for more information, documentation and examples.
+    See <https://hadrienlorenzo.netlify.com/> for more information, documentation and examples.
 Authors@R: c(person("Hadrien","Lorenzo", role = c("aut", "cre"),
                      email = "hadrien.lorenzo.2015@gmail.com"),
              person("Misbah","Razzaq", role = "ctb",
