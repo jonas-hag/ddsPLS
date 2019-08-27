@@ -3,7 +3,7 @@
 \docType{data}
 \name{liver.toxicity}
 \alias{liver.toxicity}
-\title{Data set of Liver Toxicity Data, from \emph{mixOmics}}
+\title{Data set of Liver Toxicity Data, from \strong{mixOmics}}
 \format{A list containing the following components:
 \describe{
   \item{gene}{data frame with \eqn{64} rows and \eqn{3116} columns. The
@@ -30,7 +30,7 @@ and \eqn{10} clinical measurements for \eqn{64} subjects (rats) that
   of acetaminophen in a controlled experiment.
 }
 \details{
-The data come from a liver toxicity study (Bushel \emph{et al.}, 2007) in
+The data come from a liver toxicity study (Bushel \strong{et al.}, 2007) in
   which 64 male rats of the inbred strain Fisher 344 were exposed to
   non-toxic (50 or 150 mg/kg), moderately toxic (1500 mg/kg) or severely
   toxic (2000 mg/kg) doses of acetaminophen (paracetamol) in a controlled
@@ -38,7 +38,7 @@ The data come from a liver toxicity study (Bushel \emph{et al.}, 2007) in
   exposure and the mRNA from the liver was extracted. Ten clinical chemistry
    measurements of variables containing markers for liver injury are available
     for each subject and the serum enzymes levels are measured numerically.
-     The data were further normalized and pre-processed by Bushel \emph{et al.} (2007).
+     The data were further normalized and pre-processed by Bushel \strong{et al.} (2007).
 }
 \references{
 {

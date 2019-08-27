@@ -61,9 +61,9 @@ Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
 
-\item{plot_result}{Logical. Wether or not to plot the result. Initialized to **TRUE**. The \strong{reg_error} argument of the \strong{plot.perf_mddsPLS} function is left to its default value.}
+\item{plot_result}{Logical. Wether or not to plot the result. Initialized to \strong{TRUE}. The \strong{reg_error} argument of the \strong{plot.perf_mddsPLS} function is left to its default value.}
 
-\item{legend_label}{Logical. Wether or not to add the legend names to the plot. Initialized to **TRUE**.}
+\item{legend_label}{Logical. Wether or not to add the legend names to the plot. Initialized to \strong{TRUE}.}
 }
 \value{
 A result of the perf function
