@@ -21,7 +21,7 @@ The liver toxicity dataset has been downloaded from the \strong{mixOmics} packag
 \url{http://mixomics.org/methods/pls-da/}.
 }
 \usage{
-liverToxicity
+data(liverToxicity)
 }
 \description{
 This data set contains the expression measure of \eqn{3116} genes
