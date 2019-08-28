@@ -132,7 +132,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
       out <- `%do%`
       out})
   pos_decoupe <- NULL
-  options(warn=-1)
   ERRORS <- foreach(pos_decoupe=1:min(NCORES,nrow(paras)),
                     .combine = rbind,.packages = c("ddsPLS","MASS")) %my_do% {
                       paras_here_pos <- which(decoupe==pos_decoupe)
@@ -207,7 +206,6 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
   if(NCORES_w!=1){
     stopCluster(cl)
   }
-  options(warn=0)
   if(!is.null(L0s)){
     paras_out <- expand.grid(R,L0s)
     colnames(paras_out) <- c("R","L0s")

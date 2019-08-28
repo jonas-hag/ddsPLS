@@ -52,6 +52,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
                               no_occurence=T,
                               main=NULL,
                               ...){
+  ## Reset personnal plot par() settings
+  opar <- par(no.readonly =TRUE)
+  on.exit(par(opar))
+  ## -----------------------------------
+
   res_perf_mdd <- x
   is_L0 <- names(res_perf_mdd$RMSEP)[2]
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))

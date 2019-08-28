@@ -57,8 +57,13 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                          values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
                          reorder_Y=F,
                          ...){
-  ## Functions
-  ##### HEATMAP FUNCTION #####
+  ## Reset personnal plot par() settings
+  opar <- par(no.readonly =TRUE)
+  on.exit(par(opar))
+  ## -----------------------------------
+
+  ## Functions ---------------
+  ##### HEATMAP FUNCTION .....
   plot_heatmap <- function(x,comp=NULL,out=F){
     Xs <- x$Xs
     K <- length(Xs)
@@ -155,6 +160,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       return(output)
     }
   }
+  ##### CORRPLOT FUNCTION ....
   plot_corcor <- function(x,comp=NULL,values=F){
     Xs <- x$Xs
     K <- length(Xs)
@@ -239,6 +245,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
            fill=colors[sort(unique(as.numeric(my_group_factor_plot)))],
            border=FALSE, bty="n",cex=legend.cex)
   }
+  ## END FUNCTIONS -----------
   R <- x$mod$R
   if(is.null(comp)){
     comp_in <- 1:R
