@@ -8,11 +8,11 @@ output:
     theme: yeti
     toc: yes
     toc_float: yes
+  pdf_document:
+    toc: yes
 bibliography: bib.bib
-vignette: |
-  %\VignetteIndexEntry{Mono and Multi-block Data-Driven sparse PLS (mdd-sPLS)}        
-  %\VignetteEncoding{UTF-8}{inputenc}
-  %\VignetteEngine{knitr::knitr}
+vignette: "%\\VignetteIndexEntry{Mono and Multi-block Data-Driven sparse PLS (mdd-sPLS)}
+  \       \n%\\VignetteEncoding{UTF-8}{inputenc}\n%\\VignetteEngine{knitr::knitr}\n"
 ---
 
 ```{r,include=FALSE}
@@ -432,7 +432,7 @@ The following sections detailed the discussed method though those parametization
 
 The following figure permits to represent the *scaled super-weights* for blocks 1, 2 and block Y. **mar_left** parameter adds extra values on the left of the plot, usefull to see variable names. Only the first cuper-component is plotted.
 
-```{r,fig.height=8,fig.width=13,dpi=DPI,out.width= out.width,out.height=out.height}
+```{r,fig.height=10,fig.width=13,dpi=DPI,out.width= out.width,out.height=out.height}
 plot(model_multi_vizu,vizu = "weights",super = T,comp=1 ,addY = T,
      mar_left = 5,mar_bottom = 3,reorder_Y = T)
 ```
