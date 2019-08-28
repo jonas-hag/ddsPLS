@@ -45,9 +45,9 @@
 #' # plot(x)
 #'
 #' # Regression example :
-#' data("liver.toxicity")
-#' X <- scale(liver.toxicity$gene)
-#' Y <- scale(liver.toxicity$clinic)
+#' data("liverToxicity")
+#' X <- scale(liverToxicity$gene)
+#' Y <- scale(liverToxicity$clinic)
 #' # res_cv_reg <- ddsPLS(Xs = X,Y = Y,L0=10,R = 2)
 #' # plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,

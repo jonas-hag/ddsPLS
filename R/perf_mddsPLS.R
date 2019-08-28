@@ -63,9 +63,9 @@
 #' #mode = "lda",NCORES = 1,fold_fixed = rep(1:12,3))
 #'
 #' # Regression example :
-#' data("liver.toxicity")
-#' X <- scale(liver.toxicity$gene)
-#' Y <- scale(liver.toxicity$clinic)
+#' data("liverToxicity")
+#' X <- scale(liverToxicity$gene)
+#' Y <- scale(liverToxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,25,50),R = 1,
 #' # mode = "reg")
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,

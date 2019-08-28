@@ -37,9 +37,9 @@
 #' #plot(res_cv_class)
 #'
 #' # Regression example :
-#' data("liver.toxicity")
-#' X <- scale(liver.toxicity$gene)
-#' Y <- scale(liver.toxicity$clinic)
+#' data("liverToxicity")
+#' X <- scale(liverToxicity$gene)
+#' Y <- scale(liverToxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,15,20),R = 1,
 #' # mode = "reg")
 #' #plot(res_cv_reg)

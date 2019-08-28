@@ -36,7 +36,7 @@
 #' }
 #'
 #' @importFrom Rdpack reprompt
-"liver.toxicity"
+"liverToxicity"
 
 #' Data set of three species of Penicillium fungi, from \emph{sparseLDA}
 #'

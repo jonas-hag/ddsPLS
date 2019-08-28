@@ -103,9 +103,9 @@ $$\mathbf{X}\in\mathbb{R}^{64\times3116},\mathbf{Y}\in\mathbb{R}^{64\times10}$$
 The following commands permit to create the model. The parameter *verbose* shows main information about the model.
 
 ```{r, fig.show='hold',message=FALSE,eval=T}
-data("liver.toxicity")
-X <- scale(liver.toxicity$gene)
-Y <- scale(liver.toxicity$clinic)
+data("liverToxicity")
+X <- scale(liverToxicity$gene)
+Y <- scale(liverToxicity$clinic)
 mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 3,
                              mode = "reg",verbose = TRUE)
 ```
@@ -405,9 +405,9 @@ Two different analyses are detailed here, the first one presents the tool and th
 In the case of missing values it is possible to visualize the missing positions. Let us just consider a 3-blocks toy-example case, based on the previous dataset, such as
 
 ```{r}
-data("liver.toxicity")
-X <- scale(liver.toxicity$gene)
-Y <- scale(liver.toxicity$clinic)
+data("liverToxicity")
+X <- scale(liverToxicity$gene)
+Y <- scale(liverToxicity$clinic)
 p1=p2 <- 1000
 p3 <- ncol(X)-p1-p2
 Xs <- list(Block1=X[,1:p1],Matrix2=X[,p1+1:p2],Other_Variables=X[,p1+p2+1:p3])

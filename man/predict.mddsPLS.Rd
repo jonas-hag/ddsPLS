@@ -22,9 +22,9 @@ Requested predicted values
 The predict method associated to the \strong{mddsPLS} class.
 }
 \examples{
-data("liver.toxicity")
-X <- scale(liver.toxicity$gene)
-Y <- scale(liver.toxicity$clinic)
+data("liverToxicity")
+X <- scale(liverToxicity$gene)
+Y <- scale(liverToxicity$clinic)
 mod_0 <- mddsPLS(X,Y)
 Y_test <- predict(mod_0,X)
 }

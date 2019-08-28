@@ -66,9 +66,9 @@ Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(t
 # summary(mddsPLS_model_class,plot_present_indiv = FALSE)
 
 ## Regression example :
-data("liver.toxicity")
-X <- scale(liver.toxicity$gene)
-Y <- scale(liver.toxicity$clinic)
+data("liverToxicity")
+X <- scale(liverToxicity$gene)
+Y <- scale(liverToxicity$clinic)
 #mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg",verbose = TRUE)
 #summary(mddsPLS_model_reg)
 
@@ -84,11 +84,11 @@ Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(t
 #summary(mddsPLS_model_class)
 
 ## Regression example :
-data("liver.toxicity")
-X <- scale(liver.toxicity$gene)
+data("liverToxicity")
+X <- scale(liverToxicity$gene)
 Xs <- list(X[,1:1910],X[,-(1:1910)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
-Y <- scale(liver.toxicity$clinic)
+Y <- scale(liverToxicity$clinic)
 #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 #summary(mddsPLS_model_reg)
 }

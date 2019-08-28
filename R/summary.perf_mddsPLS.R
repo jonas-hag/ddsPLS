@@ -15,9 +15,9 @@
 #'
 #' @examples
 #' library(ddsPLS)
-#' data("liver.toxicity")
-#' X <- scale(liver.toxicity$gene)
-#' Y <- scale(liver.toxicity$clinic)
+#' data("liverToxicity")
+#' X <- scale(liverToxicity$gene)
+#' Y <- scale(liverToxicity$clinic)
 #' X1<-X[,1:10];X1[1,]<-NA
 #' X2<-X[,11:20];X2[2:5,]<-NA
 #' X3<-X[,21:30];X3[4:20,]<-NA
