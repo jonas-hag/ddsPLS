@@ -5,7 +5,7 @@
 #' @param type charcter. It can be \strong{y} to return Y estimated value of \strong{x} for the completed values of newdata. \emph{both} for both \emph{y} and \emph{x}.
 #' @param ... Other plotting parameters to affect the plot.
 #'
-#' @return Requested predicted values
+#' @return Requested predicted values. In the case of classification, object \emph{probY} gives the probability per individual and per class.
 #'
 #' @importFrom stats predict
 #'
