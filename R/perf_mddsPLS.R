@@ -183,7 +183,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         }
                         time_build[i] <- as.numeric((Sys.time()-t1))
                         has_converged[i] <- mod_0$has_converged
-                        Y_est <- predict.mddsPLS(mod_0,X_test)
+                        Y_est <- predict.mddsPLS(mod_0,X_test)$y
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))

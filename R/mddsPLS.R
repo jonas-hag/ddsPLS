@@ -349,7 +349,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
               dataf$Y <- dataf$Y - 1
             }
           }
-          B <- glm(Y ~ ., data = dataf,family = "binomial")
+          B <- suppressWarnings(glm(Y ~ ., data = dataf,family = "binomial"))
         }
       }
     }
@@ -360,7 +360,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         if(!is.factor(dataf$Y)){
           dataf$Y <- factor(dataf$Y)
         }
-        B <- glm(Y ~ ., data = dataf,family = "binomial")
+        B <- suppressWarnings(glm(Y ~ ., data = dataf,family = "binomial"))
       }
     }
   }
@@ -495,7 +495,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     Xs <- x$Xs
     K <- length(Xs)
     y_obs <- x$Y_0
-    y_pred <- predict(x,Xs)
+    y_pred <- predict(x,Xs)$y
     mode <- x$mode
     if(mode=="reg"){
       if(!is.matrix(y_obs)&!is.data.frame(y_obs)){
@@ -702,7 +702,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
           x_test <- Y[id_na[[k]],,drop=F]
         }
         model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init,getVariances=F)
-        y_test <- predict(model_init,x_test)
+        y_test <- predict(model_init,x_test)$y
         Xs[[k]][id_na[[k]],] <- y_test
       }
     }
@@ -774,7 +774,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                   mod_i_k$Y_0 <- Y_i_k
                   model_imputations[[k]] <- mod_i_k
                 }
-                Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)
+                Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)$y
               }else{
                 if(keep_imp_mod){
                   model_imputations[[k]] <- list()
