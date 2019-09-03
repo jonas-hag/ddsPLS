@@ -85,7 +85,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
         }
       }
       ## Estimate missing values
-      res <- predict.mddsPLS(model_impute_test,t_X_test)
+      res <- predict.mddsPLS(model_impute_test,t_X_test)$y
       ## Put results inside Xs
       C_pos <- 1
       for(k_id in 1:length(pos_no_ok)){
@@ -145,6 +145,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       }
     }
     if(mode=="reg"){
+      probability <- NULL
       newY <- matrix(0,n_new,q)
       for(k in 1:K){
         newY <- newY + newX[[k]]%*%mod$B[[k]]
