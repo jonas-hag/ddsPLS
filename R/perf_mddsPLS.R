@@ -172,13 +172,15 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,
                                            R = R,reg_imp_model=reg_imp_model,
                                            mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput,NZV=NZV)
+                                           maxIter_imput = maxIter_imput,NZV=NZV,
+                                           getVariances = F)
 
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,
                                            R = R,reg_imp_model=reg_imp_model,
                                            mode = mode,errMin_imput = errMin_imput,
-                                           maxIter_imput = maxIter_imput,NZV=NZV)
+                                           maxIter_imput = maxIter_imput,NZV=NZV,
+                                           getVariances = F)
 
                         }
                         time_build[i] <- as.numeric((Sys.time()-t1))

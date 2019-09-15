@@ -12,6 +12,7 @@
 #' @param variance character. One of \strong{Linear}, \strong{RV}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \strong{addY}=TRUE.
+#' @param mar_heatmap vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).
 #' @param pos_legend Initialized to "topright". If equals NULL, then no legend is given.
 #' @param legend.cex positive float. character expansion factor relative to current par("cex") for \strong{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
@@ -52,7 +53,7 @@
 #' # plot(res_cv_reg)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                          block=NULL,comp=NULL,variance="Linear",
-                         mar_left=2,mar_bottom=2,
+                         mar_left=2,mar_bottom=2,margins_heatmap=c(5,5),
                          pos_legend="topright",legend_names=NULL,legend.cex=1,
                          values_corr=F,block_Y_name="Y",alpha.Y_sel=0.4,
                          reorder_Y=F,
@@ -61,10 +62,10 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
   opar <- par(no.readonly =TRUE)
   on.exit(par(opar))
   ## -----------------------------------
-
+  NZV <- x$NZV
   ## Functions ---------------
   ##### HEATMAP FUNCTION .....
-  plot_heatmap <- function(x,comp=NULL,out=F){
+  plot_heatmap <- function(x,comp=NULL,out=F,position="topright",marginsRight=5){
     Xs <- x$Xs
     K <- length(Xs)
     if(!is.null(names(Xs))){
@@ -93,7 +94,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }
     n <- nrow(Y_1)
     q <- ncol(Y_1)
-    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>1e-9)})
+    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>NZV)})
     p_sel <- sum(unlist(lapply(which_sel,length)))
     coco_imputed <- data.frame(matrix(NA,n,p_sel+q))
     coeffs <- matrix(rep(0,p_sel),nrow = 1)
@@ -150,8 +151,8 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     if(!out){
       heatmap(t(as.matrix(coco_imputed)),scale="row",labCol = "",
               xlab = "Individuals",RowSideColors=my_col,
-              main=main)
-      legend("topleft",legend=level_present,
+              main=main,margins = margins_heatmap)
+      legend(position,legend=level_present,
              fill=colors[sort(unique(as.numeric(my_group_factor_plot)))],
              border=FALSE, bty="n",cex=legend.cex)
     }
@@ -190,7 +191,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }
     n <- nrow(Y_1)
     q <- ncol(Y_1)
-    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>1e-9)})
+    which_sel <- lapply(x$mod$u_t_super,function(u){which(abs(u[,comp_in])>NZV)})
     p_sel <- sum(unlist(lapply(which_sel,length)))
     coco_imputed <- data.frame(matrix(NA,n,p_sel+q))
     coeffs <- matrix(rep(0,p_sel),nrow = 1)
@@ -356,7 +357,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
         viz_k <- viz[[k]]
         viz_k_r <- viz_k[,r]
-        pos_no_nul <- which(abs(viz_k_r)>1e-12)
+        pos_no_nul <- which(abs(viz_k_r)>NZV)
         main <- paste(legend_names_in[i_k],", component ",r,sep="")
         if(isReg){
           if(variance=="Linear"){
@@ -391,7 +392,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
       }
       if(addY & !super){
         y_como <- viz_y[,r]
-        pos_no_nul <- which(abs(y_como)>1e-12)
+        pos_no_nul <- which(abs(y_como)>NZV)
         if(length(pos_no_nul)>0){
           y_como <- y_como[pos_no_nul]
           names(y_como) <- names_Y[pos_no_nul]
@@ -438,7 +439,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
         if(addY){
           y_como <- viz_y[,r]
-          pos_no_nul <- which(abs(y_como)>1e-12)
+          pos_no_nul <- which(abs(y_como)>NZV)
           if(length(pos_no_nul)>0){
             y_como <- y_como[pos_no_nul]
             names(y_como) <- names_Y[pos_no_nul]
@@ -458,7 +459,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
             }
             xlab <- "Variance in Common"
           }
-          y_selected <- which(abs(x$mod$V_super[,r])>0)
+          y_selected <- which(abs(x$mod$V_super[,r])>NZV)
           fonts <- rep(1,length(toplot_y))
           fonts[y_selected] <- 2
           if(reorder_Y){
@@ -496,18 +497,18 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
     }
 
   }else if(vizu=="heatmap"){
-    plot_heatmap(x,comp)
+    plot_heatmap(x,comp,position = pos_legend,marginsRight=margins_heatmap)
   }else if(vizu=="correlogram"){
     plot_corcor(x,comp,values=values_corr)
   }else if(vizu=="coeffs"){
-    y_selected <- which(colSums(abs(do.call(rbind,x$mod$B)))>1e-9)
-    t_selected <- which(unlist(lapply(x$mod$B,norm))>1e-9)
+    y_selected <- which(colSums(abs(do.call(rbind,x$mod$B)))>NZV)
+    t_selected <- which(unlist(lapply(x$mod$B,norm))>NZV)
     par(mfrow=c(length(y_selected),length(t_selected)),mar = c(5,4 + mar_left, 4, 2) + 0.1)
     for(j in y_selected){
       for(i_t in 1:length(t_selected)){
         t <- t_selected[i_t]
         oo <- x$mod$B[[t]][,j]
-        pos_ok <- which(abs(oo)>1e-9)
+        pos_ok <- which(abs(oo)>NZV)
         if(length(pos_ok)>0){
           ok <- x$mod$B[[t]][pos_ok,j,drop=F]
           rownames(ok) <- colnames(x$Xs[[t]])[pos_ok]

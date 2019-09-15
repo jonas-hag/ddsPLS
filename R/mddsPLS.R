@@ -419,6 +419,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @useDynLib ddsPLS
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats na.omit glm
+#' @importFrom Matrix rankMatrix
 #'
 #' @seealso \code{\link{summary.mddsPLS}}, \code{\link{plot.mddsPLS}}, \code{\link{predict.mddsPLS}}, \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}, \code{\link{plot.perf_mddsPLS}}
 #'
@@ -480,9 +481,19 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     scaleRcpp(a)
   }
 
-  get_variances <- function(x,std_Y=T){
-    get_var_line <- function(x,y){
-      numer <- norm(mmultC(x,mmultC(solve(crossprod(x)),crossprod(x,y))),"f")
+  get_variances <- function(x,std_Y=T,NZV=1e-9){
+    get_var_line <- function(x,y,NZV=1e-9){
+      sigmaX <- crossprod(x)
+      model_svd <- svd(sigmaX)
+      if(min(model_svd$d)<NZV){
+        D_plus <- model_svd$d
+        D_plus[which(D_plus>NZV)] <- 1/D_plus[which(D_plus>NZV)]
+        D_plus[-which(D_plus>NZV)] <- 0
+        sigmaX_plus <- mmultC(model_svd$v,mmultC(diag(D_plus),t(model_svd$u)))
+      }else{
+        sigmaX_plus <- solve(sigmaX)
+      }
+      numer <- norm(mmultC(x,mmultC(sigmaX_plus,crossprod(x,y))),"f")
       denom <- norm(y,"f")
       numer/denom
     }
