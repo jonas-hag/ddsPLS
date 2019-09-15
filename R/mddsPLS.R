@@ -483,6 +483,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
 
   get_variances <- function(x,std_Y=T,NZV=1e-9){
     get_var_line <- function(x,y,NZV=1e-9){
+      coX <- colSums(x)
+      if(any(is.na(coX))){
+        x[,which(is.na(coX))] <- 0
+      }
       sigmaX <- crossprod(x)
       model_svd <- svd(sigmaX)
       if(min(model_svd$d)<NZV){
