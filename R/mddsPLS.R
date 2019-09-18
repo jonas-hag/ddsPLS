@@ -399,9 +399,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
 #' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
-#' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
+#' @param verbose Logical. If TRUE, the convergence progress is reported. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
-#' @param getVariances Logical. Whether or not to compute variances.
+#' @param getVariances Logical. Whether or not to compute variances. Default is \emph{TRUE}.
 #'
 #' @return A list containing a mddsPLS object, see \code{\link{MddsPLS_core}}. The \code{list} \code{order_values} is filled with the selected genes in each block.
 #' They are oredered according to the sum of the square values of the \strong{Super-Weights} along the \code{R} dimensions.
