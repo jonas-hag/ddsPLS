@@ -686,7 +686,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     sd_y <- sdRcpp(Y_class_dummies)#apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
   }
   if(length(unlist(id_na))==0){
-    ## If ther is no missing sample
+    ## If there is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose,NZV=NZV)
   }else{
     if(!is.null(L0)){

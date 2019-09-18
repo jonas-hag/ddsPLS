@@ -6,9 +6,10 @@
 \usage{
 \method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
   addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
-  mar_left = 2, mar_bottom = 2, pos_legend = "topright",
-  legend_names = NULL, legend.cex = 1, values_corr = F,
-  block_Y_name = "Y", alpha.Y_sel = 0.4, reorder_Y = F, ...)
+  mar_left = 2, mar_bottom = 2, margins_heatmap = c(5, 5),
+  pos_legend = "topright", legend_names = NULL, legend.cex = 1,
+  values_corr = F, block_Y_name = "Y", alpha.Y_sel = 0.4,
+  reorder_Y = F, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -44,13 +45,19 @@
 \item{reorder_Y}{logical. In case \strong{addY}=TRUE. Order the \strong{Y} variances according to proportion of varaince explained on the first component.}
 
 \item{...}{Other plotting parameters to affect the plot.}
+
+\item{mar_heatmap}{vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).}
 }
 \value{
 The plot visualisation
 }
 \description{
 That function must be applied to a \strong{mddsPLS} object. Extra parameters are
- avalaible to control the plot quality.
+ avalaible to control the plot quality. Keep in mind that if a lot of covariates
+ are selected, their names might not all fit the plot window, only the names of
+ the most important covariates are present. To provide the names of all the
+ covariates, the user can modify concerned parameters of the \strong{barplot}
+ function (for example the \emph{cex.names} parameter).
 }
 \examples{
 library(doParallel)

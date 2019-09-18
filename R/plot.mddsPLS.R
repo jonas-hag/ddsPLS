@@ -1,7 +1,11 @@
 #' Function to plot \strong{mddsPLS}
 #'
 #' That function must be applied to a \strong{mddsPLS} object. Extra parameters are
-#'  avalaible to control the plot quality.
+#'  avalaible to control the plot quality. Keep in mind that if a lot of covariates
+#'  are selected, their names might not all fit the plot window, only the names of
+#'  the most important covariates are present. To provide the names of all the
+#'  covariates, the user can modify concerned parameters of the \strong{barplot}
+#'  function (for example the \emph{cex.names} parameter).
 #'
 #' @param x The perf_mddsPLS object.
 #' @param vizu character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit})
@@ -380,7 +384,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           if(!super){
             barplot(toplot[[k]][[r]],horiz = T,las=2,
                     col=colors[k],xlim = c(-1,1),
-                    main=main,xlab="Coefficient")
+                    main=main,xlab="Coefficient",...)
             abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
           }
         }else{
@@ -399,7 +403,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }
         toplot_y <- y_como[order(abs(y_como),decreasing = T)]
         barplot(toplot_y,horiz = T,las=2,col=colors[K+1],xlim = c(-1,1),
-                main=paste(block_Y_name," component ",r,sep=""),xlab="Coefficient")
+                main=paste(block_Y_name," component ",r,sep=""),xlab="Coefficient",...)
         abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         legeds <- c(legend_names_in[block_in],block_Y_name)
         colOut <- colors[c(block_in,K+1)]
@@ -434,7 +438,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
         }else{
           oo <- order(abs(plotR),decreasing = T)
           barplot(plotR[oo],horiz = T,las=2,col=cols[oo],
-                  main=main,xlim=c(-1,1),xlab="Coefficient")
+                  main=main,xlim=c(-1,1),xlab="Coefficient",...)
           abline(v=c(0.5,-0.5,-1,1),lty=c(2,2,1,1),col=adjustcolor("black",alpha.f = 0.2))
         }
         if(addY){
@@ -481,7 +485,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           }
           xx<-barplot(toplot_y,horiz = F,las=2,col=cols_y,ylim = c(0,119),
                       main=paste("Block Y, component ",r,sep=""),
-                      ylab=xlab)
+                      ylab=xlab,..)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
                  col=adjustcolor("black",alpha.f = 0.2))
           text(xx,toplot_y,labels=round(toplot_y,0),pos=3,font=fonts)
@@ -514,7 +518,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           rownames(ok) <- colnames(x$Xs[[t]])[pos_ok]
           barplot(t(ok),las = 2,horiz = T,col=colors[t],
                   main=paste("Block X : ",legend_names_in[t],", variable Y : ",
-                             names_Y[j],sep=""))
+                             names_Y[j],sep=""),...)
         }else{
           plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
         }

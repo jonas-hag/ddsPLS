@@ -64,7 +64,7 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
   for(k in 1:K){popo <- as.numeric(object$id_na[[k]]);if(length(popo)>0){df_miss[popo,k]<-0};
   df_miss[,k] <- factor(df_miss[,k],levels = c(0,1))}
   names(df_miss) <- names_X_block
-  q <- ncol(object$Y_0); if(is.null(q)){q <- length(object$Y_0)};    sent_q <- paste("Number of variables in Y part:",q)
+  q <- ncol(object$RMSEP)-2; sent_q <- paste("Number of variables in Y part:",q)
   mode <- object$mode;if(mode=="reg"){
     mode <- "regression"
   }else{
