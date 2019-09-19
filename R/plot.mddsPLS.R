@@ -8,7 +8,7 @@
 #'  function (for example the \emph{cex.names} parameter).
 #'
 #' @param x The perf_mddsPLS object.
-#' @param vizu character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit})
+#' @param vizu character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit}). If \strong{heatmap} is selected, light colors correspond to low expressions.
 #' @param super logical. If \strong{TRUE} barplots are filled with **Super-Weights** in the case of \strong{vizu=weights} of with général **X** and **Y** components else.
 #' @param addY logical. Whether or not to plot **Block Y**. Initialized to \strong{FALSE}.
 #' @param block vector of intergers indicating which components must be plotted. If equals \strong{NULL} then all the components are plotted. Initialized to \strong{NULL}.
@@ -16,7 +16,7 @@
 #' @param variance character. One of \strong{Linear}, \strong{RV}. Explains the type of variance shown in the graphics.
 #' @param mar_left positive float. Extra lines to add to the left margins, where the variable names are written.
 #' @param mar_bottom positive float. Extra lines to add to the bottom margins. Useful when \strong{addY}=TRUE.
-#' @param mar_heatmap vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).
+#' @param margins_heatmap vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).
 #' @param pos_legend Initialized to "topright". If equals NULL, then no legend is given.
 #' @param legend.cex positive float. character expansion factor relative to current par("cex") for \strong{legend} function.
 #' @param legend_names vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.
@@ -485,7 +485,7 @@ plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
           }
           xx<-barplot(toplot_y,horiz = F,las=2,col=cols_y,ylim = c(0,119),
                       main=paste("Block Y, component ",r,sep=""),
-                      ylab=xlab,..)
+                      ylab=xlab,...)
           abline(h=c(0.25,0.5,0.75,1)*100,lty=c(3,3,2,1),lwd=c(0.5,1,1,1),
                  col=adjustcolor("black",alpha.f = 0.2))
           text(xx,toplot_y,labels=round(toplot_y,0),pos=3,font=fonts)

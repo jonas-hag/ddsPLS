@@ -30,6 +30,8 @@
 
 \item{mar_bottom}{positive float. Extra lines to add to the bottom margins. Useful when \strong{addY}=TRUE.}
 
+\item{margins_heatmap}{vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).}
+
 \item{pos_legend}{Initialized to "topright". If equals NULL, then no legend is given.}
 
 \item{legend_names}{vector of character. Indicates the names of the blocks. Initialized to NULL and in this case just gets positions in the Xs list.}
@@ -45,8 +47,6 @@
 \item{reorder_Y}{logical. In case \strong{addY}=TRUE. Order the \strong{Y} variances according to proportion of varaince explained on the first component.}
 
 \item{...}{Other plotting parameters to affect the plot.}
-
-\item{mar_heatmap}{vector of 2 positive floats. The \strong{margins} argument of the \strong{heatmap} function. Margins to the bottom and to the right of the heatmap, if plotted. Useful if samples and covariates have particularly long names. Default to c(5,5).}
 }
 \value{
 The plot visualisation
