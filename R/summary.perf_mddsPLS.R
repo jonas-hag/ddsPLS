@@ -29,11 +29,21 @@
 summary.perf_mddsPLS <- function (object,plot_res_cv=T,
                                   ...)
 {
+  if(object$mode!="reg"){
+    names(object)[which(names(object)=="ERROR")] <- "RMSEP"
+  }
   is_L0 <- names(object$RMSEP)[2]
   K <- length(object$Xs);    sent_K <- paste("Number of blocks:",K)
   n <- nrow(object$Xs[[1]]);    sent_n <- paste("Number of individuals:",n)
-  kfolds <- object$kfolds
-  if(kfolds=="loo"){
+  kfolds <- length(unique(object$fold))
+  if(kfolds==0){
+    if(object$kfolds=="loo"){
+      kfolds <- n
+    }else{
+      kfolds <- object$kfolds
+    }
+  }
+  if(kfolds==n){
     sent_kfolds <- "Performed Leave-One-Out cross-validation"
   }else{
     sent_kfolds <- paste("Performed ",kfolds,"-fold cross-validation",sep="")
@@ -71,8 +81,6 @@ summary.perf_mddsPLS <- function (object,plot_res_cv=T,
     mode <- "classification"
   }
   sent_mode <- paste("Model built in mode",mode)
-
-
   FREQ <- object$FREQ
   Conv <- object$Conv
   time <- object$time

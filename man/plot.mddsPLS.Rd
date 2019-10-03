@@ -14,7 +14,7 @@
 \arguments{
 \item{x}{The perf_mddsPLS object.}
 
-\item{vizu}{character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit})}
+\item{vizu}{character. One of \strong{weights}, \strong{coeffs}, \strong{heatmap}, \strong{correlogram}. \strong{coeffs} does not work in the case of classification (\strong{lda} or \strong{logit}). If \strong{heatmap} is selected, light colors correspond to low expressions.}
 
 \item{super}{logical. If \strong{TRUE} barplots are filled with **Super-Weights** in the case of \strong{vizu=weights} of with général **X** and **Y** components else.}
 
@@ -74,8 +74,9 @@ function(tt){rep(tt,12)})))
 data("liverToxicity")
 X <- scale(liverToxicity$gene)
 Y <- scale(liverToxicity$clinic)
-# res_cv_reg <- ddsPLS(Xs = X,Y = Y,L0=10,R = 2)
-# plot(res_cv_reg)
+# mod_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 2)
+# plot(mod_reg,addY = T,mar_left = 3)
+# plot(mod_reg,addY = T,mar_left = 3,super = T)
 }
 \seealso{
 \code{\link{mddsPLS}}, \code{\link{summary.mddsPLS}}
