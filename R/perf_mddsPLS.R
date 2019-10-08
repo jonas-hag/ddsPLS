@@ -290,7 +290,5 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
       plot(out,no_occurence=T,plot_mean = T)
     }
   }
-  plot_no_plot <- plot(out,no_plot=T)
-  out$Optim <- plot_no_plot[1:2]
   out
 }
