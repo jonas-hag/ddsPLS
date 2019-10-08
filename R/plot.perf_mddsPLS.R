@@ -52,6 +52,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
                               ylim=NULL,alpha.f=0.4,
                               no_occurence=T,
                               main=NULL,
+                              no_plot=F,
                               ...){
   ## Reset personnal plot par() settings
   opar <- par(no.readonly =TRUE)
