@@ -53,8 +53,9 @@
 #' data("liverToxicity")
 #' X <- scale(liverToxicity$gene)
 #' Y <- scale(liverToxicity$clinic)
-#' # res_cv_reg <- ddsPLS(Xs = X,Y = Y,L0=10,R = 2)
-#' # plot(res_cv_reg)
+#' # mod_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 2)
+#' # plot(mod_reg,addY = T,mar_left = 3)
+#' # plot(mod_reg,addY = T,mar_left = 3,super = T)
 plot.mddsPLS <- function(x,vizu="weights",super=FALSE,addY=FALSE,
                          block=NULL,comp=NULL,variance="Linear",
                          mar_left=2,mar_bottom=2,margins_heatmap=c(5,5),
