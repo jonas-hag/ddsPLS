@@ -334,4 +334,5 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
   }
   out <- list(optim_para_all = lam_all, optim_para_one = lam_one)
   class(out) <- "plot.perf_mddsPLS"
+  out
 }
