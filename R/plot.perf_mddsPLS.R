@@ -13,6 +13,7 @@
 #' @param ylim numeric vectors of length 2, giving the error plot range.
 #' @param no_occurence logical. Whether or not to plot the occurence plot of the \strong{Y} variables. Initialized to \strong{TRUE}.
 #' @param main character of \strong{NULL}. If null the title is given to the willing of the software. If \strong{""}, no title is given. Else is what the user wants.
+#' @param no_plot logical. Whether or not to plot the error plot. Initialized to \strong{FALSE}. Not generally used.
 #' @param ... Other plotting parameters to affect the plot.
 #'
 #' @return The plot visualisation
@@ -51,6 +52,7 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
                               ylim=NULL,alpha.f=0.4,
                               no_occurence=T,
                               main=NULL,
+                              no_plot=FALSE,
                               ...){
   ## Reset personnal plot par() settings
   opar <- par(no.readonly =TRUE)
@@ -58,7 +60,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
   ## -----------------------------------
 
   res_perf_mdd <- x
-  is_L0 <- names(res_perf_mdd[[1]])[2]
+  if(any(names(res_perf_mdd)=="RMSEP")){
+    is_L0 <- names(res_perf_mdd$RMSEP)[2]
+  }else{
+    is_L0 <- names(res_perf_mdd$ERROR)[2]
+  }
   X_all <- scale(do.call(cbind,res_perf_mdd$Xs))
   if(res_perf_mdd$mode=="reg"){
     if(reg_error=="MPE"){
@@ -185,40 +191,43 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
   for(jq in 1:q){
     dat <- data.frame(list(lambda=lam_plot,MSEP=y1[ord,jq],sd=SDEP[ord,2+jq]))
     ses <- dat$MSEP + outer(dat$sd, c(1,-1)*delta[jq])
-    if(jq==1){
-      if(res_perf_mdd$mod=="reg"){
-        with(dat,
-             plot(
-               lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
-               ylim=ylim,col=colors[jq],lwd=3,
-               main=main1,
-               panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
-                                   border=NA,
-                                   col=adjustcolor(colors[jq],alpha.f = alpha.f))
-             )
-        )
+    if(!no_plot){
+      if(jq==1){
+        if(res_perf_mdd$mod=="reg"){
+          with(dat,
+               plot(
+                 lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
+                 ylim=ylim,col=colors[jq],lwd=3,
+                 main=main1,
+                 panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
+                                     border=NA,
+                                     col=adjustcolor(colors[jq],alpha.f = alpha.f))
+               )
+          )
+        }
+        else{
+          with(dat,
+               plot(
+                 lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
+                 ylim=ylim,col=colors[jq],lwd=3,
+                 main=main1,xaxt="n",
+                 panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
+                                     border=NA,
+                                     col=adjustcolor(colors[jq],alpha.f = alpha.f))
+               )
+          )
+          axis(1,at=dat$lambda)
+        }
       }else{
         with(dat,
-             plot(
-               lambda, MSEP, type="l",xlab=xlab,ylab=ylab1,
-               ylim=ylim,col=colors[jq],lwd=3,
-               main=main1,xaxt="n",
+             points(
+               lambda, MSEP, type="l",col=colors[jq],lwd=3,
                panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
                                    border=NA,
                                    col=adjustcolor(colors[jq],alpha.f = alpha.f))
              )
         )
-        axis(1,at=dat$lambda)
       }
-    }else{
-      with(dat,
-           points(
-             lambda, MSEP, type="l",col=colors[jq],lwd=3,
-             panel.first=polygon(c(lambda,rev(lambda)), c(ses[,1],rev(ses[,2])),
-                                 border=NA,
-                                 col=adjustcolor(colors[jq],alpha.f = alpha.f))
-           )
-      )
     }
     if(delta[jq]==1){
       for(jj in 1:nrow(dat)){
@@ -237,52 +246,60 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
       pos_all <- min(which(y_mean==max(y_mean)))
       pos_one <- min(which(y1==max(y1),arr.ind = T)[,1])
     }
-    abline(v=c(lam_plot[pos_all],
-               lam_plot[pos_one]),lty=4,lwd=2)
+    if(!no_plot){
+      abline(v=c(lam_plot[pos_all],
+                 lam_plot[pos_one]),lty=4,lwd=2)
+    }
+    lam_all <- lam_plot[pos_all]
+    lam_one <- lam_plot[pos_one]
   }else{
-    abline(v=c(lam_plot[which(y_mean==min(y_mean))],
-               lam_plot[which(y1==min(y1),arr.ind = T)[,1]]),lty=4,lwd=2)
+    if(!no_plot){
+      abline(v=c(lam_plot[which(y_mean==min(y_mean))],
+                 lam_plot[which(y1==min(y1),arr.ind = T)[,1]]),lty=4,lwd=2)
+    }
+    lam_all <- lam_plot[which(y_mean==min(y_mean))]
+    lam_one <- lam_plot[which(y1==min(y1),arr.ind = T)[,1]]
   }
-  if(res_perf_mdd$mod!="reg"){
+  if(res_perf_mdd$mod!="reg" & !no_plot){
     points(sort(RMSEP[,2]),y_mean,type = "l",lwd=4,lty=1,
-                     col=adjustcolor(1,alpha.f = 0.2))
+           col=adjustcolor(1,alpha.f = 0.2))
     points(sort(RMSEP[,2]),y_mean,type = "l",lwd=2,lty=3,
-                     col=1)
+           col=1)
   }
-  if(!is.null(legend_names)){
-    if(res_perf_mdd$mod!="reg"){
-      legend(pos_legend,
-                       legend = c(paste(legend_names,
-                                        paste(" (",TAB," indiv.)",sep=""),
-                                        sep=""),
-                                  "Mean good classif rate"),
-                       col = c(colors,1),
-                       lty = c(rep(1,length(colors)),3),
-                       lwd=c(rep(2,length(colors),1.5)),bty = "n")
-    }else{
-      if(!is.null(plot_mean)){
-        legend_names <- c(legend_names, legend_0)
-        col <- c(colors,"black")
-        lty <- c(rep(1,length(colors)),3)
-        lwd <- c(rep(2,length(colors)),3)
+  if(!no_plot){
+    if(!is.null(legend_names)){
+      if(res_perf_mdd$mod!="reg"){
+        legend(pos_legend,
+               legend = c(paste(legend_names,
+                                paste(" (",TAB," indiv.)",sep=""),
+                                sep=""),
+                          "Mean good classif rate"),
+               col = c(colors,1),
+               lty = c(rep(1,length(colors)),3),
+               lwd=c(rep(2,length(colors),1.5)),bty = "n")
       }else{
-        col <- colors
-        lty <- rep(1,length(colors))
-        lwd <- rep(2,length(colors))
+        if(!is.null(plot_mean)){
+          legend_names <- c(legend_names, legend_0)
+          col <- c(colors,"black")
+          lty <- c(rep(1,length(colors)),3)
+          lwd <- c(rep(2,length(colors)),3)
+        }else{
+          col <- colors
+          lty <- rep(1,length(colors))
+          lwd <- rep(2,length(colors))
+        }
+        legend(pos_legend,legend = legend_names,
+               col = col,lty = lty,lwd=lwd,bty = "n")
       }
-      legend(pos_legend,legend = legend_names,
-                       col = col,lty = lty,lwd=lwd,bty = "n")
     }
   }
-
-  if(plot_mean){
+  if(plot_mean&!no_plot){
     points(sort(RMSEP[,2]),y_mean,type="l",
-                     lty=3,lwd=2)
+           lty=3,lwd=2)
     # graphics::points(sort(RMSEP[,2]),y_mean,type="l",
     # col=grDevices::adjustcolor("black",alpha.f = 0.2),
     # lty=1,lwd=4)
   }
-
   if(is_L0!="L0s"){
     y_card <- card_ranges*diff(range(y1))/diff(range(card_ranges))
     y_card <- y_card - min(y_card) + min(y1)
@@ -290,9 +307,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
     # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
     # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
     # lty = 1,lwd=5)
-    axis(side = 3,at=ranges,labels=card_ranges, col="red",
-                   col.axis="red")
-    mtext("", side = 3, line = 3, col = "red")
+    if(!no_plot){
+      axis(side = 3,at=ranges,labels=card_ranges, col="red",
+           col.axis="red")
+      mtext("", side = 3, line = 3, col = "red")
+    }
   }
   if(res_perf_mdd$mod=="reg"){
     if(is_L0!="L0s"){
@@ -313,17 +332,24 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
       }
     }
     if(!no_occurence){
-      matplot(FREQ[order(FREQ[2]),2],
-                        FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,
-                        type="l",lwd=4,col=colors,lty=1,
-                        xlab=expression(lambda),ylab=ylab1,
-                        main=main2)
+      if(!no_plot){
+        matplot(FREQ[order(FREQ[2]),2],
+                FREQ[order(FREQ[2]),-c(1:2)]/max(FREQ[order(FREQ[2]),-c(1:2)])*100,
+                type="l",lwd=4,col=colors,lty=1,
+                xlab=expression(lambda),ylab=ylab1,
+                main=main2)
+      }
       if(is_L0!="L0s"){
         pos_y <- unique(seq(1,length(ranges_y),length.out = 15))
         pos_y[length(pos_y)] <- min(max(pos_y),length(ranges_y))
-        axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
-        mtext("", side = 3, line = 3, col = "blue")
+        if(!no_plot){
+          axis(side = 3,at=ranges_y,labels=card_ranges_y, col="blue",col.axis="blue")
+          mtext("", side = 3, line = 3, col = "blue")
+        }
       }
     }
   }
+  out <- list(optim_all_errors=lam_one,optim_mean_errors=lam_all)
+  class(out) <- "plot.perf_mddsPLS"
+  out
 }
