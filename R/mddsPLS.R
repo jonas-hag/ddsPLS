@@ -302,19 +302,34 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   }else{ ## RIDGE solution
     B <- list()
     T_super <- matrix(0,n,q)
+
+    T_super_reg <- matrix(NA,n,R*K)
+    count_reg <- 1
+    for(k in 1:K){
+      for(r in 1:R){
+        T_super_reg[,count_reg] <- t_r[[r]][,k]
+        count_reg <- count_reg + 1
+      }
+    }
+    Q <- mmultC(solve(crossprod(T_super_reg)+n*mu*diag(1,R*K)),
+                crossprod(T_super_reg,Y))
+
+    count_reg <- 1
     for(k in 1:K){
       B_t <- matrix(NA,R,q)
       for(r in 1:R){
-        T_t_r <- t_r[[r]][,k]
-        denom <- sum(T_t_r^2) + n*mu
-        for(j in 1:q){
-          if(denom>0){
-            b_t_r_j <- sum(Y[,j]*T_t_r)/denom
-          }else{
-            b_t_r_j <- 0
-          }
-          B_t[r,j] <- b_t_r_j
-        }
+        # T_t_r <- t_r[[r]][,k]
+        # denom <- sum(T_t_r^2) + n*mu
+        # for(j in 1:q){
+          # if(denom>0){
+          #   b_t_r_j <- sum(Y[,j]*T_t_r)/denom
+          # }else{
+          #   b_t_r_j <- 0
+          # }
+          # B_t[r,j] <- b_t_r_j
+        # }
+        B_t[r,] <- Q[count_reg,]
+          count_reg <- count_reg + 1
       }
       B[[k]] <- mmultC(u_t_r[[k]],B_t)
       T_super <- T_super + mmultC(Xs[[k]],B[[k]])
