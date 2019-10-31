@@ -7,6 +7,7 @@
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
+#' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
@@ -45,7 +46,7 @@
 #' @importFrom MASS lda
 #'
 MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
-                         L0=NULL,verbose=FALSE,id_na=NULL,
+                         L0=NULL,mu=NULL,verbose=FALSE,id_na=NULL,
                          NZV=1e-9){
 
   my_scale <- function(a){
@@ -226,104 +227,115 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
     t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
-  ## Big SVD solution ######################### -----------------
-  U_t_super <- list()
-  Z <- do.call(cbind,z_t)
-  R_opt <- R#min(min(dim(Z)),R)
-  svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
-  # ## Reorder well ## -----
-  # crosY_T <- crossprod(Y,do.call(cbind,t_t))
-  # power <- colSums((crosY_T%*%svd_Z$v)^2)
-  # orderGood <- order(power,decreasing = T)
-  # svd_Z$d <- (svd_Z$d[orderGood])[1:R]
-  # svd_Z$u <- (svd_Z$u[,orderGood,drop=F])[,1:R,drop=F]
-  # svd_Z$v <- (svd_Z$v[,orderGood,drop=F])[,1:R,drop=F]
-  ## END --- Reorder well ## -----
-  beta_all <- svd_Z$v
-  beta_list <- list()
-  for(k in 1:K){#r in 1:R){
-    #beta_list[[r]] <- beta_all[K*(r-1)+1:K,,drop=F]
-    beta_list[[k]] <- beta_all[R*(k-1)+1:R,,drop=F]
-  }
-  V_super <- svd_Z$u
-  if(length(svd_Z$d)<R){
-    svd_Z$d <- c(svd_Z$d,rep(0,R-length(svd_Z$d)))
-    V_super <- cbind(V_super,matrix(0,nrow=nrow(V_super),ncol=R-length(svd_Z$d)))
-  }
-  R_here <- ncol(beta_list[[1]])
-  T_super <- matrix(0,nrow=n,ncol=R_here)
-  for(k in 1:K){
-    U_t_super[[k]] <- mmultC(u_t_r[[k]],beta_list[[k]])
-    T_super <- T_super + mmultC(Xs[[k]],U_t_super[[k]])
-  }
-  ###########################################################
-  vars_current <- rep(0,R_here)
-  for(r in 1:R_here){
-    sc_r <- T_super[,r,drop=F]#scale(x$mod$t[,r,drop=F],scale=F)
-    var_t_super_r <- sum(sc_r^2)
-    if(var_t_super_r!=0){
-      if(n>q){
-        deno_left <- norm(crossprod(Y),'f')
+  U_t_super = beta_list <- list()
+  if(is.null(mu)){
+    ## Big SVD solution ######################### -----------------
+    Z <- do.call(cbind,z_t)
+    R_opt <- R
+    svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
+    beta_all <- svd_Z$v
+    for(k in 1:K){
+      beta_list[[k]] <- beta_all[R*(k-1)+1:R,,drop=F]
+    }
+    V_super <- svd_Z$u
+    if(length(svd_Z$d)<R){
+      svd_Z$d <- c(svd_Z$d,rep(0,R-length(svd_Z$d)))
+      V_super <- cbind(V_super,matrix(0,nrow=nrow(V_super),ncol=R-length(svd_Z$d)))
+    }
+    R_here <- ncol(beta_list[[1]])
+    T_super <- matrix(0,nrow=n,ncol=R_here)
+    for(k in 1:K){
+      U_t_super[[k]] <- mmultC(u_t_r[[k]],beta_list[[k]])
+      T_super <- T_super + mmultC(Xs[[k]],U_t_super[[k]])
+    }
+    ###########################################################
+    vars_current <- rep(0,R_here)
+    for(r in 1:R_here){
+      sc_r <- T_super[,r,drop=F]
+      var_t_super_r <- sum(sc_r^2)
+      if(var_t_super_r!=0){
+        if(n>q){
+          deno_left <- norm(crossprod(Y),'f')
+        }else{
+          deno_left <- norm(tcrossprod(Y),'f')
+        }
+        deno <- deno_left*sum(sc_r^2)
+        numer <- sum(mmultC(Y,crossprod(Y,sc_r))*sc_r)
+        vars_current[r] <- numer/deno
+      }
+    }
+    l_cur <- length(vars_current)
+    if(l_cur>1){
+      ord <- order(vars_current,decreasing = T)
+      T_super <- T_super[,ord[1:R],drop=F]
+      V_super <- V_super[,ord[1:R],drop=F]
+      for(k in 1:K){
+        U_t_super[[k]] <- U_t_super[[k]][,ord[1:R],drop=F]
+        beta_list[[k]] <- beta_list[[k]][,ord[1:R],drop=F]
+      }
+    }
+    ###########################################################
+    ## -------------------------- ######################### -----------------
+    S_super <- mmultC(Y,V_super)
+    T_S <- crossprod(T_super,S_super)
+    T_T <- crossprod(T_super)
+    svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
+    v_ort <- svd_ort_T_super$v
+    Delta_ort <- svd_ort_T_super$d^2
+    if(sum(Delta_ort)!=0){
+      t_ort <- mmultC(T_super,v_ort)
+      s_ort <- mmultC(S_super,v_ort)
+      D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
+      del_0 <- which(Delta_ort<NZV)
+      if(length(del_0)>0){
+        diag(D_0_inv)[-del_0] <- 1/Delta_ort[-del_0]
       }else{
-        deno_left <- norm(tcrossprod(Y),'f')
+        diag(D_0_inv) <- 1/Delta_ort
       }
-      deno <- deno_left*sum(sc_r^2)
-      numer <- sum(mmultC(Y,crossprod(Y,sc_r))*sc_r)
-      vars_current[r] <- numer/deno#sum(diag(mmultC(tcrossprod(Y),tcrossprod(sc_r))))/deno
-    }
-  }
-  l_cur <- length(vars_current)
-  if(l_cur>1){
-    ord <- order(vars_current,decreasing = T)
-    T_super <- T_super[,ord[1:R],drop=F]
-    V_super <- V_super[,ord[1:R],drop=F]
-    for(k in 1:K){
-      U_t_super[[k]] <- U_t_super[[k]][,ord[1:R],drop=F]
-      # u_t_r[[k]] <- u_t_r[[k]][,ord,drop=F]
-      beta_list[[k]] <- beta_list[[k]][,ord[1:R],drop=F]
-    }
-  }
-  ###########################################################
-  ## -------------------------- ######################### -----------------
-  S_super <- mmultC(Y,V_super)
-  T_S <- crossprod(T_super,S_super)
-  T_T <- crossprod(T_super)
-  # svd_ort <- svd(S_T,nu = R,nv = R)
-  svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
-  # u_ort <- svd_ort_T_super$u
-  v_ort <- svd_ort_T_super$v
-  Delta_ort <- svd_ort_T_super$d^2
-  if(sum(Delta_ort)!=0){
-    t_ort <- mmultC(T_super,v_ort)
-    s_ort <- mmultC(S_super,v_ort)
-    D_0_inv <- matrix(0,nrow = length(Delta_ort),ncol = length(Delta_ort))
-    del_0 <- which(Delta_ort<NZV)
-    if(length(del_0)>0){
-      diag(D_0_inv)[-del_0] <- 1/Delta_ort[-del_0]
+      B_0 <- mmultC(mmultC(v_ort,tcrossprod(D_0_inv,v_ort)),T_S)
     }else{
-      diag(D_0_inv) <- 1/Delta_ort
+      t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
+      B_0 <- matrix(0,nrow = R,ncol=R)
+      V_super <- matrix(0,q,R)
     }
-    B_0 <- mmultC(mmultC(v_ort,tcrossprod(D_0_inv,v_ort)),T_S)
-    # A <- matrix(0,R,R)
-    # for(r in 1:R){
-    #  A[r,r] <- as.numeric(crossprod(t_ort[,r],s_ort[,r]))/as.numeric(crossprod(t_ort[,r]))
-    # }
-  }else{
-    t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
-    B_0 <- matrix(0,nrow = R,ncol=R)
-    # A <- matrix(0,R,R)
-    V_super <- matrix(0,q,R)
-  }
-  u <- beta_all#beta# deprecated
-  if(mode=="reg"){
+    u <- beta_all
+  }else{ ## RIDGE solution
     B <- list()
-    count <- 1
+    T_super <- matrix(0,n,q)
     for(k in 1:K){
-      B_k <- tcrossprod(mmultC(U_t_super[[k]],B_0),V_super)
-      if(anyNA(B_k)){
-        B_k <- matrix(0,nrow(B_k),ncol(B_k))
+      B_t <- matrix(NA,R,q)
+      for(r in 1:R){
+        T_t_r <- t_r[[r]][,k]
+        denom <- sum(T_t_r^2) + n*mu
+        for(j in 1:q){
+          if(denom>0){
+            b_t_r_j <- sum(Y[,j]*T_t_r)/denom
+          }else{
+            b_t_r_j <- 0
+          }
+          B_t[r,j] <- b_t_r_j
+        }
       }
-      B[[k]] <- B_k
+      B[[k]] <- mmultC(u_t_r[[k]],B_t)
+      T_super <- T_super + mmultC(Xs[[k]],B[[k]])
+    }
+    U_t_super <- B
+    V_super <- diag(1,q)
+    S_super <- Y
+    u <- matrix(rep(diag(1,R),K),R)
+    t_ort=s_ort <- matrix(0,nrow = nrow(T_super),ncol=R)
+  }
+  if(mode=="reg"){
+    if(is.null(mu)){
+      B <- list()
+      count <- 1
+      for(k in 1:K){
+        B_k <- tcrossprod(mmultC(U_t_super[[k]],B_0),V_super)
+        if(anyNA(B_k)){
+          B_k <- matrix(0,nrow(B_k),ncol(B_k))
+        }
+        B[[k]] <- B_k
+      }
     }
   }else{
     if(is.factor(Y_0)) Y_0 <- as.character(Y_0)
@@ -377,7 +389,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   list(u=u_t_r,u_t_super=U_t_super,V_super=V_super,ts=t_r,beta_comb=u,
        T_super=T_super,S_super=S_super,
        t_ort=t_ort,s_ort=s_ort,B=B,
-       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda_in[1])
+       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda_in[1],mu=mu)
 }
 
 
@@ -394,6 +406,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
+#' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param reg_imp_model Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
@@ -462,7 +475,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' Y <- scale(liverToxicity$clinic)
 #' #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
 #' #summary(mddsPLS_model_reg)
-mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
+mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,mu=NULL,
                     keep_imp_mod=FALSE,reg_imp_model=TRUE,
                     errMin_imput=1e-9,maxIter_imput=50,
                     verbose=FALSE,NZV=1E-9,getVariances=TRUE){
@@ -686,7 +699,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
   }
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,verbose=verbose,NZV=NZV)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,verbose=verbose,NZV=NZV)
   }else{
     if(!is.null(L0)){
       ps_init <- unlist(lapply(Xs,ncol))
@@ -721,7 +734,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
       }
     }
     if(K>1){
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,NZV=NZV)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,NZV=NZV)
       if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -774,12 +787,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
                 if(reg_imp_model){
                   ## In that case the value of lambda is computed according to the initial model.
                   model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,
-                                             R=R,L0=NULL,NZV=NZV)
+                                             R=R,L0=NULL,mu=mu,NZV=NZV)
                 }else{
                   ## In that case the value of lambda is taken equal to 0. And so
                   ## all the variables are taken in the model
                   model_here <- MddsPLS_core(Xs_i,Y_i_k,
-                                             R=R,L0=NULL,NZV=NZV)
+                                             R=R,L0=NULL,mu=mu,NZV=NZV)
                 }
                 mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
                 class(mod_i_k) <- "mddsPLS"
@@ -804,18 +817,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
             if(!is.factor(Y))Y <- factor(Y)
           }
           mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,
-                              mode=mode,L0=L0,NZV=NZV)#NULL)#######################L0)#
+                              mode=mode,L0=L0,mu=mu,NZV=NZV)
           if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
             err <- 0
-            # for(r in 1:R){
-            #   n_new <- sqrt(sum(mod$t_ort[,r]^2))
-            #   n_0 <- sqrt(sum(mod_0$t_ort[,r]^2))
-            #   if(n_new*n_0!=0){
-            #     err_i <- abs(1-as.numeric(abs(diag(crossprod(mod$t_ort[,r],
-            #                                                  mod_0$t_ort[,r]))))/(n_new*n_0))
-            #     err <- err + err_i
-            #   }
-            # }
             tsuper <- mod$T_super
             covsuper <- crossprod(tsuper)
             tsuper_0 <- mod_0$T_super
@@ -848,7 +852,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
         }
       }
     }
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0,NZV=NZV)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,verbose=verbose,L0=L0,mu=mu,NZV=NZV)
   }
   mod$mu_x_s <- mu_x_s
   mod$sd_x_s <- sd_x_s
@@ -887,7 +891,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",L0=NULL,
     if(mode=="regression")names(mod$B) <- names_Xs
     names(mod$Ms) <- names_Xs
   }
-  out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mode=mode,id_na=id_na,
+  out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mu=mu,mode=mode,id_na=id_na,
               maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0,NZV=NZV)
   class(out) <- "mddsPLS"
   if(keep_imp_mod){
