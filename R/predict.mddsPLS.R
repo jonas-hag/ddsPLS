@@ -151,7 +151,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
         newY <- newY + newX[[k]]%*%mod$B[[k]]
       }
       for(i in 1:n_new){
-        newY[i,]<-newY[i,]*sd_y+mu_y
+        newY[i,]<-newY[i,] + mu_y
       }
     }
     else{

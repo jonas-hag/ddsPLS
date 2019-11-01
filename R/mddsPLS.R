@@ -192,7 +192,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     d=rep(0,R))
     }
     else{
-      if(!deflat){
+      if(!deflat & is.null(mu)){
         R_init <- min(q,sum(ps))
         svd_k_init <- svd(Ms[[k]],nu = 0,nv = R_init)
         eigen_YXk <- apply(mmultC(Ms[[k]],svd_k_init$v),2,function(t)sum(t^2))
@@ -330,21 +330,21 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       V_super <- matrix(0,q,R)
     }
     u <- beta_all
-  }else{ ## RIDGE solution
+
+    }else{ ## RIDGE solution
     B <- list()
     T_super <- matrix(0,n,q)
 
     T_super_reg <- matrix(NA,n,R*K)
     count_reg <- 1
-    for(k in 1:K){
-      for(r in 1:R){
+    for(r in 1:R){
+      for(k in 1:K){
         T_super_reg[,count_reg] <- t_r[[r]][,k]
         count_reg <- count_reg + 1
       }
     }
     Q <- mmultC(solve(crossprod(T_super_reg)+n*mu*diag(1,R*K)),
                 crossprod(T_super_reg,Y))
-
     count_reg <- 1
     for(k in 1:K){
       B_t <- matrix(NA,R,q)
@@ -353,6 +353,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         count_reg <- count_reg + 1
       }
       B[[k]] <- mmultC(u_t_r[[k]],B_t)
+      for(jj in 1:q){
+        B[[k]][,jj] <- B[[k]][,jj]*sd_y[jj]
+      }
       T_super <- T_super + mmultC(Xs[[k]],B[[k]])
     }
     U_t_super <- B
@@ -371,6 +374,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
           B_k <- matrix(0,nrow(B_k),ncol(B_k))
         }
         B[[k]] <- B_k
+        for(jj in 1:q){
+          B[[k]][,jj] <- B[[k]][,jj]*sd_y[jj]
+        }
       }
     }
   }else{
