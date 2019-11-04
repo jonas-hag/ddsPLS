@@ -593,10 +593,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     R <- length(x$mod$ts)
+    R_super <- ncol(x$mod$T_super)
     VAR_TOT=VAR_TOT_FROB <- norm(y_obs,"f")
     VAR_GEN=VAR_GEN_FROB <- 0
     VAR_COMPS=VAR_COMPS_FROB <- matrix(0,K,R)
-    VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R)
+    VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB <- matrix(0,q,R_super)
     VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y_FROB <- matrix(0,1,R)
     R_T_super <- ncol(x$mod$T_super)
     t_y_obs <- tcrossprod(y_obs)
@@ -656,8 +657,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     rownames(VAR_COMPS)=rownames(VAR_COMPS_FROB) <- legend_names_in;
     colnames(VAR_COMPS)=colnames(VAR_COMPS_FROB) <- paste("Comp.",1:R)
-    colnames(VAR_SUPER_COMPS)= colnames(VAR_SUPER_COMPS_ALL_Y) =
-      colnames(VAR_SUPER_COMPS_FROB)= colnames(VAR_SUPER_COMPS_ALL_Y_FROB)<- paste("Super Comp.",1:R)
+    colnames(VAR_SUPER_COMPS) = colnames(VAR_SUPER_COMPS_FROB) <-
+      paste("Super Comp.",1:R_T_super)
+    names(VAR_SUPER_COMPS_ALL_Y) = names(VAR_SUPER_COMPS_ALL_Y_FROB) <-
+      paste("Super Comp.",1:R_T_super)
     rownames(VAR_SUPER_COMPS)=rownames(VAR_SUPER_COMPS_FROB) <- colnames(y_obs)
     return(list(
       Linear=list(VAR_GEN=VAR_GEN,VAR_SUPER_COMPS_ALL_Y=VAR_SUPER_COMPS_ALL_Y,
@@ -900,21 +903,24 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     values <- rowSums(mod$u_t_super[[k]])^2
     pos <- which(values>NZV)
     if(length(pos)>0){
-      R_B <- ncol(mod$u_t_super[[1]])
+      R_u <- ncol(mod$u[[1]])
+      R_u_super <- ncol(mod$u_t_super[[1]])
       order_values <- order(values[pos],decreasing = T)
       pos_ordered <- pos[order_values]
-      out_k <- matrix(NA,length(pos),2*R_B)
+      out_k <- matrix(NA,length(pos),R_u+R_u_super)
       coco_Xs_k <- colnames(Xs[[k]])
       if(is.null(coco_Xs_k)){
         rownames(out_k) <- pos_ordered
       }else{
         rownames(out_k) <- coco_Xs_k[pos_ordered]
       }
-      colnames(out_k) <- c(paste("Weights_comp_",1:R_B,sep=""),
-                           paste("Super_Weights_comp_",1:R_B,sep=""))
-      for(r in 1:R_B){
+      colnames(out_k) <- c(paste("Weights_comp_",1:R_u,sep=""),
+                           paste("Super_Weights_comp_",1:R_u_super,sep=""))
+      for(r in 1:R_u){
         out_k[,r] <- mod$u[[k]][pos_ordered,r]
-        out_k[,R_B+r] <- mod$u_t_super[[k]][pos_ordered,r]
+      }
+      for(r in 1:R_u_super){
+        out_k[,R_u+r] <- mod$u_t_super[[k]][pos_ordered,r]
       }
       var_selected[[k]] <- out_k
     }else{
