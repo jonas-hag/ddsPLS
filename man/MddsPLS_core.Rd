@@ -5,7 +5,8 @@
 \title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
 MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  verbose = FALSE, id_na = NULL, NZV = 1e-09)
+  mu = NULL, deflat = FALSE, verbose = FALSE, id_na = NULL,
+  NZV = 1e-09)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}
@@ -19,6 +20,10 @@ MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{mode}{A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.}
 
 \item{L0}{An integer non nul parameter giving the largest number of X variables that can be selected.}
+
+\item{mu}{A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.}
+
+\item{deflat}{Logical. If TRUE, the solution uses deflations to construct the weights.}
 
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
 

@@ -6,7 +6,7 @@
 \usage{
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
   lambdas = NULL, R = 1, reg_imp_model = TRUE, L0s = NULL,
-  kfolds = "loo", mode = "reg", fold_fixed = NULL,
+  mu = NULL, kfolds = "loo", mode = "reg", fold_fixed = NULL,
   maxIter_imput = 20, errMin_imput = 1e-09, NCORES = 1,
   NZV = 1e-09, plot_result = T, legend_label = T)
 }
@@ -39,6 +39,8 @@ Initialized to \code{TRUE}.}
 
 \item{L0s}{A vector of non null positive integers. The values tested by the
 perf process. Default is \eqn{NULL} and is then not taken into account.}
+
+\item{mu}{A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.}
 
 \item{kfolds}{character or integer. If equals to "loo" then a \strong{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly
