@@ -120,7 +120,6 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
   RMSEP <- ERRORS$RMSEP
   SDEP <- ERRORS$SDEP
   q <- ncol(ERRORS$RMSEP)-2
-  # Color management
   if(q<3){
     colors <- 1:q
   }
