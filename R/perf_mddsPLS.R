@@ -75,7 +75,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                          kfolds="loo",mode="reg",fold_fixed=NULL,
                          maxIter_imput=20,errMin_imput=1e-9,NCORES=1,
                          NZV=1e-9,plot_result=T,legend_label=T){
-  ## Xs shaping
+  ## Xs shaping ##
   is.multi <- is.list(Xs)&!(is.data.frame(Xs))
   if(!is.multi){
     Xs <- list(Xs)
