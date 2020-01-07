@@ -454,7 +454,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param reg_imp_model Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
-#' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
+#' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{50}.
 #' @param verbose Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param getVariances Logical. Whether or not to compute variances. Default is \emph{TRUE}.
