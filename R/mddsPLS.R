@@ -821,10 +821,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     model_imputations[[k]] <- mod_i_k
                   }
                   Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)$y
-                  for(ii_k in i_k){
-                    var_not_selected <- c(1:ncol(Xs[[k]]))[-Var_selected_k]
-                    Xs[[k]][ii_k,var_not_selected] <- mu_x_s[[k]][var_not_selected]
-                  }
+                  # for(ii_k in i_k){
+                  #   var_not_selected <- c(1:ncol(Xs[[k]]))[-Var_selected_k]
+                  #   Xs[[k]][ii_k,var_not_selected] <- mu_x_s[[k]][var_not_selected]
+                  # }
                 }else{
                   if(keep_imp_mod){
                     model_imputations[[k]] <- list()
