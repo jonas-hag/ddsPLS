@@ -60,7 +60,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       }
       ## Generate model
       model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,
-                                   R = R,maxIter_imput = mod_0$maxIter_imput,
+                                   R = R,
                                    NZV=mod_0$NZV)
       ## Create test dataset
       n_test <- nrow(X_test[[1]])
@@ -116,7 +116,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     K <- length(newX)
     id_na_test <- unlist(lapply(newX,function(x){anyNA(x)}))
     if(any(id_na_test)){
-      if(K>1 & mod_0$maxIter_imput>0){
+      if(K>1){ ###  & mod_0$maxIter_imput>0
         newX <- fill_X_test(mod_0,newX)
       }
       else{
