@@ -138,7 +138,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     M0 <- suppressWarnings(cor(Y_def,X_def))
     M0[which(is.na(M0))] <- 0
     M <- abs(M0) - lambda_in[k]
-    M[which(M<0)] <- 0
+    M[which(M<NZV)] <- 0 ### VERY IMPORTANT
     M <- sign(M0)*M
     M
   }
@@ -150,7 +150,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     M0[which(is.na(M0))] <- 0
     M <- abs(M0) - l[k]
-    M[which(M<0)] <- 0
+    M[which(M<NZV)] <- 0 ### VERY IMPORTANT
     M <- sign(M0)*M
     M
   }
@@ -331,7 +331,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     u <- beta_all
 
-    }else{ ## RIDGE solution
+  }else{ ## RIDGE solution
     B <- list()
     T_super <- matrix(0,n,q)
 
@@ -451,10 +451,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
-#' @param reg_imp_model Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
-#' @param errMin_imput Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.
-#' @param maxIter_imput Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.
 #' @param verbose Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param getVariances Logical. Whether or not to compute variances. Default is \emph{TRUE}.
@@ -520,8 +517,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' #summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     L0=NULL,mu=NULL,deflat=FALSE,
-                    keep_imp_mod=FALSE,reg_imp_model=TRUE,
-                    errMin_imput=1e-9,maxIter_imput=50,
+                    keep_imp_mod=FALSE,
                     verbose=FALSE,NZV=1E-9,getVariances=TRUE){
 
   my_scale <- function(a){
@@ -691,7 +687,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   n <- nrow(Y)
   q <- ncol(Y)
   if(keep_imp_mod) model_imputations <- list()
-  has_converged <- maxIter_imput
+  has_converged <- 0
   id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = TRUE)})
   any_na_no_all <- lapply(Xs,function(x){
     oo <- which(is.na(x),arr.ind = TRUE)[,1]
@@ -736,6 +732,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     mu_y <- colMeans(Y_class_dummies)
     sd_y <- sdRcpp(Y_class_dummies)#apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
   }
+  iter <- 0
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,verbose=verbose,NZV=NZV)
@@ -780,7 +777,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           Mat_na[id_na[[k]],k] <- 1
         }
         err <- 2
-        iter <- 0
         ## Covariate for imputation is always the same : the projected values of Y on the initial weights
         #S_super_obj <- Y#mod_0$S_super
         if(mode!="reg"){
@@ -794,59 +790,49 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         # Y_proj <- Y_class_dummies[,-1,drop=F]
         # phi <- tcrossprod(mmultC(Y_proj,solve(crossprod(Y_proj))),Y_proj)
         # ####################
-
-        while(iter<maxIter_imput&err>errMin_imput){
+        V_t_Star <- list()
+        v_t_star_equals <- rep(0,K)
+        while(sum(v_t_star_equals)<K){
           iter <- iter + 1
+          v_t_star_equals <- rep(0,K)
           for(k in 1:K){
             if(length(id_na[[k]])>0){
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
-              if(iter>1){
-                # Xs_i <- mod$S_super[-i_k,,drop=FALSE]#_0$S_super[-i_k,,drop=FALSE]
-                # newX_i <- mod$S_super[i_k,,drop=FALSE]#_0$S_super[i_k,,drop=FALSE]
-                Var_selected_k <- which(rowSums(abs(mod$u[[k]]))>NZV)#_0$u[[k]]))!=0)
-              }else{
-                # Xs_i <- mod_0$S_super[-i_k,,drop=FALSE]
-                # newX_i <- mod_0$S_super[i_k,,drop=FALSE]
-                Var_selected_k <- which(rowSums(abs(mod_0$u[[k]]))>NZV)
-              }
-              # for(no_k_i in no_k){
-              #   Var_selected_no_k <- which(rowSums(abs(mod_0$u[[no_k_i]]))>NZV)
-              #   mat_here <- Xs[[no_k_i]][,Var_selected_no_k,drop=F]
-              #   mat_here <- mat_here-mmultC(phi,mat_here)
-              #   S_super_obj <- cbind(S_super_obj,mat_here)
-              # }
-
+              Var_selected_k_previous <- if(iter!=1) V_t_Star[[k]] else NULL
+              u_current_k <- if(iter==1)mod_0$u[[k]] else mod$u[[k]]
+              Var_selected_k = V_t_Star[[k]] <- which(rowSums(abs(u_current_k))>NZV)
+              v_t_star_equals[k] <- if (setequal(Var_selected_k_previous,Var_selected_k)) 1 else 0
               Xs_i <- S_super_obj[-i_k,,drop=FALSE]
               newX_i <- S_super_obj[i_k,,drop=FALSE]
               Var_selected[k] <- length(Var_selected_k)
-              if(length(Var_selected_k)>0){
-                ## ## ## ## Impute on the selected variables
-                Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
-                if(reg_imp_model){
+              if(v_t_star_equals[k]==0){
+                if(length(Var_selected_k)>0){
+                  ## ## ## ## Impute on the selected variables
+                  Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
                   ## In that case the value of lambda is computed according to the initial model.
-                  model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=mod_0$lambda,
-                                             R=R,L0=NULL,mu=mu,deflat=deflat,NZV=NZV)
+                  model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda_init,L0=NULL,
+                                             R=R,mu=mu,deflat=deflat,NZV=NZV)
+                  mod_i_k <- list(mod=model_here,R=R,mode="reg")
+                  class(mod_i_k) <- "mddsPLS"
+                  if(keep_imp_mod){
+                    mod_i_k$Xs <- list(Xs_i)
+                    mod_i_k$Y_0 <- Y_i_k
+                    model_imputations[[k]] <- mod_i_k
+                  }
+                  Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)$y
+                  # for(ii_k in i_k){
+                  #   var_not_selected <- c(1:ncol(Xs[[k]]))[-Var_selected_k]
+                  #   Xs[[k]][ii_k,var_not_selected] <- mu_x_s[[k]][var_not_selected]
+                  # }
                 }else{
-                  ## In that case the value of lambda is taken equal to 0. And so
-                  ## all the variables are taken in the model
-                  model_here <- MddsPLS_core(Xs_i,Y_i_k,
-                                             R=R,L0=NULL,mu=mu,deflat=deflat,NZV=NZV)
-                }
-                mod_i_k <- list(mod=model_here,R=R,mode="reg",maxIter_imput=maxIter_imput)
-                class(mod_i_k) <- "mddsPLS"
-                if(keep_imp_mod){
-                  mod_i_k$Xs <- list(Xs_i)
-                  mod_i_k$Y_0 <- Y_i_k
-                  model_imputations[[k]] <- mod_i_k
-                }
-                Xs[[k]][i_k,Var_selected_k] <- predict.mddsPLS(mod_i_k,newX_i)$y
-              }else{
-                if(keep_imp_mod){
-                  model_imputations[[k]] <- list()
+                  if(keep_imp_mod){
+                    model_imputations[[k]] <- list()
+                  }
                 }
               }
             }else{
+              v_t_star_equals[k] <- 1
               if(keep_imp_mod){
                 model_imputations[[k]] <- list()
               }
@@ -855,32 +841,35 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           if(mode!="reg"){
             if(!is.factor(Y))Y <- factor(Y)
           }
-          mod <- MddsPLS_core(Xs,Y,lambda=mod_0$lambda,R=R,
-                              mode=mode,L0=L0,mu=mu,deflat=deflat,NZV=NZV)
-          if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
-            err <- 0
-            tsuper <- mod$T_super
-            covsuper <- crossprod(tsuper)
-            tsuper_0 <- mod_0$T_super
-            covsuper_0 <- crossprod(tsuper_0)
-            mix <- crossprod(tsuper_0,tsuper)
-            numer <- sum(diag(tcrossprod(mix)))
-            denom <- sqrt(sum(diag(mmultC(covsuper_0,covsuper_0)))*
-                            sum(diag(mmultC(covsuper,covsuper))))
-            if(denom>0){
-              err <- 1-numer/denom
-            }
+          if(sum(v_t_star_equals)<K){
+            mod <- MddsPLS_core(Xs,Y,R=R,lambda=lambda_init,#mod_0$lambda,L0=L0,
+                                mode=mode,mu=mu,deflat=deflat,NZV=NZV)
+            mod_0 <- mod
           }
-          else{
-            err <- 0
-          }
-          if(iter>=maxIter_imput){
-            has_converged <- 0
-          }
-          if(err<errMin_imput){
-            has_converged <- iter
-          }
-          mod_0 <- mod
+          # if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
+          #   err <- 0
+          #   tsuper <- mod$T_super
+          #   covsuper <- crossprod(tsuper)
+          #   tsuper_0 <- mod_0$T_super
+          #   covsuper_0 <- crossprod(tsuper_0)
+          #   mix <- crossprod(tsuper_0,tsuper)
+          #   numer <- sum(diag(tcrossprod(mix)))
+          #   denom <- sqrt(sum(diag(mmultC(covsuper_0,covsuper_0)))*
+          #                   sum(diag(mmultC(covsuper,covsuper))))
+          #   if(denom>0){
+          #     err <- 1-numer/denom
+          #   }
+          # }
+          # else{
+          #   err <- 0
+          # }
+          # if(iter>=maxIter_imput){
+          #   has_converged <- 0
+          # }
+          # if(err<errMin_imput){
+          #   has_converged <- iter
+          # }
+          # mod_0 <- mod
         }
         if(keep_imp_mod){
           for(k in 1:K){
@@ -936,7 +925,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     names(mod$Ms) <- names_Xs
   }
   out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mu=mu,mode=mode,id_na=id_na,
-              maxIter_imput=maxIter_imput,has_converged=has_converged,L0=L0,NZV=NZV)
+              number_iterations=iter,L0=L0,NZV=NZV)
   class(out) <- "mddsPLS"
   if(keep_imp_mod){
     if(length(names_Xs)!=0) names(model_imputations) <- names_Xs
