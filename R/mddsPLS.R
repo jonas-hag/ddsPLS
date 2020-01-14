@@ -924,7 +924,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     names(mod$Ms) <- names_Xs
   }
   out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mu=mu,mode=mode,id_na=id_na,
-              number_iterations=iter,L0=L0,NZV=NZV)
+              number_iterations=iter,L0=L0,NZV=NZV) # TEST
   class(out) <- "mddsPLS"
   if(keep_imp_mod){
     if(length(names_Xs)!=0) names(model_imputations) <- names_Xs
