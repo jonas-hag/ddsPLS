@@ -665,6 +665,26 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               VAR_SUPER_COMPS=VAR_SUPER_COMPS_FROB,VAR_COMPS=VAR_COMPS_FROB)))
   }
 
+  get_lambda_from_L0 <- function(Xs,Y,Y_class_dummies=NULL,mode,L0,lambda){
+    if(!is.null(L0)){
+      ps_init <- unlist(lapply(Xs,ncol))
+      sum_ps_init <- sum(ps_init);cum_ps_init <- cumsum(c(0,ps_init))
+      if(mode=="reg"){
+        coco_i <- suppressWarnings(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")))
+        coco_i[which(is.na(coco_i))] <- 0
+        all_maxs_init <- apply(coco_i,2,max)
+      }else{
+        coco_i <- suppressWarnings(abs(cor(Y_class_dummies,do.call(cbind,Xs),use = "pairwise")))
+        coco_i[which(is.na(coco_i))] <- 0
+        all_maxs_init <- apply(coco_i,2,max)
+      }
+      lambda_init <- sort(all_maxs_init,decreasing = T)[min(sum_ps_init,1+L0)]
+    }else{
+      lambda_init <- lambda
+    }
+    lambda_init
+  }
+
   if(lambda<0|lambda>1){
     stop("Choose lambda regularization parameter between 0 and 1",
          call. = FALSE)
@@ -736,22 +756,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     ## If there is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,verbose=verbose,NZV=NZV)
   }else{
-    if(!is.null(L0)){
-      ps_init <- unlist(lapply(Xs,ncol))
-      sum_ps_init <- sum(ps_init);cum_ps_init <- cumsum(c(0,ps_init))
-      if(mode=="reg"){
-        coco_i <- suppressWarnings(abs(cor(Y,do.call(cbind,Xs),use = "pairwise")))
-        coco_i[which(is.na(coco_i))] <- 0
-        all_maxs_init <- apply(coco_i,2,max)
-      }else{
-        coco_i <- suppressWarnings(abs(cor(Y_class_dummies,do.call(cbind,Xs),use = "pairwise")))
-        coco_i[which(is.na(coco_i))] <- 0
-        all_maxs_init <- apply(coco_i,2,max)
-      }
-      lambda_init <- sort(all_maxs_init,decreasing = T)[min(sum_ps_init,1+L0)]
-    }else{
-      lambda_init <- lambda
-    }
+    lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
     ## If ther are some missing samples
     for(k in 1:K){## ## Types of imputation for initialization
       if(length(id_na[[k]])>0){
@@ -775,7 +780,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         for(k in 1:K){
           Mat_na[id_na[[k]],k] <- 1
         }
-        err <- 2
         ## Covariate for imputation is always the same : the projected values of Y on the initial weights
         #S_super_obj <- Y#mod_0$S_super
         if(mode!="reg"){
@@ -810,7 +814,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                   ## ## ## ## Impute on the selected variables
                   Y_i_k <- Xs[[k]][-i_k,Var_selected_k,drop=FALSE]
                   ## In that case the value of lambda is computed according to the initial model.
-                  model_here <- MddsPLS_core(Xs_i,Y_i_k,lambda=lambda_init,L0=NULL,
+                  model_here <- MddsPLS_core(Xs_i,Y_i_k,
+                                             lambda=lambda_init,
+                                             L0=NULL,
                                              R=R,mu=mu,deflat=deflat,NZV=NZV)
                   mod_i_k <- list(mod=model_here,R=R,mode="reg")
                   class(mod_i_k) <- "mddsPLS"
@@ -840,35 +846,11 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           if(mode!="reg"){
             if(!is.factor(Y))Y <- factor(Y)
           }
-          if(sum(v_t_star_equals)<K){
-            mod <- MddsPLS_core(Xs,Y,R=R,lambda=lambda_init,#mod_0$lambda,L0=L0,
-                                mode=mode,mu=mu,deflat=deflat,NZV=NZV)
-            mod_0 <- mod
-          }
-          # if(sum(abs(mod$t_ort))*sum(abs(mod_0$t_ort))!=0){
-          #   err <- 0
-          #   tsuper <- mod$T_super
-          #   covsuper <- crossprod(tsuper)
-          #   tsuper_0 <- mod_0$T_super
-          #   covsuper_0 <- crossprod(tsuper_0)
-          #   mix <- crossprod(tsuper_0,tsuper)
-          #   numer <- sum(diag(tcrossprod(mix)))
-          #   denom <- sqrt(sum(diag(mmultC(covsuper_0,covsuper_0)))*
-          #                   sum(diag(mmultC(covsuper,covsuper))))
-          #   if(denom>0){
-          #     err <- 1-numer/denom
-          #   }
-          # }
-          # else{
-          #   err <- 0
-          # }
-          # if(iter>=maxIter_imput){
-          #   has_converged <- 0
-          # }
-          # if(err<errMin_imput){
-          #   has_converged <- iter
-          # }
-          # mod_0 <- mod
+          lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
+          mod <- MddsPLS_core(Xs,Y,R=R,
+                              lambda=lambda_init,
+                              mode=mode,mu=mu,deflat=deflat,NZV=NZV)
+          mod_0 <- mod
         }
         if(keep_imp_mod){
           for(k in 1:K){
@@ -879,8 +861,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         }
       }
     }
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,
-                        verbose=verbose,L0=L0,mu=mu,deflat=deflat,NZV=NZV)
   }
   mod$mu_x_s <- mu_x_s
   mod$sd_x_s <- sd_x_s
