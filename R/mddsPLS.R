@@ -687,7 +687,6 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   n <- nrow(Y)
   q <- ncol(Y)
   if(keep_imp_mod) model_imputations <- list()
-  has_converged <- 0
   id_na <- lapply(Xs,function(x){which(is.na(x[,1]),arr.ind = TRUE)})
   any_na_no_all <- lapply(Xs,function(x){
     oo <- which(is.na(x),arr.ind = TRUE)[,1]
