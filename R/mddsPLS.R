@@ -9,6 +9,7 @@
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of the corresponding block.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
@@ -48,6 +49,7 @@
 #'
 MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
                          L0=NULL,mu=NULL,deflat=FALSE,
+                         weight=FALSE,
                          verbose=FALSE,id_na=NULL,
                          NZV=1e-9){
 
@@ -183,7 +185,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   #### Inside problems
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
-  z_r <- list()
   z_t=t_t <- list()
   # BETA_r <- list()
   for(k in 1:K){
@@ -246,16 +247,17 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     if(k==1){
       for(r in 1:R){
         t_r[[r]] <- matrix(0,n,K)
-        z_r[[r]] <- matrix(0,q,K)
       }
     }
     for(r in 1:R){
       if(svd_k$d[r]!=0){
         t_r[[r]][,k] <- mmultC(Xs[[k]],u_t_r[[k]][,r,drop=F])
-        z_r[[r]][,k] <- mmultC(Ms[[k]],u_t_r[[k]][,r,drop=F])
       }
     }
     z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
+    if(weight & svd_k$d[1]!=0){
+      z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))!=0))
+    }
     t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
   U_t_super = beta_list <- list()
@@ -450,6 +452,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of the corresponding block.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param verbose Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.
@@ -517,6 +520,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' #summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     L0=NULL,mu=NULL,deflat=FALSE,
+                    weight=FALSE,
                     keep_imp_mod=FALSE,
                     verbose=FALSE,NZV=1E-9,getVariances=TRUE){
 
@@ -768,13 +772,13 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           x_train <- Y[-id_na[[k]],,drop=F]
           x_test <- Y[id_na[[k]],,drop=F]
         }
-        model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init,getVariances=F)
+        model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init,getVariances=F,weight=weight)
         y_test <- predict(model_init,x_test)$y
         Xs[[k]][id_na[[k]],] <- y_test
       }
     }
     if(K>1){
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,NZV=NZV)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,NZV=NZV,weight=weight)
       if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){
@@ -817,7 +821,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                   model_here <- MddsPLS_core(Xs_i,Y_i_k,
                                              lambda=lambda_init,
                                              L0=NULL,
-                                             R=R,mu=mu,deflat=deflat,NZV=NZV)
+                                             R=R,mu=mu,deflat=deflat,weight=weight,NZV=NZV)
                   mod_i_k <- list(mod=model_here,R=R,mode="reg")
                   class(mod_i_k) <- "mddsPLS"
                   if(keep_imp_mod){
@@ -846,10 +850,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
           if(mode!="reg"){
             if(!is.factor(Y))Y <- factor(Y)
           }
-          lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
+          ## lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda) ## Update lambda or not
           mod <- MddsPLS_core(Xs,Y,R=R,
                               lambda=lambda_init,
-                              mode=mode,mu=mu,deflat=deflat,NZV=NZV)
+                              mode=mode,mu=mu,deflat=deflat,weight=weight,NZV=NZV)
           mod_0 <- mod
         }
         if(keep_imp_mod){
