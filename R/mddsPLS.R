@@ -9,7 +9,7 @@
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
-#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of the corresponding block.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables in the corresponding block.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
 #' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
@@ -256,7 +256,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
     z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
     if(weight & svd_k$d[1]!=0){
-      z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))!=0))
+      z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
     }
     t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
@@ -452,7 +452,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
-#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of the corresponding block.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param verbose Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.
@@ -758,7 +758,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   iter <- 0
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,verbose=verbose,NZV=NZV)
+    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,
+                        weight=weight,verbose=verbose,NZV=NZV)
   }else{
     lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
     ## If ther are some missing samples

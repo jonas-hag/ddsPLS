@@ -5,8 +5,7 @@
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  mu = NULL, deflat = FALSE, keep_imp_mod = FALSE,
-  reg_imp_model = TRUE, errMin_imput = 1e-09, maxIter_imput = 50,
+  mu = NULL, deflat = FALSE, weight = FALSE, keep_imp_mod = FALSE,
   verbose = FALSE, NZV = 1e-09, getVariances = TRUE)
 }
 \arguments{
@@ -26,13 +25,9 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 
 \item{deflat}{Logical. If TRUE, the solution uses deflations to construct the weights.}
 
+\item{weight}{Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.}
+
 \item{keep_imp_mod}{Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.}
-
-\item{reg_imp_model}{Logical. Whether or not to regularize the imputation models. Initialized to \code{TRUE}.}
-
-\item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the Koh-Lanta algorithm. Default is \eqn{1e-9}.}
-
-\item{maxIter_imput}{Positive integer. Maximal number of iterations in the Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is  considered. Default is \eqn{5}.}
 
 \item{verbose}{Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.}
 

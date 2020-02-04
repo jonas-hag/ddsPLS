@@ -24,6 +24,7 @@
 #' @param R A strictly positive integer detailing the number of components to
 #' build in the model.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
 #' @param kfolds character or integer. If equals to "loo" then a \strong{leave-one-out}
 #' cross-validation is started. No other character is understood. Any strictly
 #' positive integer gives the number of folds to make in the \strong{cross-validation process}
@@ -62,7 +63,8 @@
 #' Y <- scale(liverToxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,25,50),R = 1,
 #' # mode = "reg")
-perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,L0s=NULL,mu=NULL,deflat=FALSE,
+perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,L0s=NULL,mu=NULL,
+                         deflat=FALSE,weight=FALSE,
                          kfolds="loo",mode="reg",fold_fixed=NULL,NCORES=1,
                          NZV=1e-9,plot_result=T,legend_label=T){
   ## Xs shaping ##
@@ -162,12 +164,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         }
                         if(!is.null(L0s)){
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,mu=mu,deflat=deflat,
-                                           R = R,
+                                           R = R,weight = weight,
                                            mode = mode,NZV=NZV,
                                            getVariances = F)
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,mu=mu,deflat=deflat,
-                                           R = R,
+                                           R = R,weight = weight,
                                            mode = mode,NZV=NZV,
                                            getVariances = F)
 

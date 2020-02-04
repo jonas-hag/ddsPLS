@@ -5,8 +5,8 @@
 \title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
 MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  mu = NULL, deflat = FALSE, verbose = FALSE, id_na = NULL,
-  NZV = 1e-09)
+  mu = NULL, deflat = FALSE, weight = FALSE, verbose = FALSE,
+  id_na = NULL, NZV = 1e-09)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}
@@ -24,6 +24,8 @@ MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{mu}{A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.}
 
 \item{deflat}{Logical. If TRUE, the solution uses deflations to construct the weights.}
+
+\item{weight}{Logical. If TRUE, the scores are divided by the number of selected variables in the corresponding block.}
 
 \item{verbose}{Logical. If TRUE, the function cats specificities about the model. Default is FALSE.}
 
