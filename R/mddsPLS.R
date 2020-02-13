@@ -12,7 +12,6 @@
 #' @param weight Logical. If TRUE, the scores are divided by the number of selected variables in the corresponding block.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param id_na A list of na indices for each block. Initialized to NULL.
-#' @param verbose Logical. If TRUE, the function cats specificities about the model. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #'
 #' @return A list containing the following objects:
@@ -50,7 +49,7 @@
 MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
                          L0=NULL,mu=NULL,deflat=FALSE,
                          weight=FALSE,
-                         verbose=FALSE,id_na=NULL,
+                         id_na=NULL,
                          NZV=1e-9){
 
   my_scale <- function(a){
@@ -157,10 +156,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     M
   }
   Ms <- lapply(1:K,getMS,Xs,Y,lambda_in,n)
-  if(verbose){
-    N_max <- sum(unlist(lapply(Ms,function(m){length(which(colSums(abs(m))>NZV))})))
-    cat(paste("At most ",N_max," variable(s) can be selected in the X part",sep=""));cat("\n")
-  }
   ## Solve optimization problem
   if(deflat){
     R_max <- n
@@ -420,16 +415,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
   }
-  if(verbose){
-    a<-lapply(u_t_r,function(u){apply(u,2,function(u){length(which(abs(u)>NZV))})})
-    cat("    For each block of X, are selected in order of component:");cat("\n")
-    for(k in 1:K){
-      cat(paste("        @ (",paste(a[[k]],collapse = ","),") variable(s)",sep=""));cat("\n")
-    }
-    cat("    For the Y block, are selected in order of component:");cat("\n")
-    cat(paste("        @ (",paste(apply(V_super,2,function(u){length(which(abs(u)>NZV))}),
-                                  collapse = ","),") variable(s)",sep=""));cat("\n")
-  }
   list(u=u_t_r,u_t_super=U_t_super,V_super=V_super,ts=t_r,beta_comb=u,
        T_super=T_super,S_super=S_super,
        t_ort=t_ort,s_ort=s_ort,B=B,
@@ -455,7 +440,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
-#' @param verbose Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
 #' @param getVariances Logical. Whether or not to compute variances. Default is \emph{TRUE}.
 #'
@@ -489,14 +473,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' X <- penicilliumYES$X
 #' X <- scale(X[,which(apply(X,2,sd)>0)])
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' # mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,R = 2,L0=3,mode = "lda",verbose = TRUE)
+#' # mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,R = 2,L0=3,mode = "lda")
 #' # summary(mddsPLS_model_class,plot_present_indiv = FALSE)
 #'
 #' ## Regression example :
 #' data("liverToxicity")
 #' X <- scale(liverToxicity$gene)
 #' Y <- scale(liverToxicity$clinic)
-#' #mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg",verbose = TRUE)
+#' #mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg")
 #' #summary(mddsPLS_model_reg)
 #'
 #' # Multi-block example :
@@ -507,7 +491,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' Xs <- list(X[,1:1000],X[,-(1:1000)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#' #mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,mode = "lda",R = 2,verbose = TRUE)
+#' #mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,mode = "lda",R = 2)
 #' #summary(mddsPLS_model_class)
 #'
 #' ## Regression example :
@@ -516,13 +500,13 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' Xs <- list(X[,1:1910],X[,-(1:1910)])
 #' Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 #' Y <- scale(liverToxicity$clinic)
-#' #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#' #mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg")
 #' #summary(mddsPLS_model_reg)
 mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
                     L0=NULL,mu=NULL,deflat=FALSE,
                     weight=FALSE,
                     keep_imp_mod=FALSE,
-                    verbose=FALSE,NZV=1E-9,getVariances=TRUE){
+                    NZV=1E-9,getVariances=TRUE){
 
   my_scale <- function(a){
     if(!is.matrix(a)){
@@ -759,7 +743,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,
-                        weight=weight,verbose=verbose,NZV=NZV)
+                        weight=weight,NZV=NZV)
   }else{
     lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
     ## If ther are some missing samples
@@ -808,7 +792,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               no_k <- (1:K)[-k]
               i_k <- id_na[[k]]
               Var_selected_k_previous <- if(iter!=1) V_t_Star[[k]] else NULL
-              u_current_k <- if(iter==1)mod_0$u[[k]] else mod$u[[k]]
+              u_current_k <- mod_0$u[[k]]#u_current_k <- if(iter==1)mod_0$u[[k]] else mod$u[[k]]
               Var_selected_k = V_t_Star[[k]] <- which(rowSums(abs(u_current_k))>NZV)
               v_t_star_equals[k] <- if (setequal(Var_selected_k_previous,Var_selected_k)) 1 else 0
               Xs_i <- S_super_obj[-i_k,,drop=FALSE]
