@@ -6,7 +6,7 @@
 \usage{
 mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
   mu = NULL, deflat = FALSE, weight = FALSE, keep_imp_mod = FALSE,
-  verbose = FALSE, NZV = 1e-09, getVariances = TRUE)
+  NZV = 1e-09, getVariances = TRUE)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}
@@ -28,8 +28,6 @@ mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
 \item{weight}{Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.}
 
 \item{keep_imp_mod}{Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.}
-
-\item{verbose}{Logical. If TRUE, the convergence progress of the Koh-Lanta algorithm is reported. Default is FALSE.}
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
 
@@ -61,14 +59,14 @@ data("penicilliumYES")
 X <- penicilliumYES$X
 X <- scale(X[,which(apply(X,2,sd)>0)])
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-# mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,R = 2,L0=3,mode = "lda",verbose = TRUE)
+# mddsPLS_model_class <- mddsPLS(Xs = X,Y = Y,R = 2,L0=3,mode = "lda")
 # summary(mddsPLS_model_class,plot_present_indiv = FALSE)
 
 ## Regression example :
 data("liverToxicity")
 X <- scale(liverToxicity$gene)
 Y <- scale(liverToxicity$clinic)
-#mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg",verbose = TRUE)
+#mddsPLS_model_reg <- mddsPLS(Xs = X,Y = Y,L0=10,R = 1, mode = "reg")
 #summary(mddsPLS_model_reg)
 
 # Multi-block example :
@@ -79,7 +77,7 @@ X <- scale(X[,which(apply(X,2,sd)>0)])
 Xs <- list(X[,1:1000],X[,-(1:1000)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- as.factor(unlist(lapply(c("Melanoconidiu","Polonicum","Venetum"),function(tt){rep(tt,12)})))
-#mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,mode = "lda",R = 2,verbose = TRUE)
+#mddsPLS_model_class <- mddsPLS(Xs = Xs,Y = Y,L0=3,mode = "lda",R = 2)
 #summary(mddsPLS_model_class)
 
 ## Regression example :
@@ -88,7 +86,7 @@ X <- scale(liverToxicity$gene)
 Xs <- list(X[,1:1910],X[,-(1:1910)])
 Xs[[1]][1:5,]=Xs[[2]][6:10,] <- NA
 Y <- scale(liverToxicity$clinic)
-#mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg",verbose = TRUE)
+#mddsPLS_model_reg <- mddsPLS(Xs = Xs,Y = Y,lambda=0.9,R = 1, mode = "reg")
 #summary(mddsPLS_model_reg)
 }
 \references{
