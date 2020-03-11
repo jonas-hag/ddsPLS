@@ -63,7 +63,8 @@
 #' Y <- scale(liverToxicity$clinic)
 #' #res_cv_reg <- perf_mddsPLS(Xs = X,Y = Y,L0s=c(1,5,10,25,50),R = 1,
 #' # mode = "reg")
-perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NULL,R=1,L0s=NULL,mu=NULL,
+perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,
+                         lambdas=NULL,R=1,L0s=NULL,mu=NULL,
                          deflat=FALSE,weight=FALSE,
                          kfolds="loo",mode="reg",fold_fixed=NULL,NCORES=1,
                          NZV=1e-9,plot_result=T,legend_label=T){
@@ -140,7 +141,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                       number_iterations <- rep(0,nrow(paras_here))
                       time_build <- rep(0,nrow(paras_here))
                       for(i in 1:nrow(paras_here)){
-                        R <- paras_here[i,1]
+                        R_in <- paras_here[i,1]
                         if(!is.null(L0s)){
                           L0 <- paras_here[i,2]
                         }else{
@@ -164,12 +165,12 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,lambdas=NU
                         }
                         if(!is.null(L0s)){
                           mod_0 <- mddsPLS(X_train,Y_train,L0 = L0,mu=mu,deflat=deflat,
-                                           R = R,weight = weight,
+                                           R = R_in,weight = weight,
                                            mode = mode,NZV=NZV,
                                            getVariances = F)
                         }else{
                           mod_0 <- mddsPLS(X_train,Y_train,lambda = lambda,mu=mu,deflat=deflat,
-                                           R = R,weight = weight,
+                                           R = R_in,weight = weight,
                                            mode = mode,NZV=NZV,
                                            getVariances = F)
 
