@@ -35,7 +35,11 @@
 \item{...}{Other plotting parameters to affect the plot.}
 }
 \value{
-The plot visualisation
+The plot visualisation and two candidates as optimal parameters (\emph{(lambda,R)} or \emph{(L0,R)}) in the list \emph{Optim}:
+\describe{
+\item{"optim_para_all"}{The couple for which the mean of the cross-validated errors is extremum (minimum in the regression case and maximum in the classification case) along the \emph{q} response variables.}
+\item{"optim_para_one"}{The couple for which the extremum (minimum in the regression case and maximum in the classification case) value over all the cross-validated errors is reached along the \emph{q} response variables.}
+}
 }
 \description{
 That function must be applied to a perf_mddsPLS object. Extra parameters are

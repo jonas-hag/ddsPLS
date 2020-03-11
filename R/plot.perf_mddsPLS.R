@@ -16,7 +16,11 @@
 #' @param main character of \strong{NULL}. If null the title is given to the willing of the software. If \strong{""}, no title is given. Else is what the user wants.
 #' @param ... Other plotting parameters to affect the plot.
 #'
-#' @return The plot visualisation
+#' @return The plot visualisation and two candidates as optimal parameters (\emph{(lambda,R)} or \emph{(L0,R)}) in the list \emph{Optim}:
+#' \describe{
+#' \item{"optim_para_all"}{The couple for which the mean of the cross-validated errors is extremum (minimum in the regression case and maximum in the classification case) along the \emph{q} response variables.}
+#' \item{"optim_para_one"}{The couple for which the extremum (minimum in the regression case and maximum in the classification case) value over all the cross-validated errors is reached along the \emph{q} response variables.}
+#' }
 #'
 #' @seealso  \code{\link{perf_mddsPLS}}, \code{\link{summary.perf_mddsPLS}}
 #'
@@ -242,13 +246,15 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
     }
     if(!no_plot)abline(v=c(lam_plot[pos_all],
                            lam_plot[pos_one]),lty=4,lwd=2)
-    lam_all <- lam_plot[pos_all]
-    lam_one <- lam_plot[pos_one]
+    lam_all <- RMSEP[pos_all,1:2]
+    lam_one <- RMSEP[pos_one,1:2]
   }else{
     if(!no_plot)abline(v=c(lam_plot[which(y_mean==min(y_mean))],
                            lam_plot[which(y1==min(y1),arr.ind = T)[,1]]),lty=4,lwd=2)
-    lam_all <- lam_plot[which(y_mean==min(y_mean))]
-    lam_one <- lam_plot[which(y1==min(y1),arr.ind = T)[,1]]
+    pos_all <- which(y_mean==min(y_mean))
+    pos_one <- which(y1==min(y1),arr.ind = T)[,1]
+    lam_all <- RMSEP[pos_all,1:2]
+    lam_one <- RMSEP[pos_one,1:2]
   }
   if(res_perf_mdd$mod!="reg"){
     if(!no_plot)points(sort(RMSEP[,2]),y_mean,type = "l",lwd=4,lty=1,

@@ -37,7 +37,40 @@
 #' @param plot_result Logical. Wether or not to plot the result. Initialized to \strong{TRUE}. The \strong{reg_error} argument of the \strong{plot.perf_mddsPLS} function is left to its default value.
 #' @param legend_label Logical. Wether or not to add the legend names to the plot. Initialized to \strong{TRUE}.
 #'
-#' @return A result of the perf function
+#' @return The most practical output is
+#' \describe{
+#' \item{"Optim"}{
+#' Two couples of candidates for optimal parameters, in a list, with names
+#' \describe{
+#' \item{"optim_para_all"}{The couple for which the mean of the cross-validated errors is extremum (minimum in the regression case and maximum in the classification case) along the \emph{q} response variables.}
+#' \item{"optim_para_one"}{The couple for which the extremum (minimum in the regression case and maximum in the classification case) value over all the cross-validated errors is reached along the \emph{q} response variables.}
+#' }
+#' }
+#' }
+#' But other outputs allow deeper details on the computations
+#' \describe{
+#' \item{"RMSEP" in regression or "ERROR" in classification}{
+#' The cross-validation mean errors where two first columns gather different values for the parameters.
+#' }
+#' \item{"SDEP"}{
+#' The cross-validation standard deviation errors where two first columns gather different values for the parameters.
+#' }
+#' \item{"FREQ"}{
+#' The number of times each response variables is selected in the cross-validation process where two first columns gather different values for the parameters.
+#' }
+#' \item{"Conv"}{
+#' The number of iterations in the \emph{tribe stage} of the \emph{Koh-Lanta} algorithm (column 4), for each fold (column 2) where two first columns gather different values for the parameters.
+#' }
+#' \item{"time"}{
+#' The computation time of the \emph{Koh-Lanta} algorithm (column 4), for each fold (column 2) where two first columns gather different values for the parameters.
+#' }
+#' \item{"fold"}{
+#' The identification of each observation fold.
+#' }
+#' \item{"BackUp"}{
+#' The source data used to estimate the previous statistics.
+#' }
+#' }
 #'
 #' @import foreach
 #' @importFrom parallel makeCluster stopCluster
