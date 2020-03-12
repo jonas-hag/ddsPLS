@@ -5,10 +5,9 @@
 \title{Function to compute cross-validation performances.}
 \usage{
 perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
-  lambdas = NULL, R = 1, reg_imp_model = TRUE, L0s = NULL,
-  kfolds = "loo", mode = "reg", fold_fixed = NULL,
-  maxIter_imput = 20, errMin_imput = 1e-09, NCORES = 1,
-  NZV = 1e-09, plot_result = T, legend_label = T)
+  lambdas = NULL, R = 1, L0s = NULL, mu = NULL, deflat = FALSE,
+  weight = FALSE, kfolds = "loo", mode = "reg", fold_fixed = NULL,
+  NCORES = 1, NZV = 1e-09, plot_result = T, legend_label = T)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,
@@ -34,11 +33,14 @@ perf process. Default is \eqn{NULL}, when that parameter is not taken into accou
 \item{R}{A strictly positive integer detailing the number of components to
 build in the model.}
 
-\item{reg_imp_model}{Logical. Whether or not to regularize the imputation models.
-Initialized to \code{TRUE}.}
-
 \item{L0s}{A vector of non null positive integers. The values tested by the
 perf process. Default is \eqn{NULL} and is then not taken into account.}
+
+\item{mu}{A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.}
+
+\item{deflat}{Logical. If TRUE, the solution uses deflations to construct the weights.}
+
+\item{weight}{Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.}
 
 \item{kfolds}{character or integer. If equals to "loo" then a \strong{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly
@@ -50,13 +52,6 @@ positive integer gives the number of folds to make in the \strong{cross-validati
 fold of the corresponding fold. If NULL then that argument is not considerd.
 Default to NULL.}
 
-\item{maxIter_imput}{Positive integer. Maximal number of iterations in the
-Tribe Stage of the Koh-Lanta algorithm. If equals to \eqn{0}, mean imputation is
- considered. Default is \eqn{5}.}
-
-\item{errMin_imput}{Positive real. Minimal error in the Tribe Stage of the
-Koh-Lanta algorithm. Default is \eqn{1e-9}.}
-
 \item{NCORES}{Integer. The number of cores. Default is \eqn{1}.}
 
 \item{NZV}{Float. The floatting value above which the weights are set to 0.}
@@ -66,7 +61,40 @@ Koh-Lanta algorithm. Default is \eqn{1e-9}.}
 \item{legend_label}{Logical. Wether or not to add the legend names to the plot. Initialized to \strong{TRUE}.}
 }
 \value{
-A result of the perf function
+The most practical output is
+\describe{
+\item{"Optim"}{
+Two couples of candidates for optimal parameters, in a list, with names
+\describe{
+\item{"optim_para_all"}{The couple for which the mean of the cross-validated errors is extremum (minimum in the regression case and maximum in the classification case) along the \emph{q} response variables.}
+\item{"optim_para_one"}{The couple for which the extremum (minimum in the regression case and maximum in the classification case) value over all the cross-validated errors is reached along the \emph{q} response variables.}
+}
+}
+}
+But other outputs allow deeper details on the computations
+\describe{
+\item{"RMSEP" in regression or "ERROR" in classification}{
+The cross-validation mean errors where two first columns gather different values for the parameters.
+}
+\item{"SDEP"}{
+The cross-validation standard deviation errors where two first columns gather different values for the parameters.
+}
+\item{"FREQ"}{
+The number of times each response variables is selected in the cross-validation process where two first columns gather different values for the parameters.
+}
+\item{"Conv"}{
+The number of iterations in the \emph{tribe stage} of the \emph{Koh-Lanta} algorithm (column 4), for each fold (column 2) where two first columns gather different values for the parameters.
+}
+\item{"time"}{
+The computation time of the \emph{Koh-Lanta} algorithm (column 4), for each fold (column 2) where two first columns gather different values for the parameters.
+}
+\item{"fold"}{
+The identification of each observation fold.
+}
+\item{"BackUp"}{
+The source data used to estimate the previous statistics.
+}
+}
 }
 \description{
 That function must be applied to the given dataset and
@@ -74,7 +102,6 @@ the cross-validation process is made on the given set
 of parameters.
 }
 \examples{
-library(doParallel)
 # Classification example :
 data("penicilliumYES")
 X <- penicilliumYES$X

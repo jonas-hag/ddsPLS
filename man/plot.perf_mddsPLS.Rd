@@ -7,7 +7,7 @@
 \method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, reg_error = "MSEP",
   legend_names = NULL, pos_legend = "bottomleft",
   which_sd_plot = NULL, ylim = NULL, alpha.f = 0.4,
-  no_occurence = T, main = NULL, ...)
+  no_occurence = T, main = NULL, no_plot = F, ...)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}
@@ -30,10 +30,16 @@
 
 \item{main}{character of \strong{NULL}. If null the title is given to the willing of the software. If \strong{""}, no title is given. Else is what the user wants.}
 
+\item{no_plot}{logical. Whether or not to plot error. Initialized to \strong{FALSE}.}
+
 \item{...}{Other plotting parameters to affect the plot.}
 }
 \value{
-The plot visualisation
+The plot visualisation and two candidates as optimal parameters (\emph{(lambda,R)} or \emph{(L0,R)}) in the list \emph{Optim}:
+\describe{
+\item{"optim_para_all"}{The couple for which the mean of the cross-validated errors is extremum (minimum in the regression case and maximum in the classification case) along the \emph{q} response variables.}
+\item{"optim_para_one"}{The couple for which the extremum (minimum in the regression case and maximum in the classification case) value over all the cross-validated errors is reached along the \emph{q} response variables.}
+}
 }
 \description{
 That function must be applied to a perf_mddsPLS object. Extra parameters are
