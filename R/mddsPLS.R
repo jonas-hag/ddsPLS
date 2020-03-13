@@ -239,6 +239,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
+    for(r in 1:R){
+      if(svd_k$d[r]<NZV){
+        u_t_r[[k]][,r] <- u_t_r[[k]][,r]*0
+      }
+    }
+    if(weight & svd_k$d[1]!=0){
+      u_t_r[[k]] <- u_t_r[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+    }
     if(k==1){
       for(r in 1:R){
         t_r[[r]] <- matrix(0,n,K)
@@ -250,9 +258,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
-    if(weight & svd_k$d[1]!=0){
-      z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
-    }
+    # if(weight & svd_k$d[1]!=0){
+    #   z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+    # }
     t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
   U_t_super = beta_list <- list()
@@ -310,6 +318,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     svd_ort_T_super <- svd(T_super,nu = 0,nv = R)
     v_ort <- svd_ort_T_super$v
     Delta_ort <- svd_ort_T_super$d^2
+    if(length(Delta_ort)<R){
+      Delta_ort <- c(Delta_ort,rep(0,R-length(Delta_ort)))
+    }
     if(sum(Delta_ort)!=0){
       t_ort <- mmultC(T_super,v_ort)
       s_ort <- mmultC(S_super,v_ort)
@@ -331,7 +342,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   }else{ ## RIDGE solution
     B <- list()
     T_super <- matrix(0,n,q)
-
     T_super_reg <- matrix(NA,n,R*K)
     count_reg <- 1
     for(r in 1:R){
@@ -794,7 +804,8 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
               Var_selected_k_previous <- if(iter!=1) V_t_Star[[k]] else NULL
               u_current_k <- mod_0$u[[k]]#u_current_k <- if(iter==1)mod_0$u[[k]] else mod$u[[k]]
               Var_selected_k = V_t_Star[[k]] <- which(rowSums(abs(u_current_k))>NZV)
-              v_t_star_equals[k] <- if (setequal(Var_selected_k_previous,Var_selected_k)) 1 else 0
+              v_t_star_equals[k] <-
+                if (setequal(Var_selected_k_previous,Var_selected_k)) 1 else 0
               Xs_i <- S_super_obj[-i_k,,drop=FALSE]
               newX_i <- S_super_obj[i_k,,drop=FALSE]
               Var_selected[k] <- length(Var_selected_k)
