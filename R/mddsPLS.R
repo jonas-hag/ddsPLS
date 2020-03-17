@@ -221,13 +221,18 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
             Y_0 <- Y
           }
           ## Solve optimisation problem
-          u_r_def <- svd(Ms[[k]],nu = 0,nv = 1)$v
+          svd_ms_f_def <- svd(Ms[[k]],nu = 0,nv = 1)
+          u_r_def <- svd_ms_f_def$v
+          norm_st_sc <- svd_ms_f_def$d[1]
+          if(norm_st_sc<NZV){
+            u_r_def <- u_r_def*0
+          }
           svd_k$v[,r] <- u_r_def
           t_r_def <- mmultC(X_0,u_r_def)
           ## Perform deflation
           norm_sc <- sum(t_r_def^2)
           svd_k$d[r] <- sqrt(norm_sc)
-          if(norm_sc!=0){
+          if(norm_st_sc!=0){
             X_0 <- X_0 - mmultC(t_r_def,crossprod(t_r_def,X_0))/norm_sc
             if(mode=="reg"){
               Y_0 <- Y_0 - mmultC(t_r_def,crossprod(t_r_def,Y_0))/norm_sc
