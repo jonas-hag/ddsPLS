@@ -28,3 +28,4 @@ VignetteBuilder: knitr
 Depends: R (>= 2.10)
 LinkingTo: Rcpp
 URL: https://hadrienlorenzo.netlify.com/
+download_url: https://github.com/hlorenzo/ddsPLS/archive/v116.zip
