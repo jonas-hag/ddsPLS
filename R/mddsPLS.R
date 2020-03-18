@@ -51,7 +51,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
                          weight=FALSE,
                          id_na=NULL,
                          NZV=1e-9){
-
   my_scale <- function(a){
     if(!is.matrix(a)){
       a <- as.matrix(a,ncol=1)
@@ -181,6 +180,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
   z_t=t_t <- list()
+  for(k in 1:K){
+    z_t[[k]]=t_t[[k]] <- matrix(NA,n,R)
+  }
+  for(r in 1:R){
+    t_r[[r]] <- matrix(NA,n,K)
+  }
   # BETA_r <- list()
   for(k in 1:K){
     if(norm(Ms[[k]])==0){
@@ -215,24 +220,37 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }else{
         svd_k <- list(v=matrix(0,nrow = ncol(Ms[[k]]),ncol = R),
                       d=rep(0,R))
+        Phi_r <- list()
         for(r in 1:R){
           if(r==1){
             X_0 <- Xs[[k]]
             Y_0 <- Y
+            Phi_r[[k]] <- diag(ps[k])
           }
           ## Solve optimisation problem
           svd_ms_f_def <- svd(Ms[[k]],nu = 0,nv = 1)
           u_r_def <- svd_ms_f_def$v
-          norm_st_sc <- svd_ms_f_def$d[1]
-          if(norm_st_sc<NZV){
+          norm_th_sc <- svd_ms_f_def$d[1]
+          if(norm_th_sc<NZV){
             u_r_def <- u_r_def*0
           }
-          svd_k$v[,r] <- u_r_def
           t_r_def <- mmultC(X_0,u_r_def)
+          t_r[[r]][,k] <- t_r_def
+          z_t[[k]][,r] <- mmultC(Ms[[k]],u_r_def)
+          t_t[[k]][,r] <- mmultC(X_0,u_r_def)
+          if(norm_th_sc>NZV){
+            nrom_t_r_2 <- sum(t_r_def^2)
+            bXr <- crossprod(t_r_def,X_0)/nrom_t_r_2
+            if(r>1){
+              u_r_def <- mmultC(Phi_r[[k]],u_r_def)
+            }
+            Phi_r[[k]] = mmultC(Phi_r[[k]],diag(ps[k])-mmultC(u_r_def,bXr))
+          }
+          svd_k$v[,r] <- u_r_def
           ## Perform deflation
           norm_sc <- sum(t_r_def^2)
           svd_k$d[r] <- sqrt(norm_sc)
-          if(norm_st_sc!=0){
+          if(norm_th_sc!=0){
             X_0 <- X_0 - mmultC(t_r_def,crossprod(t_r_def,X_0))/norm_sc
             if(mode=="reg"){
               Y_0 <- Y_0 - mmultC(t_r_def,crossprod(t_r_def,Y_0))/norm_sc
@@ -252,21 +270,23 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     if(weight & svd_k$d[1]!=0){
       u_t_r[[k]] <- u_t_r[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
     }
-    if(k==1){
+    if(!deflat & is.null(mu)){
+      if(k==1){
+        for(r in 1:R){
+          t_r[[r]] <- matrix(0,n,K)
+        }
+      }
       for(r in 1:R){
-        t_r[[r]] <- matrix(0,n,K)
+        if(svd_k$d[r]!=0){
+          t_r[[r]][,k] <- mmultC(Xs[[k]],u_t_r[[k]][,r,drop=F])
+        }
       }
+      z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
+      # if(weight & svd_k$d[1]!=0){
+      #   z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+      # }
+      t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
     }
-    for(r in 1:R){
-      if(svd_k$d[r]!=0){
-        t_r[[r]][,k] <- mmultC(Xs[[k]],u_t_r[[k]][,r,drop=F])
-      }
-    }
-    z_t[[k]] <- mmultC(Ms[[k]],u_t_r[[k]])
-    # if(weight & svd_k$d[1]!=0){
-    #   z_t[[k]] <- z_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
-    # }
-    t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
   }
   U_t_super = beta_list <- list()
   if(is.null(mu)){
@@ -355,7 +375,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         count_reg <- count_reg + 1
       }
     }
-    Q <- mmultC(solve(crossprod(T_super_reg)+n*mu*diag(1,R*K)),
+    regulMat_Inv <- solve(crossprod(T_super_reg)+n*mu*diag(1,R*K))
+    Q <- mmultC(regulMat_Inv,
                 crossprod(T_super_reg,Y))
     count_reg <- 1
     for(k in 1:K){

@@ -157,7 +157,8 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     else{
       T_super_new <- matrix(0,nrow=n_new,ncol=ncol(mod$T_super))
       for(k in 1:K){
-          T_super_new <- T_super_new + newX[[k]]%*%mod_0$mod$u_t_super[[k]]
+        t_k <- newX[[k]]%*%mod_0$mod$u_t_super[[k]]
+        T_super_new <- T_super_new + t_k
       }
       df_new <- data.frame(T_super_new)# df_new <- data.frame(do.call(cbind,T_super_new))#%*%mod_0$mod$beta_comb)
       colnames(df_new) <- paste("X",2:(ncol(df_new)+1),sep="")

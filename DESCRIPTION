@@ -1,6 +1,6 @@
 Package: ddsPLS
-Version: 1.1.5
-Date: 2020-03-11
+Version: 1.1.6
+Date: 2020-03-18
 Title: Data-Driven Sparse Partial Least Squares Robust to Missing Samples for Mono and Multi-Block Data Sets
 Description: Allows to build Multi-Data-Driven Sparse Partial Least Squares models. Multi-blocks with 
     high-dimensional settings are particularly sensible to this. It comes with visualization
