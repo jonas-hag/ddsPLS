@@ -407,9 +407,6 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
           B_k <- matrix(0,nrow(B_k),ncol(B_k))
         }
         B[[k]] <- B_k
-        for(jj in 1:q){
-          B[[k]][,jj] <- B[[k]][,jj]*sd_y[jj]
-        }
       }
     }
   }else{
