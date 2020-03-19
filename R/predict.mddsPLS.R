@@ -116,7 +116,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     K <- length(newX)
     id_na_test <- unlist(lapply(newX,function(x){anyNA(x)}))
     if(any(id_na_test)){
-      if(K>1){ ###  & mod_0$maxIter_imput>0
+      if(K>1){
         newX <- fill_X_test(mod_0,newX)
       }
       else{
@@ -136,7 +136,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     R <- mod$R
     K <- length(mu_x_s)
     for(k in 1:K){
-      newX[[k]][1,]<-(newX[[k]][1,]-mu_x_s[[k]])
+      newX[[k]][1,] <- (newX[[k]][1,]-mu_x_s[[k]])
       ok_sd <- which(sd_x_s[[k]]!=0)
       if(length(ok_sd)>0){
         newX[[k]][1,ok_sd] <- newX[[k]][1,ok_sd]/sd_x_s[[k]][ok_sd]
@@ -149,6 +149,9 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       newY <- matrix(0,n_new,q)
       for(k in 1:K){
         newY <- newY + newX[[k]]%*%mod$B[[k]]
+      }
+      for(j_q in 1:q){
+        newY[,j_q]<-newY[,j_q]*sd_y[j_q]
       }
       for(i in 1:n_new){
         newY[i,]<-newY[i,] + mu_y
