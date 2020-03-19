@@ -61,7 +61,7 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       ## Generate model
       model_impute_test <- mddsPLS(t_X_here,vars_Y_here,lambda = lambda,
                                    R = R,
-                                   NZV=mod_0$NZV)
+                                   NZV=mod_0$NZV,getVariances = F)
       ## Create test dataset
       n_test <- nrow(X_test[[1]])
       t_X_test <- matrix(NA,n_test,ncol(t_X_here))
