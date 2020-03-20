@@ -406,6 +406,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
         if(anyNA(B_k)){
           B_k <- matrix(0,nrow(B_k),ncol(B_k))
         }
+        for(jj in 1:q){
+          B_k[,jj] <- B_k[,jj]*sd_y[jj]
+        }
         B[[k]] <- B_k
       }
     }

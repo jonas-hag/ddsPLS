@@ -146,16 +146,11 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
     }
     if(mode=="reg"){
       probability <- NULL
-      newY <- matrix(0,n_new,q)
+      newY <- matrix(0,1,q)
       for(k in 1:K){
         newY <- newY + newX[[k]]%*%mod$B[[k]]
       }
-      for(j_q in 1:q){
-        newY[,j_q]<-newY[,j_q]*sd_y[j_q]
-      }
-      for(i in 1:n_new){
-        newY[i,]<-newY[i,] + mu_y
-      }
+      newY <- mu_y + newY
     }
     else{
       T_super_new <- matrix(0,nrow=n_new,ncol=ncol(mod$T_super))
@@ -211,8 +206,8 @@ predict.mddsPLS  <- function(object,newdata,type="y",...){
       }
     }
     for(k in 1:K){
-      newX[[k]][1,] <- newX[[k]][1,]*sd_x_s[[k]]
-      newX[[k]][1,]<- newX[[k]][1,]+mu_x_s[[k]]
+      newX[[k]] <- newX[[k]]*sd_x_s[[k]]
+      newX[[k]] <- newX[[k]]+mu_x_s[[k]]
     }
   }
   else{
