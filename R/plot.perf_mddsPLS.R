@@ -303,9 +303,11 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
     # graphics::plot(ranges,card_ranges, type = "l", xaxt = "n", yaxt = "n",
     # ylab = "", xlab = "", col = grDevices::adjustcolor("red",0),
     # lty = 1,lwd=5)
-    if(!no_plot)axis(side = 3,at=ranges,labels=card_ranges, col="red",
-                     col.axis="red")
-    if(!no_plot)mtext("", side = 3, line = 3, col = "red")
+    if(!no_plot){
+      axis(side = 3,at=ranges,labels=card_ranges, col="red",
+           col.axis="red")
+      mtext("", side = 3, line = 3, col = "red")
+    }
   }
   if(res_perf_mdd$mod=="reg"){
     if(is_L0!="L0s"){
@@ -321,8 +323,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
         ranges_y <- ranges_y_0[length(ranges_y_0)-l_in]
         card_ranges_y <- l_in
       }else{
-        ranges_y <- sort(ranges_y[which(ranges_y>=min(res_perf_mdd$RMSEP[,2]))])
-        card_ranges_y <- rev(0:(length(ranges_y)-1))
+        ranges_y_0 <- sort(ranges_y_0[which(ranges_y_0>=min(res_perf_mdd$RMSEP[,2]))])
+        card_ranges_y <- rev(0:(length(ranges_y_0)-1))
       }
     }
     if(!no_occurence){

@@ -181,16 +181,20 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
   t_r <- list()
   z_t=t_t <- list()
   for(k in 1:K){
-    z_t[[k]]=t_t[[k]] <- matrix(NA,n,R)
+    t_t[[k]] <- matrix(NA,n,R)
+    z_t[[k]] <- matrix(NA,q,R)
   }
   for(r in 1:R){
     t_r[[r]] <- matrix(NA,n,K)
   }
   # BETA_r <- list()
   for(k in 1:K){
-    if(norm(Ms[[k]])==0){
+    if(norm(Ms[[k]],"2")<NZV){
       svd_k <- list(v=matrix(0,nrow = ncol(Ms[[k]]),ncol = R),
                     d=rep(0,R))
+      for(r in 1:R) t_r[[r]][,k] <- rep(0,n)
+      z_t[[k]] <- matrix(0,nrow = q,ncol = R)
+      t_t[[k]] <- matrix(0,nrow = n,ncol = R)
     }
     else{
       if(!deflat & is.null(mu)){
@@ -776,6 +780,19 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
     sd_y <- sdRcpp(Y_class_dummies)#apply(Y_class_dummies,2,sd)*sqrt((n-1)/n)
   }
   iter <- 0
+  # Consider no deflation in the non ridge case. To be published functionnality
+  if(is.null(mu)){
+    if(deflat & R>q){
+      cat("  WARNING__________________________________________________________________________________\n")
+      cat("  | No deflation supported for R>q if not ddsPLS-Ridge analysis.                           |\n")
+      cat("  | Classical ddsPLS model built with R=q.                                                 |\n")
+      cat("  | Please set a value to mu (different from NULL) to start ddsPLS-Ridge analysis for R>q. |\n")
+      cat("   ________________________________________________________________________________________\n")
+    }
+    deflat <- F
+  }
+  # Change R in case of no deflation with R>q.
+  if(!deflat & R>q) R <- q
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
     mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,
