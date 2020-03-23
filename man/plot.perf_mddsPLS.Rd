@@ -4,10 +4,20 @@
 \alias{plot.perf_mddsPLS}
 \title{Function to plot cross-validation performance results.}
 \usage{
-\method{plot}{perf_mddsPLS}(x, plot_mean = FALSE, reg_error = "MSEP",
-  legend_names = NULL, pos_legend = "bottomleft",
-  which_sd_plot = NULL, ylim = NULL, alpha.f = 0.4,
-  no_occurence = T, main = NULL, no_plot = F, ...)
+\method{plot}{perf_mddsPLS}(
+  x,
+  plot_mean = FALSE,
+  reg_error = "MSEP",
+  legend_names = NULL,
+  pos_legend = "bottomleft",
+  which_sd_plot = NULL,
+  ylim = NULL,
+  alpha.f = 0.4,
+  no_occurence = T,
+  main = NULL,
+  no_plot = F,
+  ...
+)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}

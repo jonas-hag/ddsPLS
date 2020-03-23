@@ -4,9 +4,20 @@
 \alias{mddsPLS}
 \title{Multi-Data-Driven sparse PLS function.}
 \usage{
-mddsPLS(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  mu = NULL, deflat = FALSE, weight = FALSE, keep_imp_mod = FALSE,
-  NZV = 1e-09, getVariances = TRUE)
+mddsPLS(
+  Xs,
+  Y,
+  lambda = 0,
+  R = 1,
+  mode = "reg",
+  L0 = NULL,
+  mu = NULL,
+  deflat = FALSE,
+  weight = FALSE,
+  keep_imp_mod = FALSE,
+  NZV = 1e-09,
+  getVariances = TRUE
+)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}
@@ -51,6 +62,11 @@ This function takes a set \eqn{X} of \eqn{K} matrices defining the same \eqn{n} 
 ber of components \eqn{R}, the user fixes the number of components the model
 must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
 \eqn{X} and \eqn{Y} data sets.
+}
+\details{
+The parameter \strong{weight} allows to penalize the per-block components according to the number of variables selected in each block.
+
+Parameters \strong{mu} and \strong{deflat} allow to build deflated models but need for more theoretical verifications.
 }
 \examples{
 # Single-block example :

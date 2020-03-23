@@ -4,8 +4,7 @@
 \alias{summary.mddsPLS}
 \title{The summary method of the \strong{mddsPLS} function.}
 \usage{
-\method{summary}{mddsPLS}(object, main_plot_indiv = NULL,
-  fontsize = 10, alpha = 0.7, ...)
+\method{summary}{mddsPLS}(object, main_plot_indiv = NULL, fontsize = 10, alpha = 0.7, ...)
 }
 \arguments{
 \item{object}{The object of class mddsPLS}

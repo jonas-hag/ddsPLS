@@ -4,6 +4,8 @@
 #' the cross-validation process is made on the given set
 #' of parameters.
 #'
+#' For now, parameter \strong{mu} is included in that function but cannot be cross-validated. It is to the user to build cross-validations for each of the \strong{mu} needed.
+#'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,
 #'  if there is more than one block, of \strong{n} rows each, the number of individuals.
 #'   Some rows must be missing. The different matrices can have different numbers of columns.

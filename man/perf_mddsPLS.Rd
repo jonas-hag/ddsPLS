@@ -4,10 +4,26 @@
 \alias{perf_mddsPLS}
 \title{Function to compute cross-validation performances.}
 \usage{
-perf_mddsPLS(Xs, Y, lambda_min = 0, lambda_max = NULL, n_lambda = 1,
-  lambdas = NULL, R = 1, L0s = NULL, mu = NULL, deflat = FALSE,
-  weight = FALSE, kfolds = "loo", mode = "reg", fold_fixed = NULL,
-  NCORES = 1, NZV = 1e-09, plot_result = T, legend_label = T)
+perf_mddsPLS(
+  Xs,
+  Y,
+  lambda_min = 0,
+  lambda_max = NULL,
+  n_lambda = 1,
+  lambdas = NULL,
+  R = 1,
+  L0s = NULL,
+  mu = NULL,
+  deflat = FALSE,
+  weight = FALSE,
+  kfolds = "loo",
+  mode = "reg",
+  fold_fixed = NULL,
+  NCORES = 1,
+  NZV = 1e-09,
+  plot_result = T,
+  legend_label = T
+)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,

@@ -4,12 +4,26 @@
 \alias{plot.mddsPLS}
 \title{Function to plot \strong{mddsPLS}}
 \usage{
-\method{plot}{mddsPLS}(x, vizu = "weights", super = FALSE,
-  addY = FALSE, block = NULL, comp = NULL, variance = "Linear",
-  mar_left = 2, mar_bottom = 2, margins_heatmap = c(5, 5),
-  pos_legend = "topright", legend_names = NULL, legend.cex = 1,
-  values_corr = F, block_Y_name = "Y", alpha.Y_sel = 0.4,
-  reorder_Y = F, ...)
+\method{plot}{mddsPLS}(
+  x,
+  vizu = "weights",
+  super = FALSE,
+  addY = FALSE,
+  block = NULL,
+  comp = NULL,
+  variance = "Linear",
+  mar_left = 2,
+  mar_bottom = 2,
+  margins_heatmap = c(5, 5),
+  pos_legend = "topright",
+  legend_names = NULL,
+  legend.cex = 1,
+  values_corr = F,
+  block_Y_name = "Y",
+  alpha.Y_sel = 0.4,
+  reorder_Y = F,
+  ...
+)
 }
 \arguments{
 \item{x}{The perf_mddsPLS object.}

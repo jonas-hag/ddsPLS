@@ -4,7 +4,8 @@
 \name{penicilliumYES}
 \alias{penicilliumYES}
 \title{Data set of three species of Penicillium fungi, from \emph{sparseLDA}}
-\format{This data set contains the following matrices:
+\format{
+This data set contains the following matrices:
 \describe{
   \item{X}{A matrix with 36 columns and 3754 rows. The training and test data. The first 12
    rows are \emph{P. Melanoconidium} species, rows 13-24 are \emph{P. Polonicum} species,
@@ -12,7 +13,8 @@
     each pair of three is from the same isolate.}
   \item{Y}{A matrix of dummy variables for the training data.}
   \item{Z}{Z matrix of probabilities for the subcalsses of the training data.}
-}}
+}
+}
 \source{
 \url{http://www.imm.dtu.dk/~lhc}.
 }

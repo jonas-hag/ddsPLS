@@ -4,9 +4,19 @@
 \alias{MddsPLS_core}
 \title{The core function of the Multi-Data-Driven sparse PLS function.}
 \usage{
-MddsPLS_core(Xs, Y, lambda = 0, R = 1, mode = "reg", L0 = NULL,
-  mu = NULL, deflat = FALSE, weight = FALSE, id_na = NULL,
-  NZV = 1e-09)
+MddsPLS_core(
+  Xs,
+  Y,
+  lambda = 0,
+  R = 1,
+  mode = "reg",
+  L0 = NULL,
+  mu = NULL,
+  deflat = FALSE,
+  weight = FALSE,
+  id_na = NULL,
+  NZV = 1e-09
+)
 }
 \arguments{
 \item{Xs}{A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.}

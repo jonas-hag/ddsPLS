@@ -176,6 +176,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     warning(paste("R not integer and estimated to ",R,sep=""),
             call. = FALSE)
   }
+  if(deflat & is.null(mu)){
+    stop("For now, deflation models are built only for the ddsPLS-Ridge models. Please change to ddsPLS-classic models or to ddsPLS-Ridge changing mu parameter to a positive real value.",
+         call. = T)
+  }
   #### Inside problems
   u_t_r = u_t_r_0 <- list()
   t_r <- list()
@@ -185,14 +189,14 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     z_t[[k]] <- matrix(NA,q,R)
   }
   for(r in 1:R){
-    t_r[[r]] <- matrix(NA,n,K)
+    t_r[[r]] <- matrix(0,n,K)
   }
   # BETA_r <- list()
+  Ms_k_selected_lengths <- matrix(0,K,R)
   for(k in 1:K){
     if(norm(Ms[[k]],"2")<NZV){
       svd_k <- list(v=matrix(0,nrow = ncol(Ms[[k]]),ncol = R),
                     d=rep(0,R))
-      for(r in 1:R) t_r[[r]][,k] <- rep(0,n)
       z_t[[k]] <- matrix(0,nrow = q,ncol = R)
       t_t[[k]] <- matrix(0,nrow = n,ncol = R)
     }
@@ -239,16 +243,16 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
             u_r_def <- u_r_def*0
           }
           t_r_def <- mmultC(X_0,u_r_def)
-          t_r[[r]][,k] <- t_r_def
+          t_r[[r]][,k] = t_t[[k]][,r] <- t_r_def
           z_t[[k]][,r] <- mmultC(Ms[[k]],u_r_def)
-          t_t[[k]][,r] <- mmultC(X_0,u_r_def)
           if(norm_th_sc>NZV){
             nrom_t_r_2 <- sum(t_r_def^2)
             bXr <- crossprod(t_r_def,X_0)/nrom_t_r_2
             if(r>1){
               u_r_def <- mmultC(Phi_r[[k]],u_r_def)
+              u_r_def <- u_r_def/sqrt(sum(u_r_def^2))
             }
-            Phi_r[[k]] = mmultC(Phi_r[[k]],diag(ps[k])-mmultC(u_r_def,bXr))
+            Phi_r[[k]] = Phi_r[[k]] - mmultC(mmultC(Phi_r[[k]],u_r_def),bXr)
           }
           svd_k$v[,r] <- u_r_def
           ## Perform deflation
@@ -266,20 +270,19 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     u_t_r[[k]] = u_t_r_0[[k]] <- svd_k$v
+    ## Count the number of selected variables
+    Ms_k_selected_lengths[k,] <- unlist(apply(abs(u_t_r[[k]]),2,function(uu){length(which(uu>NZV))} ))
     for(r in 1:R){
       if(svd_k$d[r]<NZV){
         u_t_r[[k]][,r] <- u_t_r[[k]][,r]*0
       }
     }
-    if(weight & svd_k$d[1]!=0){
-      u_t_r[[k]] <- u_t_r[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
-    }
     if(!deflat & is.null(mu)){
-      if(k==1){
-        for(r in 1:R){
-          t_r[[r]] <- matrix(0,n,K)
-        }
-      }
+      # if(k==1){
+      #   for(r in 1:R){
+      #     t_r[[r]] <- matrix(0,n,K)
+      #   }
+      # }
       for(r in 1:R){
         if(svd_k$d[r]!=0){
           t_r[[r]][,k] <- mmultC(Xs[[k]],u_t_r[[k]][,r,drop=F])
@@ -291,12 +294,23 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       # }
       t_t[[k]] <- mmultC(Xs[[k]],u_t_r[[k]])#crossprod(Y,Xs[[k]]%*%u_t_r[[k]])
     }
+    if(weight & svd_k$d[1]!=0){
+      for(r in 1:R){
+        if(Ms_k_selected_lengths[k,r]!=0){
+          z_t[[k]][,r] <- z_t[[k]][,r]/Ms_k_selected_lengths[k,r]#length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+        }
+      }
+      # t_t[[k]] <- t_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+      # for(r in 1:R){
+      #   t_r[[r]][,k] <- t_r[[r]][,k]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+      # }
+    }
   }
   U_t_super = beta_list <- list()
   if(is.null(mu)){
     ## Big SVD solution ######################### -----------------
     Z <- do.call(cbind,z_t)
-    R_opt <- R
+    R_opt <- min(R,q)
     svd_Z <- svd(Z,nu = R_opt,nv = R_opt)
     beta_all <- svd_Z$v
     for(k in 1:K){
@@ -386,8 +400,8 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     for(k in 1:K){
       B_t <- matrix(NA,R,q)
       for(r in 1:R){
-        B_t[r,] <- Q[count_reg,]
-        count_reg <- count_reg + 1
+        B_t[r,] <- Q[(r-1)*K+k,]#Q[count_reg,]
+        #count_reg <- count_reg + 1
       }
       B[[k]] <- mmultC(u_t_r[[k]],B_t)
       for(jj in 1:q){
@@ -456,9 +470,9 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
   }
   list(u=u_t_r,u_t_super=U_t_super,V_super=V_super,ts=t_r,beta_comb=u,
-       T_super=T_super,S_super=S_super,
-       t_ort=t_ort,s_ort=s_ort,B=B,
-       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,lambda=lambda_in[1],mu=mu)
+       T_super=T_super,S_super=S_super,t_ort=t_ort,s_ort=s_ort,B=B,
+       mu_x_s=mu_x_s,sd_x_s=sd_x_s,mu_y=mu_y,sd_y=sd_y,R=R,q=q,Ms=Ms,
+       lambda=lambda_in[1],mu=mu,weight=weight)
 }
 
 
@@ -469,15 +483,18 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
 #' must be built on. The coefficient lambda regularizes the quality of proximity to the data choosing to forget the least correlated bounds between
 #' \eqn{X} and \eqn{Y} data sets.
 #'
+#' The parameter \strong{weight} allows to penalize the per-block components according to the number of variables selected in each block.
+#'
+#' Parameters \strong{mu} and \strong{deflat} allow to build deflated models but need for more theoretical verifications.
 #'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,, if there is more than one block, of \strong{n} rows each, the number of individuals. Some rows must be missing. The different matrices can have different numbers of columns. The length of Xs is denoted by \strong{K}.
 #' @param Y A matrix of \strong{n} rows of a vector of length \strong{n} detailing the response matrix. No missing values are allowed in that matrix.
 #' @param lambda A real \eqn{[0,1]} where 1 means just perfect correlations will be used and 0 no regularization is used.
 #' @param R A strictly positive integer detailing the number of components to build in the model.
 #' @param L0 An integer non nul parameter giving the largest number of X variables that can be selected.
+#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
 #' @param mu A real positive. The Ridge parameter changing the bias of the regression model. If is NULL, consider the classical ddsPLS. Default to NULL.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
-#' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
 #' @param keep_imp_mod Logical. Whether or not to keep imputation \strong{mddsPLS} models. Initialized to \code{FALSE} due to the potential size of those models.
 #' @param mode A character chain. Possibilities are "\strong{(reg,lda,logit)}", which implies regression problem, linear discriminant analysis (through the paclkage \code{MASS}, function \code{lda}) and logistic regression (function \code{glm}). Default is \strong{reg}.
 #' @param NZV Float. The floatting value above which the weights are set to 0.
@@ -782,14 +799,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   iter <- 0
   # Consider no deflation in the non ridge case. To be published functionnality
   if(is.null(mu)){
-    if(deflat & R>q){
-      cat("  WARNING__________________________________________________________________________________\n")
-      cat("  | No deflation supported for R>q if not ddsPLS-Ridge analysis.                           |\n")
-      cat("  | Classical ddsPLS model built with R=q.                                                 |\n")
-      cat("  | Please set a value to mu (different from NULL) to start ddsPLS-Ridge analysis for R>q. |\n")
-      cat("   ________________________________________________________________________________________\n")
+    if(!deflat & R>q){
+      deflat <- F
     }
-    deflat <- F
   }
   # Change R in case of no deflation with R>q.
   if(!deflat & R>q) R <- q
@@ -816,7 +828,9 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
       }
     }
     if(K>1){
-      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,NZV=NZV,weight=weight)
+      mod_0 <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,
+                            L0=L0,mu=mu,deflat=deflat,NZV=NZV,
+                            weight=weight)
       if(sum(abs(as.vector(mod_0$S_super)))!=0){
         Mat_na <- matrix(0,n,K)
         for(k in 1:K){

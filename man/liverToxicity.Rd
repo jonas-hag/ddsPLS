@@ -4,7 +4,8 @@
 \name{liverToxicity}
 \alias{liverToxicity}
 \title{Data set of Liver Toxicity Data, from \emph{mixOmics}}
-\format{A list containing the following components:
+\format{
+A list containing the following components:
 \describe{
   \item{gene}{data frame with \eqn{64} rows and \eqn{3116} columns. The
   expression measure of 3116 genes for the \eqn{64} subjects (rats).}
@@ -15,7 +16,8 @@
    and times of necropsies.}
  \item{gene.ID}{data frame with \eqn{3116} rows and \eqn{2} columns,
    containing geneBank IDs and gene titles of the annotated genes.}
-}}
+}
+}
 \source{
 The liver toxicity dataset has been downloaded from the \strong{mixOmics} package.
 \url{http://mixomics.org/methods/pls-da/}.
