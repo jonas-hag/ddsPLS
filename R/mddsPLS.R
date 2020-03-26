@@ -298,6 +298,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       for(r in 1:R){
         if(Ms_k_selected_lengths[k,r]!=0){
           z_t[[k]][,r] <- z_t[[k]][,r]/Ms_k_selected_lengths[k,r]#length(which(rowSums(abs(u_t_r[[k]]))>NZV))
+          # z_t[[k]][,r] <- (z_t[[k]][,r]-mean(z_t[[k]][,r]))/sd(z_t[[k]][,r])
         }
       }
       # t_t[[k]] <- t_t[[k]]/length(which(rowSums(abs(u_t_r[[k]]))>NZV))

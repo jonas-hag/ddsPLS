@@ -117,6 +117,11 @@ That function must be applied to the given dataset and
 the cross-validation process is made on the given set
 of parameters.
 }
+\details{
+The parameter \strong{lambda} can be easily tuned from an user point of view choosing a reasonnable value for \strong{n_lambda}, the number of values to be tested between 0 and the smallest value for which all the soft-thresholded corelation matrices are equal to 0.
+
+For now, parameter \strong{mu} is included in that function but cannot be cross-validated. It is to the user to build cross-validations for each of the \strong{mu} needed.
+}
 \examples{
 # Classification example :
 data("penicilliumYES")

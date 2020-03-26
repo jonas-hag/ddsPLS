@@ -4,6 +4,8 @@
 #' the cross-validation process is made on the given set
 #' of parameters.
 #'
+#' The parameter \strong{lambda} can be easily tuned from an user point of view choosing a reasonnable value for \strong{n_lambda}, the number of values to be tested between 0 and the smallest value for which all the soft-thresholded corelation matrices are equal to 0.
+#'
 #' For now, parameter \strong{mu} is included in that function but cannot be cross-validated. It is to the user to build cross-validations for each of the \strong{mu} needed.
 #'
 #' @param Xs A matrix, if there is only one block, or a list of matrices,
@@ -27,6 +29,7 @@
 #' build in the model.
 #' @param deflat Logical. If TRUE, the solution uses deflations to construct the weights.
 #' @param weight Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.
+#' @param std_errors Logical. If TRUE, the test errors are always divided by the train response variable standard deviation. Default to FALSE.
 #' @param kfolds character or integer. If equals to "loo" then a \strong{leave-one-out}
 #' cross-validation is started. No other character is understood. Any strictly
 #' positive integer gives the number of folds to make in the \strong{cross-validation process}
@@ -101,6 +104,7 @@
 perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,
                          lambdas=NULL,R=1,L0s=NULL,mu=NULL,
                          deflat=FALSE,weight=FALSE,
+                         std_errors=FALSE,
                          kfolds="loo",mode="reg",fold_fixed=NULL,NCORES=1,
                          NZV=1e-9,plot_result=T,legend_label=T){
   ## Xs shaping ##
@@ -216,6 +220,9 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,
                         if(mode=="reg"){
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
+                          if(std_errors){
+                            errors[i,] <- errors[i,]/c(apply(Y_test,2,sd))
+                          }
                           v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1
                         }else{
