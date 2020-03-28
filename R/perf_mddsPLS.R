@@ -221,7 +221,7 @@ perf_mddsPLS <- function(Xs,Y,lambda_min=0,lambda_max=NULL,n_lambda=1,
                           errors_here <- Y_test-Y_est
                           errors[i,] <- sqrt(colMeans(errors_here^2))
                           if(std_errors){
-                            errors[i,] <- errors[i,]/c(apply(Y_test,2,sd))
+                            errors[i,] <- errors[i,]/c(apply(Y_train,2,sd))
                           }
                           v_no_null <- which(rowSums(abs(mod_0$mod$V_super))>NZV)
                           select_y[i,v_no_null] <- 1
