@@ -812,7 +812,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   if(!deflat & R>q) R <- q
   if(length(unlist(id_na))==0){
     ## If there is no missing sample
-    mod <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,
+    MODEL <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,L0=L0,mu=mu,deflat=deflat,
                         weight=weight,NZV=NZV)
   }else{
     lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda)
@@ -830,6 +830,7 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
         model_init <- mddsPLS(x_train,y_train,R=R,lambda = lambda_init,getVariances=F,weight=weight)
         y_test <- predict(model_init,x_test)$y
         Xs[[k]][id_na[[k]],] <- y_test
+        rm(model_init)
       }
     }
     if(K>1){
@@ -909,10 +910,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
             if(!is.factor(Y))Y <- factor(Y)
           }
           ## lambda_init <- get_lambda_from_L0(Xs,Y,Y_class_dummies,mode,L0,lambda) ## Update lambda or not
-          mod <- MddsPLS_core(Xs,Y,R=R,
+          MODEL <- MddsPLS_core(Xs,Y,R=R,
                               lambda=lambda_init,
                               mode=mode,mu=mu,deflat=deflat,weight=weight,NZV=NZV)
-          mod_0 <- mod
+          mod_0 <- MODEL
         }
         if(keep_imp_mod){
           for(k in 1:K){
@@ -921,20 +922,28 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
             }
           }
         }
+
+      }else{
+        MODEL <- mod_0
       }
+      rm(mod_0)
+    }else{
+      MODEL <- MddsPLS_core(Xs,Y,lambda=lambda,R=R,mode=mode,
+                            L0=L0,mu=mu,deflat=deflat,NZV=NZV,
+                            weight=weight)
     }
   }
-  mod$mu_x_s <- mu_x_s
-  mod$sd_x_s <- sd_x_s
-  mod$sd_y <- sd_y
-  mod$mu_y <- mu_y
+  MODEL$mu_x_s <- mu_x_s
+  MODEL$sd_x_s <- sd_x_s
+  MODEL$sd_y <- sd_y
+  MODEL$mu_y <- mu_y
   var_selected <- list()
   for(k in 1:K){
-    values <- rowSums(mod$u_t_super[[k]])^2
+    values <- rowSums(MODEL$u_t_super[[k]])^2
     pos <- which(values>NZV)
     if(length(pos)>0){
-      R_u <- ncol(mod$u[[1]])
-      R_u_super <- ncol(mod$u_t_super[[1]])
+      R_u <- ncol(MODEL$u[[1]])
+      R_u_super <- ncol(MODEL$u_t_super[[1]])
       order_values <- order(values[pos],decreasing = T)
       pos_ordered <- pos[order_values]
       out_k <- matrix(NA,length(pos),R_u+R_u_super)
@@ -947,10 +956,10 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
       colnames(out_k) <- c(paste("Weights_comp_",1:R_u,sep=""),
                            paste("Super_Weights_comp_",1:R_u_super,sep=""))
       for(r in 1:R_u){
-        out_k[,r] <- mod$u[[k]][pos_ordered,r]
+        out_k[,r] <- MODEL$u[[k]][pos_ordered,r]
       }
       for(r in 1:R_u_super){
-        out_k[,R_u+r] <- mod$u_t_super[[k]][pos_ordered,r]
+        out_k[,R_u+r] <- MODEL$u_t_super[[k]][pos_ordered,r]
       }
       var_selected[[k]] <- out_k
     }else{
@@ -960,12 +969,12 @@ mddsPLS <- function(Xs,Y,lambda=0,R=1,mode="reg",
   names_Xs <- names(Xs)
   if(length(names_Xs)!=0){
     names(var_selected) <- names_Xs
-    names(mod$u) <- names_Xs
-    names(mod$u_t_super) <- names_Xs
-    if(mode=="regression")names(mod$B) <- names_Xs
-    names(mod$Ms) <- names_Xs
+    names(MODEL$u) <- names_Xs
+    names(MODEL$u_t_super) <- names_Xs
+    if(mode=="regression")names(MODEL$B) <- names_Xs
+    names(MODEL$Ms) <- names_Xs
   }
-  out <- list(var_selected=var_selected,mod=mod,Xs=Xs,Y_0=Y_0,lambda=lambda,mu=mu,mode=mode,id_na=id_na,
+  out <- list(var_selected=var_selected,mod=MODEL,Xs=Xs,Y_0=Y_0,lambda=lambda,mu=mu,mode=mode,id_na=id_na,
               number_iterations=iter,L0=L0,NZV=NZV)
   class(out) <- "mddsPLS"
   if(keep_imp_mod){
