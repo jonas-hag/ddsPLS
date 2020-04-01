@@ -349,6 +349,10 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
       ord <- order(vars_current,decreasing = T)
       T_super <- T_super[,ord[1:R],drop=F]
       V_super <- V_super[,ord[1:R],drop=F]
+      T_super_norm <- apply(T_super,2,norm,"2")
+      if(any(T_super_norm<NZV)){
+        V_super[,which(T_super_norm<NZV)] <- 0
+      }
       for(k in 1:K){
         U_t_super[[k]] <- U_t_super[[k]][,ord[1:R],drop=F]
         beta_list[[k]] <- beta_list[[k]][,ord[1:R],drop=F]
