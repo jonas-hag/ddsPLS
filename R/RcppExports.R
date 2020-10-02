@@ -13,3 +13,35 @@ mmultC <- function(m1, m2) {
     .Call('_ddsPLS_mmultC', PACKAGE = 'ddsPLS', m1, m2)
 }
 
+crossprodC <- function(m1, m2) {
+    .Call('_ddsPLS_crossprodC', PACKAGE = 'ddsPLS', m1, m2)
+}
+
+get_sol <- function(COV_in, lam, NZV) {
+    .Call('_ddsPLS_get_sol', PACKAGE = 'ddsPLS', COV_in, lam, NZV)
+}
+
+#' Does the trick also
+#'
+#' @param COV_in COV_in
+#' @param lam lam
+#'
+#' @return
+#' @export
+#' @useDynLib ddsPLS
+getCOV_COV <- function(COV_in, lam) {
+    .Call('_ddsPLS_getCOV_COV', PACKAGE = 'ddsPLS', COV_in, lam)
+}
+
+#' Does the trick
+#'
+#' @param COV_in COV_in
+#' @param lam lam
+#'
+#' @return
+#' @export
+#' @useDynLib ddsPLS
+get_COV_th <- function(COV_in, lam) {
+    .Call('_ddsPLS_get_COV_th', PACKAGE = 'ddsPLS', COV_in, lam)
+}
+
