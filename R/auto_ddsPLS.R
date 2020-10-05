@@ -743,36 +743,37 @@ do_one_component <- function(x0,y0,method=2,n,p,q,COV,abs_COV,max_COV,lam,tau=1e
     abs_COV_high <- abs(COV_high)
     COV_COV_high <- COV_high - lam
     COV_COV_high[which(COV_COV_high<0)] <- 0
-    if(method==2){
-      COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
-      # COV_COV <- getCOV_COV(COV,lam)
-    }else{
-      COV_COV_high <- crossprod(COV_COV_high*sign(COV_high))
-    }
-    svd_loop <- svd(COV_COV_high,nv = 1,nu=0)
+    # if(method==2){
+    #   COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
+    #   # COV_COV <- getCOV_COV(COV,lam)
+    # }else{
+    #   COV_COV_high <- crossprod(COV_COV_high*sign(COV_high))
+    # }
+
+    # ALL THE SAME
+    COV_COV_high <- COV_COV_high*sign(COV_high)
+
+    svd_loop <- svd(COV_COV_high,nv = 1,nu=1)
     # svd_loop <- rsvd(COV_COV,nv = 1,nu=0,k=1)# Ne pas utiliser rsvd car pas stable...
     U0 <- matrix(0,p,1)
+    V0 <- matrix(0,q,1)
     U0[id_x_high,] <- svd_loop$v
+    V0[id_y_high,] <- svd_loop$u
   }else{
     U0 <- matrix(0,p,1)
+    V0 <- matrix(0,q,1)
   }
   t <- x0%*%U0
-  V_svd0 <- crossprod(y0,t)
+  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t))# crossprod(y0,t)
   norm_t_0 <- sum(t^2)
   if(norm_t_0>NZV){
-    proj_comp <- tcrossprod(t,V_svd0/norm_t_0)
-    var_comp <- sum(proj_comp^2)
-    #Build descriptor
-    B_r <- tcrossprod(U0[id_x_high,,drop=F],V_svd0/norm_t_0)
-    numer <- sum(diag(crossprod(B_r,COV_COV_high%*%B_r)))^2
-    Y_here <- y0[,id_y_high,drop=F]/n
     V_svd <- V_svd0/norm_t_0
   }else{
     U0 <- matrix(0,p,1)
     V_svd <- matrix(0,q,1)
   }
   ##
-  list(t=t,U0=U0,V_svd=V_svd)
+  list(t=t,U0=U0,V_svd=V_svd,V0=V0)
 }
 ########
 
@@ -796,7 +797,7 @@ model_PLS <- function(x,y,lam,tau=1e-2,method=2,R=1,NZV=1e-3){
     max_COV <- max(na.omit(abs_COV))
     if(lam<max_COV){
       c_h <- do_one_component(x0,y0,method=method,n,p,q,COV,abs_COV,max_COV,lam,tau=tau,NZV=NZV)
-      t <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd
+      t <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd ; V0  <- c_h$V0
       ## DEFLAT ##
       if(sum(U0^2)>NZV){
         bt <- crossprod(t,x0)/sum(t^2)

@@ -16,6 +16,7 @@ perf_mddsPLS(
   mu = NULL,
   deflat = FALSE,
   weight = FALSE,
+  std_errors = FALSE,
   kfolds = "loo",
   mode = "reg",
   fold_fixed = NULL,
@@ -57,6 +58,8 @@ perf process. Default is \eqn{NULL} and is then not taken into account.}
 \item{deflat}{Logical. If TRUE, the solution uses deflations to construct the weights.}
 
 \item{weight}{Logical. If TRUE, the scores are divided by the number of selected variables of their corresponding block.}
+
+\item{std_errors}{Logical. If TRUE, the test errors are always divided by the train response variable standard deviation. Default to FALSE.}
 
 \item{kfolds}{character or integer. If equals to "loo" then a \strong{leave-one-out}
 cross-validation is started. No other character is understood. Any strictly

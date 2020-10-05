@@ -20,7 +20,7 @@ Maintainer: Hadrien Lorenzo <hadrien.lorenzo.2015@gmail.com>
 License: MIT + file LICENSE
 Encoding: UTF-8
 ByteCompile: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot,Rcpp (>= 0.12.18)
 RdMacros: Rdpack
 Suggests: knitr,rmarkdown,htmltools

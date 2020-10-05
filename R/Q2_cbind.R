@@ -64,7 +64,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
   Xs_init <- lapply(Xs,scale)
   RSS0 = RSS_h_moins_1 <- colSums(Y_init^2)
   PRESS_y = RSS_y = Q2_y <- matrix(NA,n,q)
-  lam_sol <- rep(NA,n)
+  lambda <- rep(NA,n)
   ps <- unlist(lapply(Xs_init,ncol))
   xs0_cbind <- list(do.call(cbind,Xs_init))
   u <- matrix(NA,sum(ps),n)
@@ -118,7 +118,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
     if(length(best_id_h)>0){
       test_h <- max_Q2_y[best_id_h]>tau
       best_lam_h <- lambdas[best_id_h]
-      lam_sol[h] <- best_lam_h
+      lambda[h] <- best_lam_h
       RSS_y[h,] <- RSS_il_y[best_id_h,]
       RSS_h_moins_1 <- RSS_y[h,]
       PRESS_y[h,] <- PRESS_il_y[best_id_h,]
@@ -184,7 +184,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
 
     # Compute LOO error to get Q2_reg
     ERRORS_LOO <- rep(0,n)
-    lambda_sol <- lam_sol[1:h_opt]
+    lambda_sol <- lambda[1:h_opt]
     Y_pred_all <- matrix(0,n,q)
     p <- ncol(xs0_cbind[[1]])
     for(ii in 1:n){
@@ -197,7 +197,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
       mu_y <- colMeans(Y_train)
       sd_y <- apply(Y_train,2,sd)
       ## Get LOO error
-      model_ii <- get_model_ddsPLS2(X_train,Y_train,ncomp=h_opt,lam_sol[1:h_opt],method=method)
+      model_ii <- get_model_ddsPLS2(X_train,Y_train,ncomp=h_opt,lambda[1:h_opt],method=method)
       B_ii <- model_ii$B
       Y_pred_all[ii,] <- (((X_test-mu_k)/sd_k)%*%B_ii)*sd_y+mu_y
     }
@@ -206,7 +206,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
     Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0)
     Q2_reg_y <- 1 - ERRORS_LOO/RSS0
     # Prepare outputs
-    optimal_parameters <- list(lam_sol=lam_sol[1:h_opt],R=h_opt,
+    optimal_parameters <- list(lambda=lambda[1:h_opt],R=h_opt,
                                Q2_cum_y=Q2_cum_y,Q2_cum=Q2_cum,Q2_reg=Q2_reg,Q2_reg_y=Q2_reg_y,
                                ERRORS_LOO=ERRORS_LOO,Y_pred_LOO=Y_pred_all)
     parameters <- list(RSS0=RSS0,RSS_y=RSS_y[1:(h_opt+1),],PRESS_y=PRESS_y[1:(h_opt+1),],Q2_y=Q2_y[1:(h_opt+1),])
