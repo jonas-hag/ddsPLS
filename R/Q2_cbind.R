@@ -364,7 +364,8 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
                          Q2_h_y = lapply(Q2_h_y,function(ri){ri[1:(h+1),]}),
                          Q2_h_sum = lapply(Q2_h_sum,function(ri){ri[1:(h+1)]}),
                          Q2_cum=Q2_cum,Q2_cum_y=Q2_cum_y)
-      out <- list(model=model,Us=Us,Bs=Bs,y_est=y_est,optimal_parameters=optimal_parameters,parameters=parameters)
+      out <- list(model=model,Us=Us,Bs=Bs,B_cbind=do.call(rbind,Bs),y_est=y_est,
+                  optimal_parameters=optimal_parameters,parameters=parameters)
     }else{
       out <- NULL
     }
@@ -373,6 +374,36 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
   }
   out
 }
+
+
+#' Title
+#'
+#' @param Xs Xs
+#' @param Y Y
+#' @param lambdas lambdas
+#' @param tau rate learning
+#' @param NCORES number of cores
+#' @param NZV near zero var
+#'
+#' @return
+#' @export
+#'
+#' @useDynLib ddsPLS
+Q2_ddsPLS <- function(Xs,Y,lambdas = 0.5,
+                             tau=0.0975,NCORES=1,
+                             NZV=1e-3,type="local"){
+  if(type=="local"){
+    out <- Q2_local_ddsPLS(Xs,Y,lambdas = lambdas,
+                           tau=0.0975,NCORES=NCORES,
+                           NZV=1e-3)
+  }else{
+    out <- Q2_global_ddsPLS(Xs,Y,lambdas = lambdas,
+                           tau=0.0975,NCORES=NCORES,
+                           NZV=1e-3)
+  }
+  out
+}
+
 
 Q2_OLS <- function(X,Y){
   n <- nrow(X)

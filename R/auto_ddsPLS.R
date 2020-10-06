@@ -875,13 +875,16 @@ deflat_in_loop <- function(x,y,R_max=NA,lam,method=2,
       abs_COV_high <- abs(COV_high)
       COV_COV_high <- COV_high - lam
       COV_COV_high[which(COV_COV_high<0)] <- 0
-      # COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
-      if(method==2){
-        COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
-        # COV_COV <- getCOV_COV(COV,lam)
-      }else{
-        COV_COV_high <- COV_COV_high*sign(COV_high)
-      }
+      # if(method==2){
+      #   COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
+      #   # COV_COV <- getCOV_COV(COV,lam)
+      # }else{
+      #   COV_COV_high <- crossprod(COV_COV_high*sign(COV_high))
+      # }
+
+      # ALL THE SAME
+      COV_COV_high <- COV_COV_high*sign(COV_high)
+
 
       varY <- all_variances
 
