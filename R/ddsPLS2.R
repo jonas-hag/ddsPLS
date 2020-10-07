@@ -60,6 +60,7 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
   for(k in 1:K){
     B[[k]] <- matrix(0,ncol(xs0[[k]]),ncol(y0))
   }
+  B_r_out <- list()
   for(h in 1:max(Rs)){
     K_h <- which(Rs>=h)
     m_plus <- auto_ddsPLS(xs0[K_h],y0,lambdas = lam,plotVarB = F,
@@ -100,6 +101,7 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
         t_K[[h]][[i_k]] = t_plus[[h]][[i_k]] <- NA
       }
     }
+    B_r_out[[h]] <- B[[1]]
     if(length(K_h)>1){
       y0 <- m_plus$model$model_super$RES$residuals$y
     }else{
@@ -140,7 +142,7 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
     tOk[[k]] <- xs0[[k]]%*%uOk[[k]]
   }
 
-  list(B=B,y_est=y_est,u=uOk,t=tOk,V_super=do.call(cbind,V_super),S_super=do.call(cbind,S_super),
+  list(B=B,B_r=B_r_out,y_est=y_est,u=uOk,t=tOk,V_super=do.call(cbind,V_super),S_super=do.call(cbind,S_super),
        parameters=list(x=list(mu=MU_X_K,sd=SD_X_K),y=list(mu=MU_Y,sd=SD_Y)),residuals=list(y=y0))
 }
 

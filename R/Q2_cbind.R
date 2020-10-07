@@ -70,7 +70,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
   u <- matrix(NA,sum(ps),n)
   P <- matrix(0,sum(ps),n)
   B <- matrix(0,sum(ps),q)
-  Us = Bs <- list()
+  Us = Bs = B_r_out <- list()
   B_tot_LOO <- matrix(0,n,sum(ps)*q)
 
   ### For each 'h' component, look for the best lambda
@@ -143,11 +143,11 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
             V_r <- m_plus$V_out
             y0_plus <- xs0_cbind[[1]]%*%B_r
             Var_rel <- sum(y0_plus^2)/sum(RSS0)
-            print(Var_rel)
             if(Var_rel<NZV){
               test <- F
             }else{
               B <- B + B_r
+              B_r_out[[h]] <- B_r
               V <- cbind(V,V_r)
               y0 <- y0 - y0_plus
             }
@@ -209,12 +209,17 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
     RSS0 = RSS_h_moins_1 <- colSums(Y_init^2)
     Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0)
     Q2_reg_y <- 1 - ERRORS_LOO/RSS0
+    explained_variance <- unlist(lapply(B_r_out,function(b,X){
+      sum((xs0_cbind%*%b)^2)/sum(RSS0)*100
+      },xs0_cbind))
     # Prepare outputs
     optimal_parameters <- list(lambda=lambda[1:h_opt],R=h_opt,
                                Q2_cum_y=Q2_cum_y,Q2_cum=Q2_cum,Q2_reg=Q2_reg,Q2_reg_y=Q2_reg_y,
                                ERRORS_LOO=ERRORS_LOO,Y_pred_LOO=Y_pred_all)
     parameters <- list(RSS0=RSS0,RSS_y=RSS_y[1:(h_opt+1),],PRESS_y=PRESS_y[1:(h_opt+1),],Q2_y=Q2_y[1:(h_opt+1),])
-    out <- list(Us=Us,V=V,Bs=Bs,B_cbind=B,y_est=y_est,optimal_parameters=optimal_parameters,parameters=parameters,
+    out <- list(Us=Us,V=V,explained_variance=explained_variance,
+                Bs=Bs,B_cbind=B,B_r=B_r_out,
+                y_est=y_est,optimal_parameters=optimal_parameters,parameters=parameters,
                 mu_k=mu_k,sd_k=sd_k,mu_y=colMeans(Y),sd_y=apply(Y,2,sd))
   }else{
     out <- NULL
@@ -320,12 +325,12 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
       ps <- unlist(lapply(xs0,ncol))
       xs0_cbind <- list(do.call(cbind,xs0))
       model <- ddsPLS2(Xs = xs0_cbind,Y = y0,lam = best_lambda,Rs = best_ncomps,method=method)
-
       u <- model$u[[1]]
       t <- xs0_cbind[[1]]%*%u
       v <- model$V_super
       s <- y0%*%v
       B <- model$B[[1]]
+      B_r_out <- model$B_r
       Us = Bs <- list()
       i_0 <- 0
       for(k in 1:(K)){
@@ -357,6 +362,9 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
       mu_y <- matrix(rep(colMeans(Y_init),n) ,nrow = n,byrow = T)
       Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0_y)
       Q2_reg_y <- 1 - ERRORS_LOO/RSS0_y
+      explained_variance <- unlist(lapply(B_r_out,function(b,X){
+        sum((xs0_cbind[[1]]%*%b)^2)/sum(RSS0_y)*100
+      },xs0_cbind))
       # Prepare outputs
       optimal_parameters <- list(lambda=best_lambda,R=best_ncomps,
                                  Q2_reg_y=Q2_reg_y,Q2_reg=Q2_reg,
@@ -368,7 +376,9 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
                          Q2_h_y = lapply(Q2_h_y,function(ri){ri[1:(h+1),]}),
                          Q2_h_sum = lapply(Q2_h_sum,function(ri){ri[1:(h+1)]}),
                          Q2_cum=Q2_cum,Q2_cum_y=Q2_cum_y)
-      out <- list(model=model,Us=Us,Bs=Bs,B_cbind=do.call(rbind,Bs),y_est=y_est,
+      out <- list(model=model,Us=Us,explained_variance=explained_variance,
+                  Bs=Bs,B_cbind=do.call(rbind,Bs),B_r=B_r_out,
+                  y_est=y_est,
                   optimal_parameters=optimal_parameters,parameters=parameters)
     }else{
       out <- NULL
