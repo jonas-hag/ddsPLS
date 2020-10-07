@@ -77,6 +77,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
   test <- T
   y0 <- Y_init
   h <- 0
+  V <- NULL
   K_h <- 1:K
   while(test){
     h <- h + 1
@@ -139,12 +140,15 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
           }
           if(sum(u[,h]^2)>NZV){
             B_r <- tcrossprod(u[,h,drop=F],m_plus$V_out)
+            V_r <- m_plus$V_out
             y0_plus <- xs0_cbind[[1]]%*%B_r
             Var_rel <- sum(y0_plus^2)/sum(RSS0)
+            print(Var_rel)
             if(Var_rel<NZV){
               test <- F
             }else{
               B <- B + B_r
+              V <- cbind(V,V_r)
               y0 <- y0 - y0_plus
             }
           }else{
@@ -210,7 +214,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
                                Q2_cum_y=Q2_cum_y,Q2_cum=Q2_cum,Q2_reg=Q2_reg,Q2_reg_y=Q2_reg_y,
                                ERRORS_LOO=ERRORS_LOO,Y_pred_LOO=Y_pred_all)
     parameters <- list(RSS0=RSS0,RSS_y=RSS_y[1:(h_opt+1),],PRESS_y=PRESS_y[1:(h_opt+1),],Q2_y=Q2_y[1:(h_opt+1),])
-    out <- list(Us=Us,Bs=Bs,B_cbind=B,y_est=y_est,optimal_parameters=optimal_parameters,parameters=parameters,
+    out <- list(Us=Us,V=V,Bs=Bs,B_cbind=B,y_est=y_est,optimal_parameters=optimal_parameters,parameters=parameters,
                 mu_k=mu_k,sd_k=sd_k,mu_y=colMeans(Y),sd_y=apply(Y,2,sd))
   }else{
     out <- NULL
@@ -395,11 +399,11 @@ Q2_ddsPLS <- function(Xs,Y,lambdas = 0.5,
   if(type=="local"){
     out <- Q2_local_ddsPLS(Xs,Y,lambdas = lambdas,
                            tau=0.0975,NCORES=NCORES,
-                           NZV=1e-3)
+                           NZV=NZV)
   }else{
     out <- Q2_global_ddsPLS(Xs,Y,lambdas = lambdas,
                            tau=0.0975,NCORES=NCORES,
-                           NZV=1e-3)
+                           NZV=NZV)
   }
   out
 }

@@ -784,6 +784,7 @@ model_PLS <- function(x,y,lam,tau=1e-2,method=2,R=1,NZV=1e-3){
   n <- nrow(y)
   x0 <- x
   y0 <- y
+  var_y_init <- sum(y^2)
   U_out <- matrix(0,p,R)
   V_out <- matrix(0,q,R)
   bXr <- matrix(0,R,p)
@@ -806,7 +807,9 @@ model_PLS <- function(x,y,lam,tau=1e-2,method=2,R=1,NZV=1e-3){
         V_out[,r] <- V_svd
         bXr[r,] <- bt
         bYr[r,] <- t(V_svd)
-        y0 <- y0 - tcrossprod(t,V_out[,r,drop=F])
+        y_plus_un <- tcrossprod(t,V_out[,r,drop=F])
+        var_y_plus_un <- sum(y_plus_un^2)
+        y0 <- y0 - y_plus_un
       }
     }
   }
