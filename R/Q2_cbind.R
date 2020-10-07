@@ -209,9 +209,9 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,
     RSS0 = RSS_h_moins_1 <- colSums(Y_init^2)
     Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0)
     Q2_reg_y <- 1 - ERRORS_LOO/RSS0
-    explained_variance <- unlist(lapply(B_r_out,function(b,X){
-      sum((xs0_cbind%*%b)^2)/sum(RSS0)*100
-      },xs0_cbind))
+    explained_variance <- unlist(lapply(B_r_out,function(b,xx){
+      sum((xx%*%b)^2)/sum(RSS0)*100
+      },xs0_cbind[[1]]))
     # Prepare outputs
     optimal_parameters <- list(lambda=lambda[1:h_opt],R=h_opt,
                                Q2_cum_y=Q2_cum_y,Q2_cum=Q2_cum,Q2_reg=Q2_reg,Q2_reg_y=Q2_reg_y,
@@ -362,9 +362,9 @@ Q2_global_ddsPLS <- function(Xs,Y,lambdas = 0.5,
       mu_y <- matrix(rep(colMeans(Y_init),n) ,nrow = n,byrow = T)
       Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0_y)
       Q2_reg_y <- 1 - ERRORS_LOO/RSS0_y
-      explained_variance <- unlist(lapply(B_r_out,function(b,X){
-        sum((xs0_cbind[[1]]%*%b)^2)/sum(RSS0_y)*100
-      },xs0_cbind))
+      explained_variance <- unlist(lapply(B_r_out,function(b,xx){
+        sum((xx%*%b)^2)/sum(RSS0_y)*100
+      },xs0_cbind[[1]]))
       # Prepare outputs
       optimal_parameters <- list(lambda=best_lambda,R=best_ncomps,
                                  Q2_reg_y=Q2_reg_y,Q2_reg=Q2_reg,
