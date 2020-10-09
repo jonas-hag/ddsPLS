@@ -28,19 +28,26 @@ predict_ddsPLS2 <- function(model,xs){
 #' @export
 #'
 #' @useDynLib ddsPLS
-ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
+ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA,standardize=F){
   ### Scale matrices
   MU_X_K = SD_X_K = xs0 <- list()
   K <- length(Xs)
   for(k in 1:K){
     MU_X_K[[k]] <- colMeans(Xs[[k]],na.rm = T)
     SD_X_K[[k]] <- apply(Xs[[k]],2,sd,na.rm = T)
-    xs0[[k]] <- scale(Xs[[k]])
+    if(standardize){
+      xs0[[k]] <- scale(Xs[[k]])
+    }else{
+      xs0[[k]] <- Xs[[k]]
+    }
   }
   MU_Y <- colMeans(Y,na.rm = T)
   SD_Y <- apply(Y,2,sd,na.rm = T)
-  y0 <- scale(Y)
-
+  if(standardize){
+    y0 <- scale(Y)
+  }else{
+    y0 <- Y
+  }
   K <- length(Xs)
   if(length(Rs)==0){
     Rs <- rep(1,K)
@@ -64,7 +71,7 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
   for(h in 1:max(Rs)){
     K_h <- which(Rs>=h)
     m_plus <- auto_ddsPLS(xs0[K_h],y0,lambdas = lam,plotVarB = F,
-                          R_max = 1,tau=tau,method=method,scaleMat = F)
+                          R_max = 1,tau=tau,scaleMat = F)
     for(i_k in 1:length(K_h)){
       k <- K_h[i_k]
       if(length(m_plus$model$model_per_block[[i_k]]$U_hat)!=0){
@@ -125,9 +132,13 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
   y_est <- matrix(rep(MU_Y,n),nrow = n,byrow = T)
   for(k in 1:K){
     mu_k <- matrix(rep(MU_X_K[[k]],n),nrow = n,byrow = T)
-    sd_k <- matrix(rep(SD_X_K[[k]],n),nrow = n,byrow = T)
-    sd_y <- matrix(rep(SD_Y,n),nrow = n,byrow = T)
-    y_est <- y_est + (((xs0[[k]]+mu_k)/sd_k)%*%B[[k]])*SD_Y
+    if(standardize){
+      sd_k <- matrix(rep(SD_X_K[[k]],n),nrow = n,byrow = T)
+      sd_y <- matrix(rep(SD_Y,n),nrow = n,byrow = T)
+      y_est <- y_est + (((xs0[[k]]+mu_k)/sd_k)%*%B[[k]])*SD_Y
+    }else{
+      y_est <- y_est + (((xs0[[k]]+mu_k))%*%B[[k]])
+    }
   }
 
   ## Remove bad components
@@ -142,11 +153,12 @@ ddsPLS2 <- function(Xs,Y,lam,tau=0.0975,method=2,NZV=1e-3,Rs=NA){
     tOk[[k]] <- xs0[[k]]%*%uOk[[k]]
   }
 
-  list(B=B,B_r=B_r_out,y_est=y_est,u=uOk,t=tOk,V_super=do.call(cbind,V_super),S_super=do.call(cbind,S_super),
+  list(B=B,B_r=B_r_out,u=uOk,t=tOk,y_est=y_est,
+       V_super=do.call(cbind,V_super),S_super=do.call(cbind,S_super),
        parameters=list(x=list(mu=MU_X_K,sd=SD_X_K),y=list(mu=MU_Y,sd=SD_Y)),residuals=list(y=y0))
 }
 
-get_model_ddsPLS2 <- function(x,y,ncomp,lams,method=2){
+get_model_ddsPLS2 <- function(x,y,ncomp,lams){
   p <- ncol(x)
   q <- ncol(y)
   n <- nrow(x)
@@ -156,13 +168,15 @@ get_model_ddsPLS2 <- function(x,y,ncomp,lams,method=2){
   Q <- matrix(0,q,ncomp)
   Ts <- matrix(0,n,ncomp)
   y0 <- y
+  x0 <- x
   for(r in 1:ncomp){
-    model <- ddsPLS2(Xs = list(x),Y = y0,lam = lams[r],Rs = 1,method=method)
+    model <- ddsPLS2(Xs = list(x0),Y = y0,lam = lams[r],Rs = 1)
     if(length(model$u[[1]])!=0){
       U[,r] <- model$u[[1]]
       Ts[,r] <- model$t[[1]]
       P[,r] <- crossprod(x,model$t[[1]])/sum(model$t[[1]]^2)
       Q[,r] <- crossprod(y0,model$t[[1]])/sum(model$t[[1]]^2)
+      Q[,r] <- tcrossprod(model$V_super)%*%Q[,r]
       if(r!=1){
         for(s_r in (r-1):1){
           U[,r] <- U[,r]-U[,s_r]*sum(P[,s_r]*U[,r])
@@ -170,7 +184,8 @@ get_model_ddsPLS2 <- function(x,y,ncomp,lams,method=2){
       }
       B <- B + tcrossprod(U[,r,drop=F],model$V_super)
       y0 <- y0 - tcrossprod(Ts[,r],Q[,r,drop=F])
+      x0 <- x0 - tcrossprod(Ts[,r],P[,r,drop=F])
     }
   }
-  list(U=U,Ts=Ts,B=B,P=P,residuals=list(y=y0))
+  list(U=U,Ts=Ts,B=B,P=P,residuals=list(e_x=x0,e_y=y0))
 }

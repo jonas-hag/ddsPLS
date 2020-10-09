@@ -733,7 +733,7 @@ plot_var_B <- function(model,posLegend="bottomright",
 }
 
 ## One component ##
-do_one_component <- function(x0,y0,method=2,n,p,q,COV,abs_COV,max_COV,lam,tau=1e-2,NZV=1e-3){
+do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
   max_cov_y <- apply(abs_COV,1,max)
   max_cov_x <- apply(abs_COV,2,max)
   id_y_high <- which(max_cov_y>lam)
@@ -741,18 +741,10 @@ do_one_component <- function(x0,y0,method=2,n,p,q,COV,abs_COV,max_COV,lam,tau=1e
   if(p-length(id_x_high)>=0 & q-length(id_y_high)>=0){
     COV_high <- COV[id_y_high,id_x_high,drop=F]
     abs_COV_high <- abs(COV_high)
-    COV_COV_high <- COV_high - lam
+    COV_COV_high <- abs_COV_high - lam
     COV_COV_high[which(COV_COV_high<0)] <- 0
-    # if(method==2){
-    #   COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
-    #   # COV_COV <- getCOV_COV(COV,lam)
-    # }else{
-    #   COV_COV_high <- crossprod(COV_COV_high*sign(COV_high))
-    # }
-
-    # ALL THE SAME
     COV_COV_high <- COV_COV_high*sign(COV_high)
-
+    # Do svd
     svd_loop <- svd(COV_COV_high,nv = 1,nu=1)
     # svd_loop <- rsvd(COV_COV,nv = 1,nu=0,k=1)# Ne pas utiliser rsvd car pas stable...
     U0 <- matrix(0,p,1)
@@ -764,7 +756,7 @@ do_one_component <- function(x0,y0,method=2,n,p,q,COV,abs_COV,max_COV,lam,tau=1e
     V0 <- matrix(0,q,1)
   }
   t <- x0%*%U0
-  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t))# crossprod(y0,t)
+  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) # crossprod(y0,t) #
   norm_t_0 <- sum(t^2)
   if(norm_t_0>NZV){
     V_svd <- V_svd0/norm_t_0
@@ -778,7 +770,7 @@ do_one_component <- function(x0,y0,method=2,n,p,q,COV,abs_COV,max_COV,lam,tau=1e
 ########
 
 ## Model ##
-model_PLS <- function(x,y,lam,tau=1e-2,method=2,R=1,NZV=1e-3){
+model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
   p <- ncol(x)
   q <- ncol(y)
   n <- nrow(y)
@@ -789,31 +781,42 @@ model_PLS <- function(x,y,lam,tau=1e-2,method=2,R=1,NZV=1e-3){
   V_out <- matrix(0,q,R)
   bXr <- matrix(0,R,p)
   bYr <- matrix(0,R,q)
-  e <- x0
+  B <- matrix(0,p,q)
+  B_r <- list()
+  y_est <- y0*0
   stop <- F
   no_model <- F
   for(r in 1:R){
-    COV <- crossprod(y0,x0)/n
+    COV <- crossprod(y0,x0)/(n-1)
     abs_COV <- abs(COV)
     max_COV <- max(na.omit(abs_COV))
-    if(lam<max_COV){
-      c_h <- do_one_component(x0,y0,method=method,n,p,q,COV,abs_COV,max_COV,lam,tau=tau,NZV=NZV)
+    lam_r <- lam
+    if(length(lam)>1) lam_r <- lam[r]
+    if(lam_r<max_COV){
+      c_h <- do_one_component(x0 = x0,y0 = y0,n = n,p = p,q = q,COV = COV,abs_COV = abs_COV,
+                              max_COV=max_COV,lam = lam_r,NZV=NZV)
       t <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd ; V0  <- c_h$V0
       ## DEFLAT ##
       if(sum(U0^2)>NZV){
         bt <- crossprod(t,x0)/sum(t^2)
-        e <- x0 # - t%*%bt  #  On teste sans deflation sur x : westerhuis and smilde 2001
         U_out[,r] <- U0
         V_out[,r] <- V_svd
+        B_r[[r]] <- tcrossprod(U0,V_svd)
+        B <- B + B_r[[r]]
         bXr[r,] <- bt
         bYr[r,] <- t(V_svd)
         y_plus_un <- tcrossprod(t,V_out[,r,drop=F])
+        y_est <- y_est + y_plus_un
+        x0_plus <- t%*%bt
         var_y_plus_un <- sum(y_plus_un^2)
         y0 <- y0 - y_plus_un
+        if(deflatX){
+          x0 <- x0 - x0_plus
+        }
       }
     }
   }
-  list(no_model=no_model,U_out=U_out,V_out=V_out,bXr=bXr,bYr=bYr,e_x=e,e_y=y0)
+  list(no_model=no_model,U_out=U_out,V_out=V_out,B=B,B_r=B_r,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
 }
 ########
 
@@ -829,7 +832,7 @@ deflat_in_loop <- function(x,y,R_max=NA,lam,method=2,
   q <- ncol(y)
   ## model ##
 
-  m_h <- model_PLS(x,y,lam,tau=tau,method=method,NZV=NZV)
+  m_h <- model_PLS(x,y,lam=lam,NZV=NZV)
   no_model <- m_h$no_model ; U_out <- m_h$U_out ; V_out <- m_h$V_out ; bXr <- m_h$bXr ; bYr <- m_h$bYr
   residuals <- list(x=m_h$e_x,y=m_h$e_y)
   ########
@@ -867,7 +870,7 @@ deflat_in_loop <- function(x,y,R_max=NA,lam,method=2,
       }
       B <- tcrossprod(U_out_here,V_out_here)
       ## YtX part
-      COV <- crossprod(y,x)/n
+      COV <- crossprod(y,x)/(n-1)
       # COV_COV <- getCOV_COV(COV,lam)
       abs_COV <- abs(COV)
       max_cov_x <- apply(abs_COV,2,max)
@@ -876,7 +879,7 @@ deflat_in_loop <- function(x,y,R_max=NA,lam,method=2,
       id_y_high <- which(max_cov_y>lam)
       COV_high <- COV[id_y_high,id_x_high,drop=F]
       abs_COV_high <- abs(COV_high)
-      COV_COV_high <- COV_high - lam
+      COV_COV_high <- abs_COV_high - lam
       COV_COV_high[which(COV_COV_high<0)] <- 0
       # if(method==2){
       #   COV_COV_high <- crossprod(COV_high,COV_COV_high*sign(COV_high))
@@ -928,7 +931,7 @@ get_lambda_U_R <- function(x,y,lams,tau,R_max,method=2,NZV=1e-8){
   alpha <- 1
 
   if(length(lam_opt)!=0){
-    RES_0 <- deflat_in_loop(x,y,R_max,lam_opt,method=method,lam_min=lams[1],
+    RES_0 <- deflat_in_loop(x,y,R_max,lam_opt,lam_min=lams[1],
                             tau=tau,NZV=1e-3)
   }else{
     RES_0 <- list(R=NULL,B=NULL,U=0,residuals=list(x=x,y=y))
@@ -1020,7 +1023,7 @@ auto_loop_ddsPLS <- function(Xs,Y,
         }
         model_init <- get_lambda_U_R(
           x_train,y_train,lams=lams[[k]],tau=tau,
-          R_max=min(R_max,ncol(x_train)),method=method)
+          R_max=min(R_max,ncol(x_train)))
         ##
         B_k <- model_init$B_hat
         y_test <- matrix(0,length(pos_na_k),p_k)
@@ -1054,7 +1057,7 @@ auto_loop_ddsPLS <- function(Xs,Y,
         Xs_k <- matrix(0,nrow(Xs_k),1)
       }
     }
-    model_k <- get_lambda_U_R(Xs_k,Y,lams=lams[[k]],method=method,tau=tau,
+    model_k <- get_lambda_U_R(Xs_k,Y,lams=lams[[k]],tau=tau,
                               R_max=min(R_max,ncol(Xs_k)))
     if(!is.null(var_selected)){
       var_k <- var_selected[[k]]
@@ -1148,7 +1151,7 @@ auto_ddsPLS <- function(Xs,Y,
     Xs_init_scaled,Y,
     lambdas=lambdas,lambdas_super=lambdas_super,
     tau=tau,R_max=R_max,
-    NZV=NZV,method=method,
+    NZV=NZV,
     keep_model_per_block=keep_model_per_block)
   var_sel_0 <- model$selected_x
   model_0 <- model
@@ -1161,7 +1164,7 @@ auto_ddsPLS <- function(Xs,Y,
         model <- auto_loop_ddsPLS(
           Xs_init_scaled,Y,
           lambdas=lambdas,lambdas_super=lambdas_super,
-          tau=tau,R_max=R_max,method=method,NZV=NZV,
+          tau=tau,R_max=R_max,NZV=NZV,
           id_na=id_na,var_selected=var_sel_0,
           keep_model_per_block=keep_model_per_block)
         var_sel <- model$selected_x
@@ -1429,7 +1432,7 @@ predict_auto_ddsPLS <- function(model,newX){
                 X_mis <- scale(X_mis)
                 model_imput <- auto_ddsPLS(
                   Xs = list(t_i_not_mis),Y = X_mis,lambdas=para$lambdas,
-                  tau=para$tau,method=method,
+                  tau=para$tau,
                   NZV=para$NZV,
                   keep_model_per_block=para$keep_model_per_block)
                 X_predicted <- predict_auto_ddsPLS(model_imput,list(t_i_mis))
@@ -1549,7 +1552,7 @@ perf_auto_ddsPLS <- function(Xs,Y,
                         model_cv <- auto_ddsPLS(
                           X_train,Y_train,
                           tau=tau_i,
-                          lambdas=lambdas,method=method,lambdas_super = lambdas_super)
+                          lambdas=lambdas,lambdas_super = lambdas_super)
                         for(k in 1:K){
                           R_k <- model_cv$model$model_per_block[[k]]$R_hat
                           lambda_k <- model_cv$model$model_per_block[[k]]$lambda_hat
