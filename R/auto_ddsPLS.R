@@ -774,6 +774,10 @@ model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
   p <- ncol(x)
   q <- ncol(y)
   n <- nrow(y)
+  sd_x_inv <- unlist(lapply(apply(x,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
+  sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
+  sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+  sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
   x0 <- x
   y0 <- y
   var_y_init <- sum(y^2)
@@ -802,11 +806,12 @@ model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
         U_out[,r] <- U0
         V_out[,r] <- V_svd
         B_r[[r]] <- tcrossprod(U0,V_svd)
+        y_est <- y_est + x0%*%B_r[[r]]
+        B_r[[r]] <- B_r[[r]]*sd_y_mat
         B <- B + B_r[[r]]
         bXr[r,] <- bt
         bYr[r,] <- t(V_svd)
         y_plus_un <- tcrossprod(t,V_out[,r,drop=F])
-        y_est <- y_est + y_plus_un
         x0_plus <- t%*%bt
         var_y_plus_un <- sum(y_plus_un^2)
         y0 <- y0 - y_plus_un
