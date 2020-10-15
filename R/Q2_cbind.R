@@ -30,7 +30,7 @@ do_loo <- function(xs0,y0,lam=0,NCORES=1,method=2,deflatX=T){
     sd_y <- apply(Y_train,2,sd)
     X_train <- do.call(cbind,lapply(1:p,function(j,xx,mu_k,sd_k){if(sd_k[j]>1e-9){out <- (xx[,j]-mu_k[j])/sd_k[j]}else{out = xx[,j]};out},X_train,mu_k,sd_k))
     Y_train <- do.call(cbind,lapply(1:q,function(j,xx,mu_k,sd_k){if(sd_k[j]>1e-9){out <- (xx[,j]-mu_k[j])/sd_k[j]}else{out = xx[,j]};out},Y_train,mu_y,sd_y))
-    m_1 <-  model_PLS(x = X_train,y=Y_train,lam=lam,deflatX = deflatX)# ddsPLS2(Xs = list(scale(X_train)),Y = scale(Y_train),lam = lam)
+    m_1 <-  model_PLS(x = X_train,y=Y_train,lam=lam,deflatX = deflatX,to.scale = F)# ddsPLS2(Xs = list(scale(X_train)),Y = scale(Y_train),lam = lam)
     B_i <- tcrossprod(m_1$U_out,m_1$V_out) # m_1$B[[1]]
     var_selected_y[i,which(colSums(abs(B_i))>1e-9)] <- 1
     # y_pred <- mu_y + (((X_test+mu_k)/sd_k)%*%B_i)*sd_y
@@ -68,7 +68,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   ncomps = Q2_TOTAL <- rep(NA,Ls)
   q <- ncol(Y)
   Y_init <- scale(Y)
-  Xs_init <- lapply(Xs,scale)
+  Xs_init <- lapply(Xs,scale,)
   ps <- unlist(lapply(Xs_init,ncol))
   mu_x_s <- lapply(Xs,colMeans)
   mu_y <- colMeans(Y)
@@ -99,7 +99,6 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   while(test){
     h <- h + 1
     Bis <- list()
-    if(verbose){cat("\n");cat("Leave-One-Out performing... ")}
     NCORES_w <- min(NCORES,Ls)
     `%my_do%` <- ifelse(NCORES_w!=1,{
       out<-`%dopar%`
@@ -119,16 +118,17 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     if(NCORES_w!=1){
       stopCluster(cl)
     }
-    if(verbose){cat(" done!")}
     PRESS_il_y <- do.call(rbind,lapply(PRESS_il_y_and_i_l,function(ll){ll$PRESS_y}))
     # STAR
     PRESS_il_y_star <- do.call(rbind,lapply(PRESS_il_y_and_i_l,function(ll){ll$PRESS_y_star}))
     PRESS_il_y_star[which(rowSums(PRESS_il_y_star)<1e-9),] <- NA
     RSS_il_y = var_sel <- matrix(NA,Ls,q)
     RSS_il_y_star <- matrix(0,Ls,q)
+    vars <- rep(0,length(lambdas))
     for(i_l in 1:Ls){
       lam <- lambdas[i_l]
-      m_1 <- model_PLS(x0,y0,lam,deflatX=deflatX)
+      m_1 <- model_PLS(x0,y0,lam,deflatX=deflatX,to.scale = F)
+      vars[i_l] <- sum((m_1$y_est)^2)/sum(RSS0)
       B_i_l <- m_1$B
       id_B <- which(colSums(abs(B_i_l))>1e-9)
       y_est_train <- m_1$y_est
@@ -146,59 +146,59 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     RSS_h_moins_1_star[which(is.na(RSS_h_moins_1_star))] <- 0
     Q2_h_sum_star<- 1-rowSums(PRESS_il_y_star)/rowSums(RSS_h_moins_1_star)
     # max_Q2_y <- apply(Q2_h_y,MARGIN = 1,max)
-    best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star)))[1] # which.max( max_Q2_y)#  Q2_h_sum)#
-    if(length(best_id_h)>0){
-      test_h <- Q2_h_sum_star[best_id_h]>tau # max_Q2_y[best_id_h]>tau # Q2_h_sum[best_id_h]>tau #
-      # test_h <- test_h & Q2_h_sum[best_id_h]>tau
-      if(!test_h){
-        test <- F
-      }else{
-        best_lam_h <- lambdas[best_id_h]
-        m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,NZV=NZV,deflatX=deflatX,to.scale = F)
-        variance_component <- sum((m_plus$y_est)^2)/sum(RSS0)
-        lambda[h] <- best_lam_h
-        RSS_y[h,] <- RSS_il_y[best_id_h,]
-        if(h==1){
-          RSS0_star <- RSS_h_moins_1_star[best_id_h,]
-        }
-        RSS_h_moins_1 <- RSS_y[h,]
-        PRESS_y[h,] <- PRESS_il_y[best_id_h,]
-        Q2_y[h,] <- Q2_h_y[best_id_h,]
-        # STAR
-        RSS_y_star[h,] <- RSS_il_y_star[best_id_h,]
-        RSS_h_moins_1_star <- RSS_y_star[h,]
-        PRESS_y_star[h,] <- PRESS_il_y_star[best_id_h,]
-        Q2_sum_star[h] <- Q2_h_sum_star[best_id_h]
-        # Get the regression matrix of the optimal model
-        if(variance_component>NZV){
+    # best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star)))[1] # which.max( max_Q2_y)#  Q2_h_sum)#
+    id_vars_ok <- which(vars>NZV)
+    if(length(id_vars_ok)>0){
+      best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star[id_vars_ok])))[1]
+      if(length(best_id_h)>0){
+        test_h <- Q2_h_sum_star[best_id_h]>tau # max_Q2_y[best_id_h]>tau # Q2_h_sum[best_id_h]>tau #
+        if(!test_h){
+          test <- F
+        }else{
+          best_lam_h <- lambdas[best_id_h]
+          m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,NZV=NZV,
+                              deflatX=deflatX,to.scale = F)
+          lambda[h] <- best_lam_h
+          RSS_y[h,] <- RSS_il_y[best_id_h,]
+          if(h==1){
+            RSS0_star <- RSS_h_moins_1_star[best_id_h,]
+          }
+          RSS_h_moins_1 <- RSS_y[h,]
+          PRESS_y[h,] <- PRESS_il_y[best_id_h,]
+          Q2_y[h,] <- Q2_h_y[best_id_h,]
+          # STAR
+          RSS_y_star[h,] <- RSS_il_y_star[best_id_h,]
+          RSS_h_moins_1_star <- RSS_y_star[h,]
+          PRESS_y_star[h,] <- PRESS_il_y_star[best_id_h,]
+          Q2_sum_star[h] <- Q2_h_sum_star[best_id_h]
+          # Get the regression matrix of the optimal model
           u[,h] <- m_plus$U_star
           t_r <- x0%*%m_plus$U_out
           # P[,h] <- crossprod(x0,t_r)/sum(t_r^2)
-          if(sum(u[,h]^2)>NZV){
+          if(sum(u[,h]^2)>1e-9){
             B_r <- m_plus$B # (tcrossprod(u[,h,drop=F],m_plus$V_out))#*sd_y_x_inv
             V_r <- m_plus$V_out
             # x0_plus <- tcrossprod(t_r,P[,h])
             y0_plus <- y0 - m_plus$e_y#x0%*%B_r
             id_y_sel <- which(abs(V_r)>NZV)
-            Var_rel <- sum(y0_plus^2)/sum(RSS0)
-            if(Var_rel<NZV){
-              test <- F
-            }else{
-              B <- B + B_r*sd_y_x_inv
-              B_r_out[[h]] <- B_r*sd_y_x_inv
-              V <- cbind(V,V_r)
-              y0 <- m_plus$e_y # y0 - y0_plus
-              if(deflatX){
-                x0 <- m_plus$e_x # x0 - x0_plus
-              }
+            if(verbose){
+              cat(paste("\nComponent ",h," built with",
+                        "\n          lambda=",round(best_lam_h,3),
+                        "\n          Q_2^star=",round(Q2_h_sum_star[best_id_h],2),
+                        "\n          var.expl.=",round(vars[best_id_h]*100,2),"%",sep=""))
             }
-          }else{
-            test <- F
+            B <- B + B_r*sd_y_x_inv
+            B_r_out[[h]] <- B_r*sd_y_x_inv
+            V <- cbind(V,V_r)
+            y0 <- m_plus$e_y # y0 - y0_plus
+            if(deflatX){
+              x0 <- m_plus$e_x # x0 - x0_plus
+            }
           }
-        }else{
-          test <- F
         }
       }
+    }else{
+      test <- F
     }
   }
   h_opt <- h - 1
@@ -261,6 +261,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     RSS0_star_model <- colSums(Y^2)[which(rowSums(abs(m_star$V_out))>1e-9)]
     Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
     RSS_0_bas <- sum(scale(Y,scale = F)^2)
+    X_binded <- scale(X_binded,scale = F)
     explained_variance <- unlist(lapply(B_r_out,function(b,xx){
       sum((xx%*%b)^2)/RSS_0_bas*100
     },X_binded))

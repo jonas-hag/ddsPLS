@@ -738,7 +738,7 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
   max_cov_x <- apply(abs_COV,2,max)
   id_y_high <- which(max_cov_y>lam)
   id_x_high <- which(max_cov_x>lam)
-  if(p-length(id_x_high)>=0 & q-length(id_y_high)>=0){
+  if(length(id_x_high)>0 & length(id_y_high)>0){
     COV_high <- COV[id_y_high,id_x_high,drop=F]
     abs_COV_high <- abs(COV_high)
     COV_COV_high <- abs_COV_high - lam
@@ -804,7 +804,7 @@ model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3,to.scale=T){
   for(r in 1:R){
     COV <- crossprod(y0,x0)/(n-1)
     abs_COV <- abs(COV)
-    max_COV <- max(na.omit(abs_COV))
+    max_COV <- max(na.omit(c(abs_COV)))
     lam_r <- lam
     if(length(lam)>1) lam_r <- lam[r]
     if(lam_r<max_COV){
