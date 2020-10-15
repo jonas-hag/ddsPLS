@@ -770,24 +770,35 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
 ########
 
 ## Model ##
-model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
+model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3,to.scale=T){
   p <- ncol(x)
   q <- ncol(y)
   n <- nrow(y)
-  sd_x_inv <- unlist(lapply(apply(x,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
-  sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
-  sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
-  sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
-  x0 <- x
-  y0 <- y
+  if(to.scale){
+    mu_x <- matrix(rep(colMeans(x),n),ncol = p,byrow = T)
+    mu_y <- matrix(rep(colMeans(y),n),ncol = q,byrow = T)
+    sd_x_inv <- unlist(lapply(apply(x,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
+    sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
+    sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+    sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
+    x0 <- scale(x)
+    y0 <- scale(y)
+  }else{
+    x0 <- x
+    y0 <- y
+  }
   var_y_init <- sum(y^2)
-  U_out <- matrix(0,p,R)
+  U_out = U_star <- matrix(0,p,R)
   V_out <- matrix(0,q,R)
   bXr <- matrix(0,R,p)
   bYr <- matrix(0,R,q)
   B <- matrix(0,p,q)
   B_r <- list()
-  y_est <- y0*0
+  if(to.scale){
+    y_est <- mu_y
+  }else{
+    y_est <- matrix(0,n,q)
+  }
   stop <- F
   no_model <- F
   for(r in 1:R){
@@ -804,13 +815,25 @@ model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
       if(sum(U0^2)>NZV){
         bt <- crossprod(t,x0)/sum(t^2)
         U_out[,r] <- U0
+        U_star[,r] <- U0
         V_out[,r] <- V_svd
-        B_r[[r]] <- tcrossprod(U0,V_svd)
-        y_est <- y_est + x0%*%B_r[[r]]
-        B_r[[r]] <- B_r[[r]]*sd_y_mat
-        B <- B + B_r[[r]]
+        B_r_0<- tcrossprod(U0,V_svd)
+        y_est <- y_est + x0%*%B_r_0
         bXr[r,] <- bt
         bYr[r,] <- t(V_svd)
+        if(r!=1){
+          for(s_r in (r-1):1){
+            U_star[,r] <- U_star[,r]-U_star[,s_r]*sum(bXr[s_r,]*U_star[,r])
+          }
+          norm_u_h <- sqrt(sum(U_star[,r]^2))
+          if(norm_u_h>1e-9) U_star[,r] <- U_star[,r]/norm_u_h
+        }
+        if(to.scale){
+          B_r[[r]] <- tcrossprod(U_star[,r],V_svd)*sd_y_x_inv
+        }else{
+          B_r[[r]] <- tcrossprod(U_star[,r],V_svd)
+        }
+        B <- B + B_r[[r]]
         y_plus_un <- tcrossprod(t,V_out[,r,drop=F])
         x0_plus <- t%*%bt
         var_y_plus_un <- sum(y_plus_un^2)
@@ -821,7 +844,10 @@ model_PLS <- function(x,y,lam,deflatX=T,method=2,R=1,NZV=1e-3){
       }
     }
   }
-  list(no_model=no_model,U_out=U_out,V_out=V_out,B=B,B_r=B_r,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
+  if(to.scale){
+    y_est <- y_est - mu_x%*%B
+  }
+  list(no_model=no_model,U_out=U_out,U_star=U_star,V_out=V_out,B=B,B_r=B_r,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
 }
 ########
 
