@@ -142,7 +142,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star)))[1] # which.max( max_Q2_y)#  Q2_h_sum)#
     if(length(best_id_h)>0){
       test_h <- Q2_h_sum_star[best_id_h]>tau # max_Q2_y[best_id_h]>tau # Q2_h_sum[best_id_h]>tau #
-      test_h <- test_h & Q2_h_sum[best_id_h]>tau
+      # test_h <- test_h & Q2_h_sum[best_id_h]>tau
       if(!test_h){
         test <- F
       }else{
@@ -245,14 +245,15 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
       var_sel[ii,which(colSums(abs(B_ii))>1e-9)] <- 1
       Y_pred_all[ii,] <- mu_y + ((X_test-mu_k)*sd_x_inv)%*%B_ii
     }
-    ERRORS_LOO <- colSums((Y_init-Y_pred_all)^2)
+    ERRORS_LOO <- colSums((Y-Y_pred_all)^2)
     Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0)
     Q2_reg_y <- 1 - ERRORS_LOO/RSS0
     # STAR
-    m_star <- model_PLS(x0,Y_init,lambda_sol,R = h_opt,
+    x0 <- do.call(cbind,Xs_init)
+    m_star <- model_PLS(x0,Y,lambda_sol,R = h_opt,
                         NZV=NZV,deflatX=deflatX)
-    ERRORS_LOO_star <- colSums(((Y_init-Y_pred_all)^2)*var_sel)
-    RSS0_star_model <- colSums(Y_init^2)[which(rowSums(abs(m_star$V_out))>1e-9)]
+    ERRORS_LOO_star <- colSums(((Y-Y_pred_all)^2)*var_sel)
+    RSS0_star_model <- colSums(Y^2)[which(rowSums(abs(m_star$V_out))>1e-9)]
     Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
     explained_variance <- unlist(lapply(B_r_out,function(b,xx){
       sum((xx%*%b)^2)/sum(RSS0)*100
