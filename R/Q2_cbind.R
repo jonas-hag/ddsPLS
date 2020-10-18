@@ -87,7 +87,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   u <- matrix(NA,sum(ps),n)
   P <- matrix(0,sum(ps),n)
   B <- matrix(0,sum(ps),q)
-  Us = Bs = B_r_out <- list()
+  Us = Bs = B_r_out = Q2_h_sum_star <- list()
   B_tot_LOO <- matrix(0,n,sum(ps)*q)
 
   ### For each 'h' component, look for the best lambda
@@ -144,14 +144,14 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     RSS_h_moins_1_star <- t(apply(var_sel,1,function(vv){vv*RSS_h_moins_1}))
     if(ncol(RSS_h_moins_1_star)!=q) RSS_h_moins_1_star <- t(RSS_h_moins_1_star)
     RSS_h_moins_1_star[which(is.na(RSS_h_moins_1_star))] <- 0
-    Q2_h_sum_star<- 1-rowSums(PRESS_il_y_star)/rowSums(RSS_h_moins_1_star)
+    Q2_h_sum_star[[h]] <- 1-rowSums(PRESS_il_y_star)/rowSums(RSS_h_moins_1_star)
     # max_Q2_y <- apply(Q2_h_y,MARGIN = 1,max)
     # best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star)))[1] # which.max( max_Q2_y)#  Q2_h_sum)#
     id_vars_ok <- which(vars>NZV)
     if(length(id_vars_ok)>0){
-      best_id_h <- which(Q2_h_sum_star==max(na.omit(Q2_h_sum_star[id_vars_ok])))[1]
+      best_id_h <- which(Q2_h_sum_star[[h]]==max(na.omit(Q2_h_sum_star[[h]][id_vars_ok])))[1]
       if(length(best_id_h)>0){
-        test_h <- Q2_h_sum_star[best_id_h]>tau # max_Q2_y[best_id_h]>tau # Q2_h_sum[best_id_h]>tau #
+        test_h <- Q2_h_sum_star[[h]][best_id_h]>tau # max_Q2_y[best_id_h]>tau # Q2_h_sum[best_id_h]>tau #
         if(!test_h){
           test <- F
         }else{
@@ -170,7 +170,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
           RSS_y_star[h,] <- RSS_il_y_star[best_id_h,]
           RSS_h_moins_1_star <- RSS_y_star[h,]
           PRESS_y_star[h,] <- PRESS_il_y_star[best_id_h,]
-          Q2_sum_star[h] <- Q2_h_sum_star[best_id_h]
+          Q2_sum_star[h] <- Q2_h_sum_star[[h]][best_id_h]
           # Get the regression matrix of the optimal model
           u[,h] <- m_plus$U_star
           t_r <- x0%*%m_plus$U_out
@@ -184,7 +184,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
             if(verbose){
               cat(paste("\nComponent ",h," built with",
                         "\n          lambda=",round(best_lam_h,3),
-                        "\n          Q_2^star=",round(Q2_h_sum_star[best_id_h],2),
+                        "\n          Q_2^star=",round(Q2_h_sum_star[[h]][best_id_h],2),
                         "\n          var.expl.=",round(vars[best_id_h]*100,2),"%",sep=""))
             }
             B <- B + B_r*sd_y_x_inv
@@ -276,6 +276,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
                        PRESS_y=PRESS_y[1:(h_opt+1),],Q2_y=Q2_y[1:(h_opt+1),])
     out <- list(optimal_parameters=optimal_parameters,Us=Us,V=V,
                 explained_variance=explained_variance,
+                Q2_h_star=Q2_h_sum_star,
                 Bs=Bs,B_cbind=B,B_r=B_r_out,
                 y_est=y_est,parameters=parameters,
                 mu_k=colMeans(Xs_cbind),mu_y=colMeans(Y),sd_y=apply(Y,2,sd))
