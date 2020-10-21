@@ -251,14 +251,15 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
       Y_pred_all[ii,] <- mu_y_ii + ((X_test-mu_k_ii))%*%m_plus$B
     }
     ERRORS_LOO <- colSums((Y-Y_pred_all)^2)
-    Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSS0)
-    Q2_reg_y <- 1 - ERRORS_LOO/RSS0
+    RSSO_loo <- colSums(scale(Y,scale=F)^2)
+    Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSSO_loo)
+    Q2_reg_y <- 1 - ERRORS_LOO/RSSO_loo
     # STAR
     X_binded <- do.call(cbind,Xs)
     m_star <- model_PLS(X_binded,Y,lambda_sol,R = h_opt,
                         NZV=NZV,deflatX=deflatX)
     ERRORS_LOO_star <- colSums(((Y-Y_pred_all)^2)*var_sel)
-    RSS0_star_model <- colSums(Y^2)[which(rowSums(abs(m_star$V_out))>1e-9)]
+    RSS0_star_model <- RSSO_loo[which(rowSums(abs(m_star$V_out))>1e-9)]
     Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
     RSS_0_bas <- sum(scale(Y,scale = F)^2)
     X_binded <- scale(X_binded,scale = F)
