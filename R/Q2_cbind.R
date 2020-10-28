@@ -58,7 +58,7 @@ do_loo <- function(xs0,y0,lam=0,NCORES=1,method=2,deflatX=T){
 #'
 #' @useDynLib ddsPLS
 Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
-                            tau=0.0975,NCORES=1,
+                            tau=0.0975,NCORES=1,center=T,
                             NZV=1e-3,method=2,verbose=F){
   n <- nrow(Xs[[1]])
   q <- ncol(Y)
@@ -67,11 +67,15 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   Ls <- length(lambdas)
   ncomps = Q2_TOTAL <- rep(NA,Ls)
   q <- ncol(Y)
-  Y_init <- scale(Y)
-  Xs_init <- lapply(Xs,scale,)
+  Y_init <- scale(Y,center = center)
+  Xs_init <- lapply(Xs,scale,center=center)
   ps <- unlist(lapply(Xs_init,ncol))
   mu_x_s <- lapply(Xs,colMeans)
   mu_y <- colMeans(Y)
+  if(!center){
+    mu_x_s <- lapply(mu_x_s,function(mu){mu*0})
+    mu_y <- colMeans(Y)*0
+  }
   sd_x_inv_mat <- matrix(rep(unlist(lapply(apply(do.call(cbind,Xs),2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out})),q),ncol = q,byrow = T)
   sd_y_mat <- matrix(rep(apply(Y,2,sd),sum(ps)),ncol = q,byrow = T)
   sd_y_inv_mat <- matrix(rep(unlist(lapply(apply(Y,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out})),sum(ps)),ncol = q,byrow = T)
@@ -202,7 +206,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     }
   }
   h_opt <- h - 1
-  x0_center <- scale(do.call(cbind,Xs_init),scale = F)
+  x0_center <- scale(do.call(cbind,Xs_init),scale = F,center=center)
   if(h_opt>0){
     Q2_cum_star <- 1-prod(1-Q2_sum_star[1:h_opt])
     for(h in 1:h_opt){
@@ -251,7 +255,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
       Y_pred_all[ii,] <- mu_y_ii + ((X_test-mu_k_ii))%*%m_plus$B
     }
     ERRORS_LOO <- colSums((Y-Y_pred_all)^2)
-    RSSO_loo <- colSums(scale(Y,scale=F)^2)
+    RSSO_loo <- colSums(scale(Y,scale=F,center=center)^2)
     Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSSO_loo)
     Q2_reg_y <- 1 - ERRORS_LOO/RSSO_loo
     # STAR
@@ -261,8 +265,8 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     ERRORS_LOO_star <- colSums(((Y-Y_pred_all)^2)*var_sel)
     RSS0_star_model <- RSSO_loo[which(rowSums(abs(m_star$V_out))>1e-9)]
     Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
-    RSS_0_bas <- sum(scale(Y,scale = F)^2)
-    X_binded <- scale(X_binded,scale = F)
+    RSS_0_bas <- sum(scale(Y,scale = F,center=center)^2)
+    X_binded <- scale(X_binded,scale = F,center=center)
     explained_variance <- unlist(lapply(B_r_out,function(b,xx){
       sum((xx%*%b)^2)/RSS_0_bas*100
     },X_binded))
@@ -280,7 +284,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
                 Q2_h_star=Q2_h_sum_star,
                 Bs=Bs,B_cbind=B,B_r=B_r_out,
                 y_est=y_est,parameters=parameters,
-                mu_k=colMeans(Xs_cbind),mu_y=colMeans(Y),sd_y=apply(Y,2,sd))
+                mu_k=c(mu_x_s),mu_y=mu_y,sd_y=apply(Y,2,sd))
   }else{
     out <- NULL
   }
