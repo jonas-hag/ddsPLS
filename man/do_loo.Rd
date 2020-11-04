@@ -4,7 +4,7 @@
 \alias{do_loo}
 \title{Title}
 \usage{
-do_loo(xs0, y0, lam = 0, Rs = 1, NCORES = 1, method = 2)
+do_loo(xs0, y0, lam = 0, NCORES = 1, deflatX = T)
 }
 \arguments{
 \item{xs0}{xs0}
@@ -13,9 +13,9 @@ do_loo(xs0, y0, lam = 0, Rs = 1, NCORES = 1, method = 2)
 
 \item{lam}{lam}
 
-\item{Rs}{Rs}
-
 \item{NCORES}{number of cores}
+
+\item{Rs}{Rs}
 }
 \value{
 

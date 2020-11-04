@@ -8,10 +8,12 @@ Q2_local_ddsPLS(
   Xs,
   Y,
   lambdas = 0.5,
+  deflatX = T,
   tau = 0.0975,
   NCORES = 1,
+  center = T,
   NZV = 0.001,
-  method = 2
+  verbose = F
 )
 }
 \arguments{
@@ -26,6 +28,8 @@ Q2_local_ddsPLS(
 \item{NCORES}{number of cores}
 
 \item{NZV}{near zero var}
+
+\item{verbose}{verbose}
 }
 \value{
 

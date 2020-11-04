@@ -4,7 +4,16 @@
 \alias{ddsPLS2}
 \title{Title}
 \usage{
-ddsPLS2(Xs, Y, lam, tau = 0.0975, method = 2, NZV = 0.001, Rs = NA)
+ddsPLS2(
+  Xs,
+  Y,
+  lam,
+  tau = 0.0975,
+  method = 2,
+  NZV = 0.001,
+  Rs = NA,
+  standardize = F
+)
 }
 \arguments{
 \item{Xs}{Xs}
