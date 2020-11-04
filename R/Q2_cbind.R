@@ -36,10 +36,12 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
     ## X part
-    svd_X <- svd(crossprod(COV_high,COV_COV_high),nv = 1,nu=0)
+    svd_X <- svd(crossprod(COV_high)%*%crossprod(COV_high,COV_COV_high),
+                 nv = 1,nu=0)#svd(COV_COV_high,nv = 1,nu=0)#
     U0[id_x_high,] <- svd_X$v
     ## Y part
-    svd_Y <- svd(tcrossprod(COV_high,COV_COV_high),nv = 1,nu=0)
+    svd_Y <- svd(tcrossprod(COV_high)%*%tcrossprod(COV_high,COV_COV_high),
+                 nv = 1,nu=0)#svd(t(COV_COV_high),nv = 1,nu=0)#
     V0[id_y_high,] <- svd_Y$v
   }else{
     U0 <- matrix(0,p,1)
