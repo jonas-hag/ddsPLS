@@ -36,19 +36,20 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
     ## X part
-    svd_X <- svd(crossprod(COV_high)%*%crossprod(COV_high,COV_COV_high),
-                 nv = 1,nu=0)#svd(COV_COV_high,nv = 1,nu=0)#
-    U0[id_x_high,] <- svd_X$v
+    model_NULL <- svd(COV_high,nu = 1,nv = 1)
+    # svd_X <- svd(COV_COV_high,nv = 1,nu=0)#svd(COV_COV_high,nv = 1,nu=0)#
+    u_x_no_std <- t(COV_COV_high)%*%model_NULL$u
+    U0[id_x_high,] <- u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_X$v
     ## Y part
-    svd_Y <- svd(tcrossprod(COV_high)%*%tcrossprod(COV_high,COV_COV_high),
-                 nv = 1,nu=0)#svd(t(COV_COV_high),nv = 1,nu=0)#
-    V0[id_y_high,] <- svd_Y$v
+    # svd_Y <- svd(tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high,COV_COV_high),nv = 1,nu=0)#svd(t(COV_COV_high),nv = 1,nu=0)#
+    u_y_no_std <- COV_COV_high%*%model_NULL$v
+    V0[id_y_high,] <- u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_Y$v
   }else{
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
   }
   t <- x0%*%U0
-  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) # crossprod(y0,t) #
+  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
   norm_t_0 <- sum(t^2)
   if(norm_t_0>NZV){
     V_svd <- V_svd0/norm_t_0
@@ -121,7 +122,7 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,NZV=1e-3,to.scale=T){
         U_out[,r] <- U0
         U_star[,r] <- U0
         V_out[,r] <- V_svd
-        B_r_0<- tcrossprod(U0,V_svd)
+        B_r_0 <- tcrossprod(U0,V_svd)
         y_est <- y_est + x0%*%B_r_0
         bXr[r,] <- bt
         bYr[r,] <- t(V_svd)
@@ -257,6 +258,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   h <- 0
   V = VAR_h_s <- NULL
   K_h <- 1:K
+  lambdas_h <- lambdas
   while(test){
     h <- h + 1
     Bis <- list()
@@ -270,7 +272,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
         out})
     pos_decoupe <- 1
     PRESS_il_y_and_i_l <- foreach(i_l=1:Ls,.packages = "ddsPLS") %my_do% {
-      out <- do_loo(list(x0),y0,lam=lambdas[i_l])
+      out <- do_loo(list(x0),y0,lam=lambdas_h[i_l])
       out$PRESS_y_star <- colSums(out$PRESS_y*out$var_selected_y)
       out$PRESS_y <- colSums(out$PRESS_y)
       out$B <- NULL
@@ -285,9 +287,9 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     PRESS_il_y_star[which(rowSums(PRESS_il_y_star)<1e-9),] <- NA
     RSS_il_y = var_sel <- matrix(NA,Ls,q)
     RSS_il_y_star <- matrix(0,Ls,q)
-    vars <- rep(0,length(lambdas))
+    vars <- rep(0,length(lambdas_h))
     for(i_l in 1:Ls){
-      lam <- lambdas[i_l]
+      lam <- lambdas_h[i_l]
       m_1 <- model_PLS(x0,y0,lam,deflatX=deflatX,to.scale = F)
       vars[i_l] <- sum((m_1$y_est)^2)/sum(RSS0)
       B_i_l <- m_1$B
@@ -316,7 +318,8 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
         if(!test_h){
           test <- F
         }else{
-          best_lam_h <- lambdas[best_id_h]
+          best_lam_h <- lambdas_h[best_id_h]
+          lambdas_h <- seq(min(lambdas_h),best_lam_h,length.out = length(lambdas_h))
           m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,NZV=NZV,
                               deflatX=deflatX,to.scale = F)
           lambda[h] <- best_lam_h

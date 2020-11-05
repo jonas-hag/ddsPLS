@@ -612,14 +612,14 @@ test <- function(){
     # datas$Xs[[i]] <- Xs
     # datas$Y[[i]] <- Y
     # datas$phi[[i]] <- phi
-    if(i%%5==0){
-      save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFort_no_1_2.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
-      # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
-    }
     # Load data
     datas$Xs[[i]] -> Xs
     datas$Y[[i]] -> Y
     x <- do.call(cbind,Xs)
+    if(i%%5==0){
+      save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFort_no_1_2.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+      # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+    }
     sel_no_sp <- c(length(which(rowSums(abs(B_th))>1e-9)),ncol(x),length(which(colSums(abs(B_th))>1e-9)),ncol(Y))
     sensib_no_sp_X <- sel_no_sp[1]/(sel_no_sp[1]+0)
     specif_no_sp_X <- 0/(0+sel_no_sp[2]-sel_no_sp[1])
