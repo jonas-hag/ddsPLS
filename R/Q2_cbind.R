@@ -27,23 +27,16 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
     COV_COV_high[which(COV_COV_high<0)] <- 0
     COV_COV_high <- COV_COV_high*sign(COV_high)
     # Do svd
-    # svd_loop <- svd(COV_COV_high,nv = 1,nu=1)
-    # # svd_loop <- rsvd(COV_COV,nv = 1,nu=0,k=1)# Ne pas utiliser rsvd car pas stable...
-    # U0 <- matrix(0,p,1)
-    # V0 <- matrix(0,q,1)
-    # U0[id_x_high,] <- svd_loop$v
-    # V0[id_y_high,] <- svd_loop$u
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
     ## X part
     model_NULL <- svd(COV_high,nu = 1,nv = 1)
-    # svd_X <- svd(COV_COV_high,nv = 1,nu=0)#svd(COV_COV_high,nv = 1,nu=0)#
+    # svd_XY <- svd(COV_COV_high,nv = 1,nu=1)#svd(COV_COV_high,nv = 1,nu=0)#
     u_x_no_std <- t(COV_COV_high)%*%model_NULL$u
-    U0[id_x_high,] <- u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_X$v
+    U0[id_x_high,] <- u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_XY$v#
     ## Y part
-    # svd_Y <- svd(tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high)%*%tcrossprod(COV_high,COV_COV_high),nv = 1,nu=0)#svd(t(COV_COV_high),nv = 1,nu=0)#
     u_y_no_std <- COV_COV_high%*%model_NULL$v
-    V0[id_y_high,] <- u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_Y$v
+    V0[id_y_high,] <- u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_XY$u#
   }else{
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
@@ -75,7 +68,7 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,NZV=1e-3){
 #' @export
 #'
 #' @useDynLib ddsPLS
-model_PLS <- function(x,y,lam,deflatX=T,R=1,NZV=1e-3,to.scale=T){
+model_PLS <- function(x,y,lam,kX=NULL,deflatX=T,R=1,NZV=1e-3,to.scale=T){
   p <- ncol(x)
   q <- ncol(y)
   n <- nrow(y)
@@ -112,6 +105,15 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,NZV=1e-3,to.scale=T){
     max_COV <- max(na.omit(c(abs_COV)))
     lam_r <- lam
     if(length(lam)>1) lam_r <- lam[r]
+    if(!is.null(kX)){
+      kX_r <- kX
+      if(length(kX)>1) kX_r <- kX[r]
+      if(kX_r==p){
+        lam_r <- 0
+      }else{
+        lam_r <- sort(apply(abs(COV),2,max),decreasing = F)[p-kX_r]
+      }
+    }
     if(lam_r<max_COV){
       c_h <- do_one_component(x0 = x0,y0 = y0,n = n,p = p,q = q,COV = COV,abs_COV = abs_COV,
                               max_COV=max_COV,lam = lam_r,NZV=NZV)
@@ -131,7 +133,7 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,NZV=1e-3,to.scale=T){
             U_star[,r] <- U_star[,r]-U_star[,s_r]*sum(bXr[s_r,]*U_star[,r])
           }
           norm_u_h <- sqrt(sum(U_star[,r]^2))
-          if(norm_u_h>1e-9) U_star[,r] <- U_star[,r]/norm_u_h
+          # if(norm_u_h>1e-9) U_star[,r] <- U_star[,r]/norm_u_h
         }
         if(to.scale){
           B_r[[r]] <- tcrossprod(U_star[,r],V_svd)*sd_y_x_inv
@@ -168,7 +170,7 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,NZV=1e-3,to.scale=T){
 #' @export
 #'
 #' @useDynLib ddsPLS
-do_loo <- function(xs0,y0,lam=0,NCORES=1,deflatX=T){
+do_loo <- function(xs0,y0,lam=0,kX=NULL,NCORES=1,deflatX=T){
   n <- nrow(xs0[[1]])
   q <- ncol(y0)
   p <- ncol(xs0[[1]])
@@ -188,10 +190,9 @@ do_loo <- function(xs0,y0,lam=0,NCORES=1,deflatX=T){
     sd_y <- apply(Y_train,2,sd)
     X_train <- do.call(cbind,lapply(1:p,function(j,xx,mu_k,sd_k){if(sd_k[j]>1e-9){out <- (xx[,j]-mu_k[j])/sd_k[j]}else{out = xx[,j]};out},X_train,mu_k,sd_k))
     Y_train <- do.call(cbind,lapply(1:q,function(j,xx,mu_k,sd_k){if(sd_k[j]>1e-9){out <- (xx[,j]-mu_k[j])/sd_k[j]}else{out = xx[,j]};out},Y_train,mu_y,sd_y))
-    m_1 <-  model_PLS(x = X_train,y=Y_train,lam=lam,deflatX = deflatX,to.scale = F)# ddsPLS2(Xs = list(scale(X_train)),Y = scale(Y_train),lam = lam)
-    B_i <- tcrossprod(m_1$U_out,m_1$V_out) # m_1$B[[1]]
+    m_1 <-  model_PLS(x = X_train,y=Y_train,lam=lam,kX=kX,deflatX = deflatX,to.scale = F)
+    B_i <- tcrossprod(m_1$U_out,m_1$V_out)
     var_selected_y[i,which(colSums(abs(B_i))>1e-9)] <- 1
-    # y_pred <- mu_y + (((X_test+mu_k)/sd_k)%*%B_i)*sd_y
     X_test_normalize <- do.call(cbind,lapply(1:p,function(j,xx,mu_k,sd_k){if(sd_k[j]>1e-9){out <- (xx[,j]-mu_k[j])/sd_k[j]}else{out = xx[,j]};out},X_test,mu_k,sd_k))
     y_pred <- mu_y + (X_test_normalize%*%B_i)*sd_y
     PRESS_y[i,] <- (y_pred-Y_test)^2
@@ -215,19 +216,17 @@ do_loo <- function(xs0,y0,lam=0,NCORES=1,deflatX=T){
 #' @export
 #'
 #' @useDynLib ddsPLS
-Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
+Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,lambda_max=1,use_lambda=T,deflatX=T,
                             tau=0.0975,NCORES=1,center=T,
                             NZV=1e-3,verbose=F){
   n <- nrow(Xs[[1]])
   q <- ncol(Y)
   id_na <- lapply(Xs,function(xx){which(is.na(xx[,1]))})
   K <- length(Xs)
-  Ls <- length(lambdas)
-  ncomps = Q2_TOTAL <- rep(NA,Ls)
-  q <- ncol(Y)
   Y_init <- scale(Y,center = center)
   Xs_init <- lapply(Xs,scale,center=center)
   ps <- unlist(lapply(Xs_init,ncol))
+  p <- sum(ps)
   mu_x_s <- lapply(Xs,colMeans)
   mu_y <- colMeans(Y)
   if(!center){
@@ -243,7 +242,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   RSS0 = RSS_h_moins_1 = RSS_h_moins_1_star <- colSums(Y_init^2)
   PRESS_y = RSS_y = Q2_y <- matrix(NA,n,q)
   PRESS_y_star = RSS_y_star = Q2_y_star <- matrix(NA,n,q)
-  lambda = Q2_sum_star <- rep(NA,n)
+  lambda = kX = Q2_sum_star <- rep(NA,n)
   ps <- unlist(lapply(Xs_init,ncol))
   x0 <- do.call(cbind,Xs_init)
   u <- matrix(NA,sum(ps),n)
@@ -258,11 +257,27 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
   h <- 0
   V = VAR_h_s <- NULL
   K_h <- 1:K
-  lambdas_h <- lambdas
+  # Check lambdas and stuff
+  coco <- abs(crossprod(Y_init,do.call(cbind,Xs_init)))/(n-1)
+  lambdas_h <- seq(min(coco),min(max(coco),lambda_max),length.out = N_lambdas+2)[2:(N_lambdas+1)]
+  if(!use_lambda){
+    lambdas_h_ordered <- sort(apply(coco,2,max),decreasing = F)
+    keepX_h_ordered <- rev(0:(p-1))
+    if(N_lambdas>=p){
+      lambdas_h <- lambdas_h_ordered
+      N_lambdas <- p
+    }else{
+      lambdas_h <- lambdas_h_ordered[(p-N_lambdas+1):p]
+      keepX_h_ordered <- keepX_h_ordered[(p-N_lambdas+1):p]
+    }
+  }else{
+    keepX_h_ordered <- NULL
+  }
+  ncomps = Q2_TOTAL <- rep(NA,N_lambdas)
   while(test){
     h <- h + 1
     Bis <- list()
-    NCORES_w <- min(NCORES,Ls)
+    NCORES_w <- min(NCORES,N_lambdas)
     `%my_do%` <- ifelse(NCORES_w!=1,{
       out<-`%dopar%`
       cl <- makeCluster(NCORES_w)#cl <- parallel::makeCluster(NCORES_w)
@@ -271,8 +286,8 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
         out <- `%do%`
         out})
     pos_decoupe <- 1
-    PRESS_il_y_and_i_l <- foreach(i_l=1:Ls,.packages = "ddsPLS") %my_do% {
-      out <- do_loo(list(x0),y0,lam=lambdas_h[i_l])
+    PRESS_il_y_and_i_l <- foreach(i_l=1:N_lambdas,.packages = "ddsPLS") %my_do% {
+      out <- do_loo(list(x0),y0,lam=lambdas_h[i_l],kX=keepX_h_ordered[i_l])
       out$PRESS_y_star <- colSums(out$PRESS_y*out$var_selected_y)
       out$PRESS_y <- colSums(out$PRESS_y)
       out$B <- NULL
@@ -285,10 +300,10 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     # STAR
     PRESS_il_y_star <- do.call(rbind,lapply(PRESS_il_y_and_i_l,function(ll){ll$PRESS_y_star}))
     PRESS_il_y_star[which(rowSums(PRESS_il_y_star)<1e-9),] <- NA
-    RSS_il_y = var_sel <- matrix(NA,Ls,q)
-    RSS_il_y_star <- matrix(0,Ls,q)
+    RSS_il_y = var_sel <- matrix(NA,N_lambdas,q)
+    RSS_il_y_star <- matrix(0,N_lambdas,q)
     vars <- rep(0,length(lambdas_h))
-    for(i_l in 1:Ls){
+    for(i_l in 1:N_lambdas){
       lam <- lambdas_h[i_l]
       m_1 <- model_PLS(x0,y0,lam,deflatX=deflatX,to.scale = F)
       vars[i_l] <- sum((m_1$y_est)^2)/sum(RSS0)
@@ -301,7 +316,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
         RSS_il_y_star[i_l,id_B] <- colSums(((y_est_train-y0)^2)[,id_B,drop=F])
       }
     }
-    Q2_h_y <- 1-PRESS_il_y/matrix(rep(RSS_h_moins_1,Ls),nrow = Ls,byrow = T)
+    Q2_h_y <- 1-PRESS_il_y/matrix(rep(RSS_h_moins_1,N_lambdas),nrow = N_lambdas,byrow = T)
     Q2_h_sum <- 1-rowSums(PRESS_il_y)/sum(RSS_h_moins_1)
     # STAR
     RSS_h_moins_1_star <- t(apply(var_sel,1,function(vv){vv*RSS_h_moins_1}))
@@ -319,10 +334,10 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
           test <- F
         }else{
           best_lam_h <- lambdas_h[best_id_h]
-          lambdas_h <- seq(min(lambdas_h),best_lam_h,length.out = length(lambdas_h))
           m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,NZV=NZV,
                               deflatX=deflatX,to.scale = F)
           lambda[h] <- best_lam_h
+          if(!use_lambda) kX[h] <- keepX_h_ordered[best_id_h]
           RSS_y[h,] <- RSS_il_y[best_id_h,]
           if(h==1){
             RSS0_star <- RSS_h_moins_1_star[best_id_h,]
@@ -349,6 +364,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
             if(verbose){
               cat(paste("\nComponent ",h," built with",
                         "\n          lambda=",round(best_lam_h,3),
+                        "\n          kX=",kX[h],
                         "\n          Q_2^star=",round(Q2_h_sum_star[[h]][best_id_h],2),
                         "\n          var.expl.=",round(vars[best_id_h]*100,2),"%",sep=""))
             }
@@ -358,6 +374,19 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
             y0 <- m_plus$e_y # y0 - y0_plus
             if(deflatX){
               x0 <- m_plus$e_x # x0 - x0_plus
+            }
+            lambdas_h <- seq(min(lambdas_h),best_lam_h,length.out = length(lambdas_h))
+            if(!use_lambda){
+              coco <- abs(crossprod(y0,x0))/(n-1)
+              lambdas_h_ordered <- sort(apply(coco,2,max),decreasing = F)
+              keepX_h_ordered <- rev(0:(p-1))
+              if(N_lambdas>=p){
+                lambdas_h <- lambdas_h_ordered
+                N_lambdas <- p
+              }else{
+                lambdas_h <- lambdas_h_ordered[(p-N_lambdas+1):p]
+                keepX_h_ordered <- keepX_h_ordered[(p-N_lambdas+1):p]
+              }
             }
           }
         }
@@ -391,9 +420,13 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     }
     mu_y <- matrix(rep(colMeans(Y),n) ,nrow = n,byrow = T)
     y_est <- mu_y + x0_center%*%(B*sd_x_mat)
-
     # Compute LOO error to get Q2_reg
     lambda_sol <- lambda[1:h_opt]
+    if(!use_lambda){
+      kX_sol <- kX[1:h]
+    }else{
+      kX_sol <- NULL
+    }
     Y_pred_all <- matrix(0,n,q)
     p <- ncol(x0_center)
     var_sel <- matrix(0,n,q)
@@ -410,7 +443,7 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
       # sd_x_mat_ii <- apply(X_train,2,sd)
       sd_y_mat_ii <- apply(Y,2,sd)
       # sd_y_inv_ii <- unlist(lapply(apply(Y,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
-      m_plus <- model_PLS(X_train,Y_train,lambda_sol,R = h_opt,NZV=NZV,deflatX=deflatX)
+      m_plus <- model_PLS(X_train,Y_train,lambda_sol,kX = kX_sol,R = h_opt,NZV=NZV,deflatX=deflatX)
       var_sel[ii,which(rowSums(abs(m_plus$V_out))>1e-9)] <- 1
       Y_pred_all[ii,] <- mu_y_ii + ((X_test-mu_k_ii))%*%m_plus$B
     }
@@ -421,13 +454,13 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas = 0.5,deflatX=T,
     Q2_reg_y <- 1 - ERRORS_LOO/RSSO_loo
     # STAR
     X_binded <- do.call(cbind,Xs_init)
-    m_star <- model_PLS(X_binded,Y,lambda_sol,R = h_opt,
+    m_star <- model_PLS(X_binded,Y,lambda_sol,kX = kX_sol,R = h_opt,
                         NZV=NZV,deflatX=deflatX)
     ERRORS_LOO_star <- colSums((err_LOO^2)*var_sel)
     RSS0_star_model <- RSSO_loo[which(rowSums(abs(m_star$V_out))>1e-9)]
     Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
     # Prepare outputs
-    optimal_parameters <- list(lambda=lambda_sol,R=h_opt,
+    optimal_parameters <- list(lambda=lambda_sol,kX=kX_sol,R=h_opt,
                                Q2_cum_y=Q2_cum_y,Q2_cum=Q2_cum,
                                Q2_cum_star=Q2_cum_star,Q2_sum_star=Q2_sum_star,
                                Q2_reg=Q2_reg,Q2_reg_y=Q2_reg_y,Q2_reg_star=Q2_reg_star,

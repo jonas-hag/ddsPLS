@@ -4,7 +4,7 @@
 \alias{do_loo}
 \title{Title}
 \usage{
-do_loo(xs0, y0, lam = 0, NCORES = 1, deflatX = T)
+do_loo(xs0, y0, lam = 0, kX = NULL, NCORES = 1, deflatX = T)
 }
 \arguments{
 \item{xs0}{xs0}

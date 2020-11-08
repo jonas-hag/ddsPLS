@@ -7,7 +7,9 @@
 Q2_local_ddsPLS(
   Xs,
   Y,
-  lambdas = 0.5,
+  N_lambdas = 100,
+  lambda_max = 1,
+  use_lambda = T,
   deflatX = T,
   tau = 0.0975,
   NCORES = 1,
@@ -21,8 +23,6 @@ Q2_local_ddsPLS(
 
 \item{Y}{Y}
 
-\item{lambdas}{lambdas}
-
 \item{tau}{rate learning}
 
 \item{NCORES}{number of cores}
@@ -30,6 +30,8 @@ Q2_local_ddsPLS(
 \item{NZV}{near zero var}
 
 \item{verbose}{verbose}
+
+\item{lambdas}{lambdas}
 }
 \value{
 
