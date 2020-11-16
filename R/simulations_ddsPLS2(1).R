@@ -573,7 +573,7 @@ test <- function(){
     A_all <- cbind(A,A2,A3)
     B_th_all=B_th <- MASS::ginv(A_all)%*%C
 
-    lambdas <- seq(0.05,0.8,length.out = 50)
+    lambdas <- seq(0,1,length.out = 100)
 
     ns <- unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
     Ns <- 1:100
@@ -600,7 +600,8 @@ test <- function(){
     load("../../Hadrien/data_signalFort_no_1_2.RData")#load("../data_simu/data_signalFaible.RData")
     i <- 6 ; i_m <- 1
   }
-  for(i in 383:NNs){
+  posINIT <- unique(which(df$method==method[1] & df$n==20))
+  for(i in posINIT[9:length(posINIT)]){#1:NNs){#386
     n <- paras[i,1]
     pos <- intersect(which(df$n==n),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
@@ -612,14 +613,14 @@ test <- function(){
     # datas$Xs[[i]] <- Xs
     # datas$Y[[i]] <- Y
     # datas$phi[[i]] <- phi
-    # Load data
-    datas$Xs[[i]] -> Xs
-    datas$Y[[i]] -> Y
-    x <- do.call(cbind,Xs)
     if(i%%5==0){
       save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFort_no_1_2.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
       # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
     }
+    # Load data
+    datas$Xs[[i]] -> Xs
+    datas$Y[[i]] -> Y
+    x <- do.call(cbind,Xs)
     sel_no_sp <- c(length(which(rowSums(abs(B_th))>1e-9)),ncol(x),length(which(colSums(abs(B_th))>1e-9)),ncol(Y))
     sensib_no_sp_X <- sel_no_sp[1]/(sel_no_sp[1]+0)
     specif_no_sp_X <- 0/(0+sel_no_sp[2]-sel_no_sp[1])
@@ -631,15 +632,28 @@ test <- function(){
       pos_i <- pos[i_m]
       method_i <- method[which(pos_method==pos_i)]
       cat(paste(method_i,"... ",sep=""))
-      toPlot <- method_i %in% method[2]
+      toPlot <- method_i %in% method[1]
       if(toPlot){#T){#
         if(method_i %in% c("ddsPLS_local","ddsPLS_global","PLS")){
-          lambdas_i <- lambdas
+          lambda_max <- 1
+          N_lambdas <- 100
           if(method_i=="PLS"){
-            lambdas_i <- 0
+            lambda_max <- 0
+            N_lambdas <- 1
             df[pos_i,id_sel] <- sel_no_sp
           }
-          res <- Q2_local_ddsPLS(Xs,Y,lambdas = lambdas_i,tau=0.0975,NZV=NZV,NCORES=3)
+          res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
+                                 n_B = 1000,tau=0.0975,NZV=NZV,NCORES=20,use_lambda = T)
+          if(F){
+            R_hat <- res$optimal_parameters$R
+            uu <- do.call(rbind,res$Us)
+            ts <- scale(x)%*%uu
+            tau_r <- apply(ts,2,sd)
+            W_star <- uu%*%diag(1/tau_r)
+            A_hat <- MASS::ginv(W_star)
+            AA_th <- cbind(A,A2,A3)[1:2,]
+            cor(AA_th,A_hat)
+          }
           if(!is.null(res)){
             df[pos_i,]$Q2 <- res$optimal_parameters$Q2_reg
             df[pos_i,]$Q2_star <- res$optimal_parameters$Q2_reg_star
@@ -661,14 +675,13 @@ test <- function(){
             # cat(", Q2_reg=");cat(round(df[pos_i,]$Q2,2))
             # cat(", Q2_cum_star=");cat(round(df[pos_i,]$Q2_CUM_star,2))
             # cat(", Q2_reg_star=");cat(round(df[pos_i,]$Q2_star,2));cat("-| \n")
-          }
-        }else if(method_i=="sPLS (Le Cao)"){
-          res <- tryCatch({
-            do_sPLS_all_comp(as.data.frame(x),Y,B_th=B_th,Ks=1:8,kYs=1:3,NCORES = 10,NZV = NZV)
-          }, error = function(error_condition) {
-            NULL
-          })
-          if(!is.null(res)){
+          }else if(method_i=="sPLS (Le Cao)"){
+            res <- tryCatch({
+              do_sPLS_all_comp(as.data.frame(x),Y,B_th=B_th,Ks=1:8,kYs=1:3,NCORES = 10,NZV = NZV)
+            }, error = function(error_condition) {
+              NULL
+            })
+            # if(!is.null(res)){
             df$Q2_CUM[pos_i] <- res$Q2_cum
             df$Q2[pos_i] <- res$Q2_reg
             df$Q2_CUM_star[pos_i] <- res$Q2_cum_star
@@ -756,17 +769,17 @@ test <- function(){
       # dev.off()
 
       # pdf(file = "/Users/hlorenzo/Dropbox/Results/Simulations.pdf",width = 15,height = 8)
-      postscript("/Users/hlorenzo/Dropbox/Results/Simulations.eps", width=20, height=10, onefile=TRUE, horizontal=F)
+      postscript("/Users/hlorenzo/Dropbox/Results/Simulations.eps", width=30, height=10, onefile=TRUE, horizontal=T)
       give_me_plot_comm()
       dev.off()
 
-      # pdf(file = "/Users/hlorenzo/Dropbox/Results/Simulations_sel_x_bis.pdf",width = 14,height = 9)
-      postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
+      pdf(file = "/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.pdf",width = 14,height = 9)
+      # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
       plot_sel_simu_x()
       dev.off()
 
-      # pdf(file = paste("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.pdf",sep=""),width = 15,height = 11)
-      postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
+      pdf(file = paste("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.pdf",sep=""),width = 14,height = 9)
+      # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
       plot_sel_simu_y()
       dev.off()
     }
