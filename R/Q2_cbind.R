@@ -134,8 +134,6 @@ model_PLS <- function(x,y,lam,kX=NULL,deflatX=T,R=1,NZV=1e-3,to.scale=T){
           for(s_r in (r-1):1){
             U_star[,r] <- U_star[,r]-U_star[,s_r]*sum(bXr[s_r,]*U_star[,r])
           }
-          norm_u_h <- sqrt(sum(U_star[,r]^2))
-          # if(norm_u_h>1e-9) U_star[,r] <- U_star[,r]/norm_u_h
         }
         if(to.scale){
           B_r[[r]] <- tcrossprod(U_star[,r],V_svd)*sd_y_x_inv
@@ -156,7 +154,9 @@ model_PLS <- function(x,y,lam,kX=NULL,deflatX=T,R=1,NZV=1e-3,to.scale=T){
   if(to.scale){
     y_est <- y_est - mu_x%*%B
   }
-  list(no_model=no_model,U_out=U_out,U_star=U_star,V_out=V_out,B=B,B_r=B_r,score_x=score_x,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
+  list(no_model=no_model,U_out=U_out,U_star=U_star,V_out=V_out,
+       B=B,B_r=B_r,
+       score_x=score_x,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
 }
 ########
 
@@ -560,19 +560,36 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
           m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,NZV=NZV,
                               deflatX=deflatX,to.scale = F)
           if(sum(m_plus$U_star^2)>1e-9){
-            print("-----")
-            print(h)
-            print(c(VAR_h_s,result_b$vars[best_id_h]))
             tested_bad_comp <- F
             if(h>1){
+              print("-----")
+              print(h)
+              print(VAR_h_s)
+              print(result_b$vars[best_id_h])
               if(min(VAR_h_s)<result_b$vars[best_id_h]){
-                h <- min(which(VAR_h_s<result_b$vars[best_id_h]))-1
+                h <- min(which(VAR_h_s<result_b$vars[best_id_h]))
                 VAR_h_s <- VAR_h_s[1:h]
                 lambdas_h <- seq(min(lambdas_h),lambdas_h[best_id_h],length.out = N_lambdas)
-                x0 <- x0_deflated[[h]]
-                y0 <- y0_deflated[[h]]
-                V <- V[,1:h]
-                # tested_bad_comp <- T
+                x0 <- x0_deflated[[h-1]]
+                y0 <- y0_deflated[[h-1]]
+                # V <- cbind(V[,1:h],V_r)
+                u[,h] <- m_plus$U_star
+                t_r <- x0%*%m_plus$U_out
+                if(h!=1){
+                  for(s_r in (h-1):1){
+                    if(s_r!=1){
+                      x_s_r <- x0_deflated[[s_r-1]]
+                    }else{
+                      x_s_r <- do.call(cbind,Xs_init)
+                    }
+                    u_s_r <- u[,s_r,drop=F]
+                    t_s_r <- x_s_r%*%u_s_r
+                    bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
+                    u[,h] <- u[,h]-u_s_r*sum(bt*u[,h])
+                  }
+                }
+                V_r <- crossprod(y0,t_r)/sum(t_r^2)#m_plus$V_out
+                browser()
               }else{
                 VAR_h_s <- c(VAR_h_s,result_b$vars[best_id_h])
               }
@@ -599,8 +616,20 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
                 Q2_sum_star[h] <- Q2_h_sum_star[[h]][best_id_h]
                 # Get the regression matrix of the optimal model
                 u[,h] <- m_plus$U_star
+                if(h!=1){
+                  for(s_r in (h-1):1){
+                    if(s_r!=1){
+                      x_s_r <- x0_deflated[[s_r-1]]
+                    }else{
+                      x_s_r <- do.call(cbind,Xs_init)
+                    }
+                    u_s_r <- u[,s_r,drop=F]
+                    t_s_r <- x_s_r%*%u_s_r
+                    bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
+                    u[,h] <- u[,h]-u_s_r*sum(bt*u[,h])
+                  }
+                }
                 t_r <- x0%*%m_plus$U_out
-                # P[,h] <- crossprod(x0,t_r)/sum(t_r^2)
               }
               B_r <- m_plus$B
               V_r <- m_plus$V_out
@@ -648,7 +677,6 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     }else{
       test <- F
     }
-
   }
   h_opt <- h - 1
   x0_center <- scale(do.call(cbind,Xs_init),scale = F,center=center)

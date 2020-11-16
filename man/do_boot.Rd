@@ -4,7 +4,7 @@
 \alias{do_boot}
 \title{Title}
 \usage{
-do_boot(x0, y0, id_IN, id_OOB, lam = 0, deflatX = T)
+do_boot(x0, y0, Y_init, lam = 0, deflatX = T)
 }
 \arguments{
 \item{x0}{x0}
