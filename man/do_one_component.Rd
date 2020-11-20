@@ -4,7 +4,19 @@
 \alias{do_one_component}
 \title{Title}
 \usage{
-do_one_component(x0, y0, n, p, q, COV, abs_COV, max_COV, lam, NZV = 0.001)
+do_one_component(
+  x0,
+  y0,
+  n,
+  p,
+  q,
+  COV,
+  abs_COV,
+  max_COV,
+  lam,
+  remove_COV = NULL,
+  NZV = 0.001
+)
 }
 \arguments{
 \item{x0}{x0}

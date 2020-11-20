@@ -9,7 +9,7 @@ Q2_local_ddsPLS(
   Y,
   N_lambdas = 100,
   lambda_max = 1,
-  use_lambda = T,
+  alpha = 2/3,
   n_B = 20,
   deflatX = T,
   tau = 0.0975,

@@ -4,7 +4,18 @@
 \alias{model_PLS}
 \title{Title}
 \usage{
-model_PLS(x, y, lam, kX = NULL, deflatX = T, R = 1, NZV = 0.001, to.scale = T)
+model_PLS(
+  x,
+  y,
+  lam,
+  deflatX = T,
+  R = 1,
+  remove_COV = NULL,
+  RSS0 = NULL,
+  NZV = 0.001,
+  to.scale = T,
+  COV_init = NULL
+)
 }
 \arguments{
 \item{x}{x}

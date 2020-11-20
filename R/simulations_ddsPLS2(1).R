@@ -600,8 +600,8 @@ test <- function(){
     load("../../Hadrien/data_signalFort_no_1_2.RData")#load("../data_simu/data_signalFaible.RData")
     i <- 6 ; i_m <- 1
   }
-  posINIT <- unique(which(df$method==method[1] & df$n==20))
-  for(i in posINIT[9:length(posINIT)]){#1:NNs){#386
+  posINIT <- unique(which(df$method==method[1] & df$n %in% c(20,220) ))
+  for(i in posINIT){#1:NNs){#386
     n <- paras[i,1]
     pos <- intersect(which(df$n==n),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
@@ -643,7 +643,7 @@ test <- function(){
             df[pos_i,id_sel] <- sel_no_sp
           }
           res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
-                                 n_B = 1000,tau=0.0975,NZV=NZV,NCORES=20,use_lambda = T)
+                                 n_B = 700,tau=0.0975,NZV=NZV,NCORES=15,verbose = T)
           if(F){
             R_hat <- res$optimal_parameters$R
             uu <- do.call(rbind,res$Us)
@@ -655,11 +655,11 @@ test <- function(){
             cor(AA_th,A_hat)
           }
           if(!is.null(res)){
-            df[pos_i,]$Q2 <- res$optimal_parameters$Q2_reg
-            df[pos_i,]$Q2_star <- res$optimal_parameters$Q2_reg_star
+            # df[pos_i,]$Q2 <- res$optimal_parameters$Q2_reg
+            # df[pos_i,]$Q2_star <- res$optimal_parameters$Q2_reg_star
             df[pos_i,]$SE_B <- sum((res$B_cbind-B_th_all)^2)
-            df[pos_i,]$Q2_CUM <- res$optimal_parameters$Q2_cum
-            df[pos_i,]$Q2_CUM_star <- res$optimal_parameters$Q2_cum_star
+            # df[pos_i,]$Q2_CUM <- res$optimal_parameters$Q2_cum
+            # df[pos_i,]$Q2_CUM_star <- res$optimal_parameters$Q2_cum_star
             df[pos_i,]$R <- res$optimal_parameters$R
             df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
             if(method_i=="PLS"){
