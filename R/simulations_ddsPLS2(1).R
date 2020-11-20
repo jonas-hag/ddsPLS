@@ -607,19 +607,19 @@ test <- function(){
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
     LAMBDAS_SOL[[i]]=varExplained[[i]] <- list()
     # # Do data
-    # phi <- matrix(rnorm(n*d),nrow = n)
-    # X <- phi%*%A;Y <- phi%*%C;X2 <- phi%*%A2;X3 <- phi%*%A3
-    # Xs <- list(X,X2,X3)
-    # datas$Xs[[i]] <- Xs
-    # datas$Y[[i]] <- Y
-    # datas$phi[[i]] <- phi
-    if(i%%5==0){
-      save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFort_no_1_2.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
-      # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
-    }
+    phi <- matrix(rnorm(n*d),nrow = n)
+    X <- phi%*%A;Y <- phi%*%C;X2 <- phi%*%A2;X3 <- phi%*%A3
+    Xs <- list(X,X2,X3)
+    datas$Xs[[i]] <- Xs
+    datas$Y[[i]] <- Y
+    datas$phi[[i]] <- phi
+    # if(i%%5==0){
+    #   save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFort_no_1_2.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+    #   # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+    # }
     # Load data
-    datas$Xs[[i]] -> Xs
-    datas$Y[[i]] -> Y
+    # datas$Xs[[i]] -> Xs
+    # datas$Y[[i]] -> Y
     x <- do.call(cbind,Xs)
     sel_no_sp <- c(length(which(rowSums(abs(B_th))>1e-9)),ncol(x),length(which(colSums(abs(B_th))>1e-9)),ncol(Y))
     sensib_no_sp_X <- sel_no_sp[1]/(sel_no_sp[1]+0)
@@ -642,8 +642,10 @@ test <- function(){
             N_lambdas <- 1
             df[pos_i,id_sel] <- sel_no_sp
           }
+          if(n==20) n_B <- 700
+          if(n==220) n_B <- 100
           res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
-                                 n_B = 700,tau=0.0975,NZV=NZV,NCORES=15,verbose = T)
+                                 n_B = n_B,tau=0.0975,NZV=NZV,NCORES=15,verbose = T)
           if(F){
             R_hat <- res$optimal_parameters$R
             uu <- do.call(rbind,res$Us)
@@ -655,7 +657,7 @@ test <- function(){
             cor(AA_th,A_hat)
           }
           if(!is.null(res)){
-            # df[pos_i,]$Q2 <- res$optimal_parameters$Q2_reg
+            df[pos_i,]$Q2 <- res$optimal_parameters$Q2
             # df[pos_i,]$Q2_star <- res$optimal_parameters$Q2_reg_star
             df[pos_i,]$SE_B <- sum((res$B_cbind-B_th_all)^2)
             # df[pos_i,]$Q2_CUM <- res$optimal_parameters$Q2_cum
@@ -743,7 +745,7 @@ test <- function(){
     ##########################
     ########## PLOT ##########
     ##########################
-    if(T){
+    if(F){
       # postscript("/Users/hlorenzo/Dropbox/Results/simulations_plotsFaible.eps", width=16, height=10, onefile=TRUE, horizontal=FALSE)
       # give_me_plot()
       # dev.off()
