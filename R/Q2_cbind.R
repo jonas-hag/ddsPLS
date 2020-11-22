@@ -761,7 +761,12 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
             V_optim_boot_h <- V_optim_boot_h/norm_v
           }
           V_phi[,h] <- V_optim_boot_h
-          V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))/sum(t_boot_h^2)
+          norm_t_2 <- sum(t_boot_h^2)
+          if(norm_t_2>1e-9){
+            V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))/norm_t_2
+          }else{
+            V_sol_boot_h <- matrix(0,q,1)
+          }
           B_boot_h <- tcrossprod(u_sol_boot_h,V_sol_boot_h)
           ## The regression matrix is the result of projection of x0 on bootstrap u and v
           # V_model_boot_best <- lapply(V_model_boot,function(v_l){v_l[,best_id_h]})
@@ -775,7 +780,7 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
           y_est_boot <- x0%*%B_boot_h
           varia_expl <- sum(y_est_boot^2)/sum(RSS0)
           variance_h <- varia_expl#m_plus$var_expl
-          vari_boot_h_best <- vars_h_boot[[h]][best_id_h]>tau
+          vari_boot_h_best <- vars_h_boot[[h]][best_id_h]
           if(vari_boot_h_best>NZV & variance_h>NZV){
             tested_bad_comp <- F
             if(T){
@@ -953,7 +958,7 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     # Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
     if(verbose){
       cat(paste("\nComplete model   ",
-                "   Q2=",round(Q2_all_sum_star[[h_opt]][best_id_h],3),"% \n",sep=""))
+                "   Q2=",round(Q2_all_sum_star[[h_opt]][best_id_h],2)," \n",sep=""))
     }
     # Prepare outputs
     optimal_parameters <- list(lambda=lambda_sol,R=h_opt,
@@ -1029,7 +1034,7 @@ plot_res <- function(res){
     text(x=popo,y=res$tau,pos=3,labels = bquote(tau==.(res$tau)),col='red',cex=1)
     # abline(v=,lwd=1.5)
     # abline(v=coco_mean,col='gray',lwd=0.5,lty=1)
-    legend("topleft",c(expression("Q"[B,h]^"2"),
+    legend("topleft",c(expression("Q"["B,h"]^"2"),
                        expression("Q"[B]^"2"),"Expl.var.Y"),
            fill=c("red","darkgreen","blue"),bty="n")
     legend("top",c("Median","25% / 75%"),lty=c(1,2),bty="n")
