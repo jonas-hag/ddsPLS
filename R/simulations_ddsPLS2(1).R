@@ -645,7 +645,7 @@ test <- function(){
           if(n==20) n_B <- 1000
           if(n==220) n_B <- 100
           res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
-                                 n_B = n_B,tau=0.0975,NZV=NZV,NCORES=20,verbose = T)
+                                 n_B = n_B,NCORES=20,verbose = T)
           if(F){
             R_hat <- res$optimal_parameters$R
             uu <- do.call(rbind,res$Us)
