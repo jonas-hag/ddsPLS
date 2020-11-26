@@ -39,13 +39,13 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,remove_COV=NULL
       # model_NULL <- svd(COV_high,nu = 1,nv = 1)
       # svd_XY <- svd(COV_COV_high,nv = 1,nu=1)#svd(COV_COV_high,nv = 1,nu=0)#
 
-      svd_mix_Y <- svd(tcrossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
-      svd_mix_X <- svd(crossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
+      svd_mix_Y <- svd(COV_COV_high,nu = 1,nv = 1)#tcrossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
+      # svd_mix_X <- svd(COV_COV_high,nu = 0,nv = 1)#crossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
       # u_x_no_std <- t(COV_COV_high)%*%model_NULL$u
-      U0[id_x_high,] <- svd_mix_X$v#u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_XY$v#
+      U0[id_x_high,] <- svd_mix_Y$v#svd_mix_X$v#u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_XY$v#
       ## Y part
       # u_y_no_std <- COV_COV_high%*%model_NULL$v
-      V0[id_y_high,] <- svd_mix_Y$v#u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_XY$u#
+      V0[id_y_high,] <- svd_mix_Y$u#u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_XY$u#
     }
   }else{
     U0 <- matrix(0,p,1)
@@ -89,13 +89,16 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,remove_COV=NULL,RSS0=NULL,NZV=1e-3,t
     sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
     sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
     sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
-    x0 <- scale(x)
-    y0 <- scale(y)
+    x_init <- scale(x)
+    y_init <- scale(y)
   }else{
-    x0 <- x
-    y0 <- y
+    x_init <- scale(x,scale = F)
+    y_init <- scale(y,scale = F)
+    mu_y <- matrix(0,n,q)
     sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
   }
+  x0 <- x_init
+  y0 <- y_init
   if(is.null(RSS0)){
     RSS0 <- sum(sd_y_mat^2)
   }else{
@@ -158,8 +161,8 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,remove_COV=NULL,RSS0=NULL,NZV=1e-3,t
         B <- B + B_r[[r]]
         y_plus_un <- tcrossprod(t_r,V_out[,r,drop=F])
         x0_plus <- t_r%*%bt
-        var_y_plus_un <- sum(y_plus_un^2)
-        var_expl[r] <- var_y_plus_un/RSS0
+        # var_y_plus_un <-
+        var_expl[r] <- 1-sum((y_init-mu_y-y_plus_un)^2)/sum((y_init-mu_y)^2)
         y0 <- y0 - y_plus_un
         if(deflatX){
           x0 <- x0 - x0_plus
@@ -387,16 +390,16 @@ bootstrap_pls <- function(X_init,Y_init,B_previous,u,v,h=1,lambdas=0){
     B_all <- B_next + B_youyou
     y_train_pred <- X_train%*%B_all
     y_test_pred <- X_test_normalize%*%B_all
-    Y_train_pred <- t(apply(y_train_pred,1,function(yi){ mu_y + (yi)*sd_y }))
-    Y_test_pred <- t(apply(y_test_pred,1,function(yi){ mu_y + (yi)*sd_y }))
+    # Y_train_pred <- t(apply(y_train_pred,1,function(yi){ mu_y + (yi)*sd_y }))
+    # Y_test_pred <- t(apply(y_test_pred,1,function(yi){ mu_y + (yi)*sd_y }))
     # Previous components
     y_test_pred_RSS <- X_test_normalize%*%B_previous
-    Y_test_pred_RSS <- t(apply(y_test_pred_RSS,1,function(yi){ mu_y + (yi)*sd_y }))
+    # Y_test_pred_RSS <- t(apply(y_test_pred_RSS,1,function(yi){ mu_y + (yi)*sd_y }))
     # Compute criterions
-    vars_expl[i_l] <- sum( (Y_train-Y_train_pred)^2 ) / sum( Y_train^2 )
-    Q2[i_l] <- 1 - sum( (Y_test-Y_test_pred)^2 ) / sum((Y_test-Y_test_pred_RSS)^2)
+    vars_expl[i_l] <- 1 - sum( (Y_train-y_train_pred)^2 ) / sum( (Y_train)^2 )
+    Q2[i_l] <- 1 - sum( (Y_test-y_test_pred)^2 ) / sum((Y_test-y_test_pred_RSS)^2)
     MU_test <- matrix(rep(mu_y,length(id_OOB)),nrow = length(id_OOB),byrow = T)
-    Q2_all[i_l] <- 1 - sum( (Y_test-Y_test_pred)^2 ) / sum((Y_test-MU_test)^2)
+    Q2_all[i_l] <- 1 - sum( (Y_test-y_test_pred)^2 ) / sum((Y_test)^2)#-MU_test)^2)
     if(length(which(abs(V_svd)>1e-9))>0) model_exists[i_l] <- 1
 
     # RSS <- sum((Y_train_pred)^2)
@@ -482,7 +485,6 @@ Q2_OLS_th <- function(x,y,B_th){
 #' @param Xs Xs
 #' @param Y Y
 #' @param lambdas lambdas
-#' @param tau rate learning
 #' @param NCORES number of cores
 #' @param NZV near zero var
 #' @param verbose verbose
@@ -494,9 +496,8 @@ Q2_OLS_th <- function(x,y,B_th){
 Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
                             lambda_max=1,alpha=1/3,
                             n_B=20,
-                            deflatX=T,
-                            tau=0.0975,NCORES=1,center=T,
-                            NZV=1e-3,verbose=F){
+                            deflatX=T,NCORES=1,center=T,
+                            NZV=1e-2,verbose=F){
   ###### INTERNAL FUNCTION
   do_soft_thresh_lowest <- function(x0,y0,lambda,cov_init=NULL){
     n <- nrow(y0)
@@ -608,14 +609,14 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     Q2_h_sum_star = Q2_h_sum_star_sd_moins = Q2_h_sum_star_sd_plus =
     Q2_all_sum_star = Q2_all_sum_star_sd_moins = Q2_all_sum_star_sd_plus =
     lambdas_out = vars_h_boot = vars_h_boot_sd_moins = vars_h_boot_sd_plus <- list()
-  q2_max_h <- NULL
+  q2_max_h = VAR_h_s = CUM_VAR_h_s = Q2_tot_s <- rep(NA,n)
   B_tot_LOO <- matrix(0,n,sum(ps)*q)
 
   ### For each 'h' component, look for the best lambda
   test <- T
   y0 <- Y_init
   h <- 0
-  VAR_h_s <- NULL
+  id_ALL_TEST_h = Q2_all_sum_star_boxplot <- list()
   K_h <- 1:K
   # Check lambdas and stuff
   lambdas_h <- seq(0,lambda_max,length.out = N_lambdas)
@@ -623,6 +624,7 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
   x0_deflated = y0_deflated = cov_mean_h = prop_models_ok <- list()
   remove_COV <- matrix(0,q,p)
   B_previous <- matrix(0,p,q)
+  V_boot = u_boot = res_measure <- list()
   while(test){
     h <- h + 1
     Bis <- list()
@@ -630,21 +632,6 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     Q2_Boot = vars = Q2_h_sum <- rep(0,N_lambdas)
     RSS_il_y = var_sel = Q2_h_y = RSS_il_y_star = RSS_h_moins_1_star = PRESS_il_y <- matrix(0,N_lambdas,q)
     Q2_B = vars_in = Q2_h_clas <- matrix(NA,n_B,N_lambdas)
-    ## LOO
-    # result_b <- get_errors_stuff(x0=x0,y0=y0,N_lambdas=N_lambdas,lambdas_h=lambdas_h,
-    #                              remove_COV=remove_COV,deflatX=deflatX,RSS0=RSS0,
-    #                              NCORES=NCORES)
-    # RSS_il_y_star  <- result_b$RSS_il_y_star
-    # PRESS_il_y_star <- result_b$PRESS_il_y_star
-    # RSS_h_moins_1_star  <- result_b$RSS_h_moins_1_star
-    # # Q2_Boot <- result_b$Q2_h_star
-    # vars <-  result_b$vars
-    # RSS_il_y <- result_b$RSS_il_y
-    # var_sel <- result_b$var_sel
-    # Q2_h_y <- result_b$Q2_h_y
-    # Q2_h_sum <- result_b$Q2_h_sum
-    # PRESS_il_y <- result_b$PRESS_il_y
-    ## BOOTSTRAP
     NCORES_w <- min(NCORES,n_B)
     `%my_do%` <- ifelse(NCORES_w!=1,{
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
@@ -662,9 +649,9 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     # temp <- array(unlist(Q2_star_bootstrat[id_pos_boot-5]), c(q, p, n_B))
     # cov_mean <- apply(temp, 1:2, median)
     # B_boot <- Q2_star_bootstrat[id_pos_boot-4]
-    res_measure <- do.call(rbind,Q2_star_bootstrat[id_pos_boot-2])
-    V_boot <- Q2_star_bootstrat[id_pos_boot-1]
-    u_boot <- Q2_star_bootstrat[id_pos_boot]
+    res_measure[[h]] <- do.call(rbind,Q2_star_bootstrat[id_pos_boot-2])
+    V_boot[[h]] <- Q2_star_bootstrat[id_pos_boot-1]
+    u_boot[[h]] <- Q2_star_bootstrat[id_pos_boot]
     # V_boot <- Q2_star_bootstrat[id_pos_boot]
     vars_boot = vars_boot_sd_plus = vars_boot_sd_moins =
       q2_boot = q2_boot_sd_plus = q2_boot_sd_moins =
@@ -677,8 +664,8 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     aa <- min(alpha,1-alpha)
     probabilities <- c(aa,0.5,1-aa)
     while(test_batchas){
-      pos <- which(res_measure[,1]==i_l)
-      toto <- na.omit(res_measure[pos,c(2,3,4,7)])
+      pos <- which(res_measure[[h]][,1]==i_l)
+      toto <- na.omit(res_measure[[h]][pos,c(2,3,4,7)])
       if(length(toto)>0){
         Q2_qtles <- quantile(toto[,1],probs = probabilities)
         q2_boot[i_l] <- Q2_qtles[2]
@@ -703,8 +690,41 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
       i_l <- i_l + 1
     }
     vars <- vars_boot
-    id_vars_loo_ok <- which(vars_boot_sd_moins>NZV)# & mod_exists==1)
-
+    # id_vars_loo_ok <- which(vars_boot_sd_moins>0)# & mod_exists==1)
+    id_ALL_TEST <- which(q2_boot_sd_moins > 0)
+    if(h!=1){
+      # q2_all_boot_sd_moins > Q2_all_sum_star_sd_plus[[h-1]]
+      # l_s_before <- lambdas_out[[h-1]]
+      # l_s_now <- lambdas_h
+      # l_s_unif <- sort(unique(c(l_s_now,l_s_before[which(l_s_before<=max(l_s_now))])))
+      # N_unif <- length(l_s_unif)
+      # Vec_before = Vec_now <- rep(NA,N_unif)
+      # for(i_l in 1:N_unif){
+      #   pos_before <- which(l_s_before==l_s_unif[i_l])
+      #   pos_now <- which(l_s_now==l_s_unif[i_l])
+      #   if(length(pos_now)>0){
+      #     Vec_now[i_l] <- q2_all_boot_sd_moins[pos_now]
+      #   }else{
+      #     i_last <- max(which(!is.na(Vec_now[1:(i_l-1)])))
+      #     Vec_now[i_l] <- Vec_now[i_last]
+      #   }
+      #   if(length(pos_before)>0){
+      #     Vec_before[i_l] <- Q2_all_sum_star_sd_plus[[h-1]][pos_before]
+      #   }else{
+      #     i_last <- max(which(!is.na(Vec_before[1:(i_l-1)])))
+      #     Vec_before[i_l] <- Vec_before[i_last]
+      #   }
+      # }
+      # pos_ok <- which(Vec_before<Vec_now)
+      # lambdas_ok <- l_s_unif[pos_ok]
+      # id_test_h <- which(lambdas_h %in% lambdas_ok)
+      # id_ALL_TEST <- intersect(id_ALL_TEST,id_test_h)
+      id_test_h <- which(q2_all_boot_sd_moins>Q2_all_sum_star_sd_plus[[h-1]][
+        which(lambdas_out[[h-1]]==lambda[h-1])
+      ])
+      id_ALL_TEST <- intersect(id_ALL_TEST,id_test_h)
+    }
+    id_ALL_TEST_h[[h]] <- id_ALL_TEST
     Q2_h_sum_star[[h]] <- q2_boot#result_b$Q2_h_star
     Q2_h_sum_star_sd_moins[[h]] <- q2_boot_sd_moins
     Q2_h_sum_star_sd_plus[[h]] <- q2_boot_sd_plus
@@ -717,51 +737,97 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     vars_h_boot_sd_moins[[h]] <- vars_boot_sd_moins
     vars_h_boot_sd_plus[[h]] <- vars_boot_sd_plus
     # cov_mean_h[[h]] <- cov_mean
-    if(length(id_vars_loo_ok)>0){
-      q2_max_h <- c(q2_max_h,max(na.omit(q2_boot[id_vars_loo_ok])))
-      id_s_cool <- which(q2_boot==q2_max_h[h] &
-                           q2_boot_sd_moins>0 &#q2_boot>tau &#q2_boot_sd_plus>=q2_max_h[h] & q2_boot>tau &#>=q2_max_h[h] & q2_boot>tau &#
-                           vars_boot_sd_moins>0)#vars_boot>NZV)# & mod_exists==1)
+    if(length(id_ALL_TEST)>0){#id_vars_loo_ok)>0){
+      q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#id_vars_loo_ok])))
+      id_s_cool <- which(q2_boot==q2_max_h[h])# & q2_boot_sd_moins>0 &#q2_boot>tau &#q2_boot_sd_plus>=q2_max_h[h] & q2_boot>tau &#>=q2_max_h[h] & q2_boot>tau &#vars_boot_sd_moins>0)#vars_boot>NZV)# & mod_exists==1)
+
       if(length(id_s_cool)>0){
         best_id_h <- max(1,min(id_s_cool))
-        # coco_bobo <- apply(abs(cov_mean),2,max)
-        # mean_coco_bobo_best <- mean(coco_bobo[order(abs(coco_bobo-lambdas_h[best_id_h]))[1:2]])
-        # best_id_h <- which.min(abs(mean_coco_bobo_best-lambdas_h))
-        ####
-        # I <- which(q2_boot==q2_max_h[h])
-        # m_I <- model_PLS(x0,y0,lambdas_h[I],R = 1,remove_COV=remove_COV,COV_init = cov_mean,
-        #                  NZV=NZV,deflatX=deflatX,to.scale = F)
-        # u_I <- m_I$U_star
-        # t_I <- x0%*%u_I
-        # phi_I <- t_I/sqrt(sum(t_I^2))
-        # cor_x_tI <- abs(crossprod(phi_I,x0))/sqrt(n-1)
-        # id_I <- which(abs(u_I)>1e-9);cor_min <- min(cor_x_tI[id_I])
-        # id_all <- which(cor_x_tI>=cor_min)
-        # cor_x_y <- abs(crossprod(y0,x0)/(n-1))
-        # lambda_gogo <- min(apply(cor_x_y[,id_all,drop=F],2,max))
-        # lambda_sol <- max(lambdas_h[which(lambdas_h<lambda_gogo)])
-        # best_id_h <- which(lambdas_h==lambda_sol)
-        ####
         if(length(best_id_h)>0){
-          test_h <- Q2_h_sum_star[[h]][best_id_h]>0#tau
+          test_h <- Q2_h_sum_star_sd_moins[[h]][best_id_h]>0
+          if(h>1){
+            best_id_h_before <- which(lambdas_out[[h-1]]==lambda[h-1])
+            test2 <- Q2_all_sum_star_sd_plus[[h-1]][best_id_h_before] <
+              Q2_all_sum_star_sd_moins[[h]][best_id_h]
+            test_h <- test_h & test2
+          }
           best_lam_h <- lambdas_h[best_id_h]
+          # Maybe best lambda right of previous best lambda
+          if(h<0){#>1){
+            if(best_lam_h>lambda[h-1]){
+              lambda_min_h <- best_lam_h
+              h <- h-1
+              u[,h] <- NA
+              V_phi[,h] <- NA
+              id_ALL_TEST_h[[h]] <- intersect(id_ALL_TEST_h[[h]],which(lambdas_h>=lambda_min_h))
+              q2_max_h[h] <- max(na.omit(Q2_h_sum_star[[h]][id_ALL_TEST_h[[h]]]))
+              id_s_cool <- which(Q2_h_sum_star[[h]]==q2_max_h[h])
+              best_id_h <- max(1,min(id_s_cool))
+              best_lam_h <- lambdas_h[best_id_h]
+              if(h>1){
+                x0 <- x0_deflated[[h]]
+                y0 <- y0_deflated[[h]]
+                B_previous <- matrix(0,p,q)
+                for(s in 1:(h-1)){
+                  B_previous <- B_previous + B_r_out[[s]]
+                }
+              }else{
+                x0 <- X_init
+                y0 <- Y_init
+                B_previous <- matrix(0,p,q)
+              }
+            }else{
+              lambda_min_h <- 0
+            }
+          }
+          # coco <- crossprod(x0,y0)*0
+          # for(ii in 1:n_B){
+          #   i_b <- sample(1:n,size = n,replace = T)
+          #   coco <- coco + crossprod(x0[i_b,,drop=F],y0[i_b,,drop=F])/((n-1)*n_B)
+          # }
+          # coco <- sort(abs(coco))
+          # if(best_lam_h>=max(coco)){
+          #   best_lam_h_hypoth <- (best_lam_h + max(coco))/2
+          # }else if(best_lam_h<=min(coco)){
+          #   best_lam_h_hypoth <- (best_lam_h + min(coco))/2
+          # }else{
+          #   po_left <- which(coco>best_lam_h)
+          #   po_right <- which(coco<best_lam_h)
+          #   popo_left <- max(min(po_left)-1,0)
+          #   popo_right <- min(max(po_right)+1,length(coco))
+          #   best_lam_h_hypoth <- (coco[popo_left]+coco[popo_right])/2
+          # }
+          # best_id_h <- which.min(abs(best_lam_h_hypoth-lambdas_h))
+          # best_lam_h <- lambdas_h[best_id_h]
+          # if(!test_h){
+          #   test <- F
+          # }else{
           ### Find best solution
-          # m_plus <- model_PLS(x0,y0,best_lam_h,R = 1,remove_COV=remove_COV,
-          #                     NZV=NZV,RSS0 = RSS0,
-          #                     deflatX=deflatX,to.scale = F)
           ## The regression matrix is the result of projection of x0 on bootstrap u
-          u_boot_best <- lapply(u_boot,function(u_l){u_l[,best_id_h]})
-          u_sol <- apply(do.call(rbind,u_boot_best),2,median)
+          u_boot_best <- lapply(u_boot[[h]],function(u_l){u_l[,best_id_h]})
+          uuuu_0 <- do.call(rbind,u_boot_best);sisi <- sign(uuuu_0%*%t(t(uuuu_0[1,])))
+          uuuu <- uuuu_0*matrix(rep(sisi,ncol(uuuu_0)),ncol = ncol(uuuu_0),byrow = F)
+          u_sol <- apply(uuuu,2,quantile,probs=0.5)#(apply(uuuu,2,quantile,probs=alpha)+apply(uuuu,2,quantile,probs=1-alpha))/2#
           norm_u <- sqrt(sum(u_sol^2))
           if(norm_u>1e-9){
             u_sol_boot_h <- u_sol/norm_u
+          }else{
+            u_sol_boot_h <- u_sol
+            cat(paste("\n  --  Component ",h," not built, gathered model for u null.\n",sep=""))
           }
           t_boot_h <- x0%*%u_sol_boot_h
-          V_boot_best <- lapply(V_boot,function(v_l){v_l[,best_id_h]})
-          V_optim_boot_h <- apply(do.call(rbind,V_boot_best),2,median)
+          V_boot_best <- lapply(V_boot[[h]],function(v_l){v_l[,best_id_h]})
+          # V_optim_boot_h <- apply(do.call(rbind,V_boot_best),2,median)
+          # vvvv <- do.call(rbind,V_boot_best)
+          vvvv_0 <- do.call(rbind,V_boot_best)
+          # sisi <- sign(vvvv_0%*%t(t(vvvv_0[1,])))
+          vvvv <- vvvv_0*matrix(rep(sisi,ncol(vvvv_0)),ncol = ncol(vvvv_0),byrow = F)
+          V_optim_boot_h <- apply(vvvv,2,quantile,probs=0.5)#(apply(vvvv,2,quantile,probs=alpha)+apply(vvvv,2,quantile,probs=1-alpha))/2
           norm_v <- sqrt(sum(V_optim_boot_h^2))
           if(norm_v>1e-9){
             V_optim_boot_h <- V_optim_boot_h/norm_v
+          }else{
+            cat(paste("\n  --  Component ",h," not built, gathered model for V null.\n",sep=""))
           }
           V_phi[,h] <- V_optim_boot_h
           norm_t_2 <- sum(t_boot_h^2)
@@ -780,83 +846,76 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
           # B_boot_h <- matrix(apply(do.call(rbind,B_boot_h_0),2,median),ncol=q,byrow = F)
           B_previous <- B_previous + B_boot_h
           ### End
+          sd_y <- apply(Y,2,sd)
+          ## Variance per component
           y_est_boot <- x0%*%B_boot_h
-          varia_expl <- sum(y_est_boot^2)/sum(RSS0)
-          variance_h <- varia_expl#m_plus$var_expl
-          vari_boot_h_best <- vars_h_boot[[h]][best_id_h]
-          if(T){#vari_boot_h_best>NZV & variance_h>NZV){
-            tested_bad_comp <- F
-            VAR_h_s <- c(VAR_h_s,variance_h)
-            if(!tested_bad_comp){
-              #Q2_h_sum_star[[h]][best_id_h]>tau
-              if(!test_h){
-                test <- F
-              }else{
-                lambda[h] <- best_lam_h
-                # RSS_y[h,] <- RSS_il_y[best_id_h,]
-                # if(h==1){
-                #   RSS0_star <- RSS_h_moins_1_star[best_id_h,]
-                # }
-                # RSS_h_moins_1 <- RSS_y[h,]
-                # PRESS_y[h,] <- PRESS_il_y[best_id_h,]
-                # Q2_y[h,] <- Q2_h_y[best_id_h,]
-                # # STAR
-                # RSS_y_star[h,] <- RSS_il_y_star[best_id_h,]
-                # RSS_h_moins_1_star <- RSS_y_star[h,]
-                # PRESS_y_star[h,] <- PRESS_il_y_star[best_id_h,]
-                # Q2_sum_star[h] <- Q2_h_sum_star[[h]][best_id_h]
-                # Get the regression matrix of the optimal model
-                u[,h] <- u_sol_boot_h#m_plus$U_star
-                if(h!=1){
-                  for(s_r in (h-1):1){
-                    if(s_r!=1){
-                      x_s_r <- x0_deflated[[s_r-1]]
-                    }else{
-                      x_s_r <- do.call(cbind,Xs_init)
-                    }
-                    u_s_r <- u[,s_r,drop=F]
-                    t_s_r <- x_s_r%*%u_s_r
-                    bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
-                    u[,h] <- u[,h]-u_s_r*sum(bt*u[,h])
-                  }
+          # y_est_boot_ori <- t(apply(y_est_boot,1,function(ll){ll*sd_y+mu_y}))
+          varia_expl <- 1 - sum((Y_init-y_est_boot)^2)/sum(RSS0)
+          ## Variance total
+          y_est_boot_tot <- X_init%*%B_previous
+          # y_est_boot_tot_origin <- t(apply(y_est_boot_tot,1,function(ll){ll*sd_y+mu_y}))
+          cum_vari_h <- 1-sum((Y_init-y_est_boot_tot)^2)/sum(RSS0)
+          ##
+          if(varia_expl>1e-9){#} varia_expl>NZV){#cum_vari_h>vars_boot_sd_moins[best_id_h] &
+            VAR_h_s[h] <- varia_expl#c(VAR_h_s,varia_expl)
+            CUM_VAR_h_s[h] <- cum_vari_h#c(CUM_VAR_h_s,cum_vari_h)
+            Q2_tot_s[h] <- Q2_all_sum_star[[h]][best_id_h]#c(Q2_tot_s,Q2_all_sum_star[[h]][best_id_h])
+            Q2_all_sum_star_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),3] #HERE#
+            lambda[h] <- best_lam_h
+            # Get the regression matrix of the optimal model
+            u[,h] <- u_sol_boot_h#m_plus$U_star
+            if(h!=1){
+              for(s_r in (h-1):1){
+                if(s_r!=1){
+                  x_s_r <- x0_deflated[[s_r-1]]
+                }else{
+                  x_s_r <- do.call(cbind,Xs_init)
                 }
-                t_r <- x0%*%u_sol_boot_h#m_plus$U_out
-                t_h[,h] <- t_r
+                u_s_r <- u[,s_r,drop=F]
+                t_s_r <- x_s_r%*%u_s_r
+                bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
+                u[,h] <- u[,h]-u_s_r*sum(bt*u[,h])
               }
-              B_r <- B_boot_h#m_plus$B
-              V_r <- V_sol_boot_h#m_plus$V_out
-              # y0_plus <- y0 - m_plus$e_y
-              # id_y_sel <- which(abs(V_r)>1e-9)
-              if(verbose){
-                cat(paste("\nComponent ",h,"   ",
-                          "   lambda=",round(best_lam_h,3),
-                          "   var.expl.=",round(variance_h*100),"% \n",sep=""))
-              }
-              B_r_out[[h]] <- B_r*sd_y_x_inv
-              V[,h] <- V_r
-              y0 <- y0-x0%*%B_boot_h#m_plus$e_y # y0 - y0_plus
-              y0_deflated[[h]] <- y0
-              if(deflatX){
-                if(is.null(t_r)){
-                  t_r <- x0%*%u_sol_boot_h
-                }
-                bt <- crossprod(t_r,x0)/sum(t_r^2)
-                x0 <- x0 - t_r%*%bt
-                x0_deflated[[h]] <- x0
-              }
-              lambdas_h <- seq(min(lambdas_h),best_lam_h,length.out = length(lambdas_h))
-              lambdas_h <- unique(lambdas_h)
-              N_lambdas <- length(lambdas_h)
             }
+            t_r <- x0%*%u_sol_boot_h#m_plus$U_out
+            t_h[,h] <- t_r
+
+            V_r <- V_sol_boot_h#m_plus$V_out
+            # y0_plus <- y0 - m_plus$e_y
+            # id_y_sel <- which(abs(V_r)>1e-9)
+            if(verbose){
+              cat(paste("\nComponent ",h,"   ",
+                        "   lambda=",round(best_lam_h,3),
+                        "   var.expl.=",round(varia_expl*100),"% \n",sep=""))
+            }
+            B_r_out[[h]] <- B_boot_h
+            V[,h] <- V_r
+            y0 <- y0-x0%*%B_boot_h#m_plus$e_y # y0 - y0_plus
+            y0_deflated[[h]] <- y0
+            if(deflatX){
+              if(is.null(t_r)){
+                t_r <- x0%*%u_sol_boot_h
+              }
+              bt <- crossprod(t_r,x0)/sum(t_r^2)
+              x0 <- x0 - t_r%*%bt
+              x0_deflated[[h]] <- x0
+            }
+            lambdas_h <- seq(0,lambda_max,length.out = N_lambdas)#seq(min(lambdas_h),best_lam_h,length.out = length(lambdas_h))
+            lambdas_h <- unique(lambdas_h)
+            N_lambdas <- length(lambdas_h)
           }else{
             test <- F
           }
+        }else{
+          test <- F
         }
       }else{
         test <- F
+        cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
       }
     }else{
       test <- F
+      cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
     }
   }
   h_opt <- h - 1
@@ -864,14 +923,8 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
   if(h_opt>0){
     Q2_cum_star <- 1-prod(1-Q2_sum_star[1:h_opt])
     for(h in 1:h_opt){
+      B_r_out[[h]] <- B_r_out[[h]]*sd_y_x_inv
       B <- B + B_r_out[[h]]
-      # if(h==1){
-      #   Q2_cum <- 1- sum(PRESS_y[h,])/sum(RSS0)
-      #   Q2_cum_y <- Q2_y[h,]
-      # }else{
-      #   Q2_cum <- 1-(1-Q2_cum)*sum(PRESS_y[h,])/sum(RSS_y[h-1,])
-      #   Q2_cum_y <- 1-(1-Q2_cum_y)*PRESS_y[h,]/RSS_y[h-1,]
-      # }
     }
     i_0 <- 0
     for(k in 1:K){
@@ -882,56 +935,25 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     lambda_sol <- lambda[1:h_opt]
     mu_y <- matrix(rep(colMeans(Y),n) ,nrow = n,byrow = T)
     y_est <- mu_y + x0_center%*%(B*sd_x_mat)
-    # # Compute LOO error to get Q2_reg
-    # Y_pred_all <- matrix(0,n,q)
-    # p <- ncol(x0_center)
-    # var_sel <- matrix(0,n,q)
-    # Xs_cbind <- as.matrix(do.call(cbind,Xs_init))
-    # ## Get LOO error
-    # for(ii in 1:n){
-    #   X_train <- Xs_cbind[-ii,,drop=F]
-    #   X_test <- Xs_cbind[ii,,drop=F]
-    #   Y_train <- Y_init[-ii,,drop=FALSE]
-    #   Y_test <- Y_init[ii,,drop=FALSE]
-    #   mu_k_ii <- colMeans(X_train)
-    #   mu_y_ii <- colMeans(Y_train)
-    #   sd_x_inv_ii <- unlist(lapply(apply(X_train,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
-    #   # sd_x_mat_ii <- apply(X_train,2,sd)
-    #   sd_y_mat_ii <- apply(Y,2,sd)
-    #   # sd_y_inv_ii <- unlist(lapply(apply(Y,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
-    #   m_plus <- model_PLS(X_train,Y_train,lambda_sol,remove_COV=remove_COV,
-    #                       R = h_opt,NZV=NZV,deflatX=deflatX)
-    #   var_sel[ii,which(rowSums(abs(m_plus$V_out))>1e-9)] <- 1
-    #   Y_pred_all[ii,] <- mu_y_ii + ((X_test-mu_k_ii))%*%m_plus$B
-    # }
-    # err_LOO <- (Y_init-Y_pred_all)
-    # ERRORS_LOO <- colSums(err_LOO^2)
-    # RSSO_loo <- colSums(scale(Y_init,center=center)^2)
-    # Q2_reg <- 1 - sum(ERRORS_LOO)/sum(RSSO_loo)
-    # Q2_reg_y <- 1 - ERRORS_LOO/RSSO_loo
-    # # STAR
-    # X_binded <- do.call(cbind,Xs_init)
-    # m_star <- model_PLS(X_binded,Y,lambda_sol,R = h_opt,remove_COV=remove_COV,
-    #                     NZV=NZV,deflatX=deflatX)
-    # ERRORS_LOO_star <- colSums((err_LOO^2)*var_sel)
-    # RSS0_star_model <- RSSO_loo[which(rowSums(abs(m_star$V_out))>1e-9)]
-    # Q2_reg_star <- 1 - sum(ERRORS_LOO_star)/sum(RSS0_star_model)
+
     if(verbose){
       cat(paste("\nComplete model   ",
-                "   Q2=",round(Q2_all_sum_star[[h_opt]][best_id_h],2)," \n",sep=""))
+                "   Q2=",round(Q2_tot_s[h_opt],2)," \n\n",sep=""))
     }
     # Prepare outputs
     optimal_parameters <- list(lambda=lambda_sol,R=h_opt,
-                               Q2=Q2_all_sum_star[[h_opt]][best_id_h])
+                               Q2=Q2_tot_s[h_opt])
     parameters <- list(RSS0=RSS0)#,RSS0_star=RSS0_star,RSS_y=RSS_y[1:(h_opt+1),],PRESS_y=PRESS_y[1:(h_opt+1),],Q2_y=Q2_y[1:(h_opt+1),])
     bootstrap <- list(lambdas_h=lambdas_out,
-                      q2_max_h=q2_max_h,
+                      Q2_tot_s=na.omit(Q2_tot_s),
+                      q2_max_h=q2_max_h[1:h_opt],
                       Q2_h_star=Q2_h_sum_star,
                       Q2_h_star_sd_plus=Q2_h_sum_star_sd_plus,
                       Q2_h_star_sd_moins=Q2_h_sum_star_sd_moins,
                       Q2_all_sum_star=Q2_all_sum_star,
                       Q2_all_sum_star_sd_plus=Q2_all_sum_star_sd_plus,
                       Q2_all_sum_star_sd_moins=Q2_all_sum_star_sd_moins,
+                      Q2_all_sum_star_boxplot=Q2_all_sum_star_boxplot,
                       vars_h_boot=vars_h_boot,
                       vars_h_boot_sd_plus=vars_h_boot_sd_plus,
                       vars_h_boot_sd_moins=vars_h_boot_sd_moins,
@@ -939,10 +961,13 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     res <- list(optimal_parameters=optimal_parameters,
                 bootstrap=bootstrap,
                 Us=Us,V=V[,1:h_opt,drop=F],B_cbind=B,
+                id_ALL_TEST_h=id_ALL_TEST_h,
                 x0_deflated=x0_deflated,y0_deflated=y0_deflated,
+                alpha=alpha,
                 t_h=t_h[,1:h_opt,drop=F],
-                explained_variance=VAR_h_s*100,
-                NZV=NZV,tau=tau,#score_X = m_plus$score_x,
+                explained_variance=na.omit(VAR_h_s)*100,
+                explained_variance_cum=na.omit(CUM_VAR_h_s)*100,
+                NZV=NZV,#score_X = m_plus$score_x,
                 Bs=Bs,B_r=B_r_out,
                 y_est=y_est,parameters=parameters,
                 mu_k=c(mu_x_s),mu_y=mu_y,sd_y=apply(Y,2,sd))
@@ -958,54 +983,13 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
 plot_res <- function(res){
   h_opt <- res$optimal_parameters$R
   lambdas_out <- res$bootstrap$lambdas_h
-  # Q2_h_sum_star <- res$bootstrap$Q2_h_star
-  # Q2_h_star_sd_moins <- res$bootstrap$Q2_h_star_sd_moins
-  # Q2_h_star_sd_plus <- res$bootstrap$Q2_h_star_sd_plus
-  # vars_h_boot <- res$bootstrap$vars_h_boot
-  # vars_h_boot_sd_moins <- res$bootstrap$vars_h_boot_sd_moins
-  # vars_h_boot_sd_plus <- res$bootstrap$vars_h_boot_sd_plus
-  # par(mfrow=c(1,h_opt))
-  # for(h in 1:h_opt){
-  #   # coco_mean <- apply(abs(res$bootstrap$cov_mean_h[[h]]),2,max)
-  #   plot(lambdas_out[[h]],Q2_h_sum_star[[h]],type="l",ylim=c(0,1.1),col="red",lwd=2,
-  #        xlab=expression(lambda),ylab="",main=paste("Component ",h," (",
-  #                                                   round(res$explained_variance[h]),"%)",sep="",collapse = ""))
-  #   points(lambdas_out[[h]],Q2_h_star_sd_plus[[h]],lwd=1.5,
-  #          lty=2,type="l",col="red")
-  #   points(lambdas_out[[h]],Q2_h_star_sd_moins[[h]],lwd=1.5,
-  #          lty=2,type="l",col="red")
-  #   points(lambdas_out[[h]],vars_h_boot[[h]],type="l",col="blue")
-  #   points(lambdas_out[[h]],vars_h_boot_sd_plus[[h]],
-  #          lty=2,type="l",col="blue")
-  #   points(lambdas_out[[h]],vars_h_boot_sd_moins[[h]],
-  #          lty=2,type="l",col="blue")
-  #   points(lambdas_out[[h]],res$bootstrap$Q2_all_sum_star[[h]],type="l",col="darkgreen")
-  #   points(lambdas_out[[h]],res$bootstrap$Q2_all_sum_star_sd_plus[[h]],
-  #          lty=2,type="l",col="darkgreen")
-  #   points(lambdas_out[[h]],res$bootstrap$Q2_all_sum_star_sd_moins[[h]],
-  #          lty=2,type="l",col="darkgreen")
-  #   popo <- mean(range(lambdas_out[[h]]))
-  #   max_h <- res$bootstrap$q2_max_h[h]
-  #   points(c(res$optimal_parameters$lambda[h],res$optimal_parameters$lambda[h]),c(max_h,-2),
-  #          type="l",col="black")
-  #   points(res$optimal_parameters$lambda[h],max_h,pch=16,col="red",cex=1.5)
-  #   text(x=popo,y=max_h,pos=3,labels = bquote("||Q"[B,h]^"2"~"||"[infinity]==.(round(max_h,2))),col='red',cex=1)
-  #   abline(h=res$tau,lty=1,col="red",lwd=0.5)
-  #   text(x=popo,y=res$tau,pos=3,labels = bquote(tau==.(res$tau)),col='red',cex=1)
-  #   # abline(v=,lwd=1.5)
-  #   # abline(v=coco_mean,col='gray',lwd=0.5,lty=1)
-  #   legend("topleft",c(expression("Q"["B,h"]^"2"),
-  #                      expression("Q"[B]^"2"),"Expl.var.Y"),
-  #          fill=c("red","darkgreen","blue"),bty="n")
-  #   legend("top",c("Median","25% / 75%"),lty=c(1,2),bty="n")
-  #   points(lambdas_out[[h]],res$bootstrap$prop_models_ok[[h]],col="brown",type="l",lty=1)
-  # }
-  #
-  cols <- RColorBrewer::brewer.pal(max(h_opt,3),"Set1")
-  layout(matrix(c(1,2,3,3), 2, 2, byrow = TRUE))
-  par(mar=c(3,2,2,1),mgp=c(2,0,0))
+  cols <- c(RColorBrewer::brewer.pal(max(h_opt,3),"Set1")[1:h_opt],"gray")
+  layout(matrix(c(1,1,2,2,3,3,3,4), 2, 4, byrow = TRUE))
+  par(mar=c(3,3,2,1),mgp=c(2,1,0))
+  aa <- min(res$alpha,1-res$alpha)
   if(T){
-    for(h in 1:h_opt){
+    for(h in 1:(h_opt+1)){
+      id_h <- res$id_ALL_TEST_h[[h]]
       add <- T;if(h==1) add<-F
       matplot(res$bootstrap$lambdas_h[[h]],
               cbind(res$bootstrap$Q2_h_star[[h]],
@@ -1013,9 +997,27 @@ plot_res <- function(res){
                     res$bootstrap$Q2_h_star_sd_moins[[h]])
               ,lty=c(1,2,2),type="l",col=cols[h],add=add,ylim=c(0,1),
               main=expression("Q"["B,h"]^"2"),ylab="",xlab=expression(lambda))
+      if(length(id_h)>0){
+        matplot(res$bootstrap$lambdas_h[[h]][id_h],
+                cbind(res$bootstrap$Q2_h_star[[h]][id_h],
+                      res$bootstrap$Q2_h_star_sd_plus[[h]][id_h],
+                      res$bootstrap$Q2_h_star_sd_moins[[h]][id_h])
+                ,lty=c(1,2,2),type="l",col=cols[h],add=T,lwd=2)
+      }
+      if(h<=h_opt){
+        points(res$optimal_parameters$lambda[h],
+               res$bootstrap$Q2_h_star[[h]][which(
+                 res$bootstrap$lambdas_h[[h]]==res$optimal_parameters$lambda[h])],
+               col=cols[h],pch=16)
+      }
+      legend(bty="n","topleft",fill=cols,legend = c(unlist(lapply(1:h_opt,function(h){
+        paste("Component ",h," (",round(res$explained_variance[h]),"%)",sep="",collapse = "")})),
+        "Not selected component"))
+      legend("top",ncol=2,c("Median",paste(round(c(aa,1-aa),2),collapse=" / ")),lty=c(1,2),bty="n")
     }
     abline(v=res$optimal_parameters$lambda,col=cols,lty=3)
-    for(h in 1:h_opt){
+    for(h in 1:(h_opt+1)){
+      id_h <- res$id_ALL_TEST_h[[h]]
       add <- T;if(h==1) add<-F
       matplot(res$bootstrap$lambdas_h[[h]],
               cbind(res$bootstrap$vars_h_boot[[h]],
@@ -1023,9 +1025,30 @@ plot_res <- function(res){
                     res$bootstrap$vars_h_boot_sd_moins[[h]])*100
               ,lty=c(1,2,2),type="l",col=cols[h],add=add,ylim=c(0,1)*100,
               main="Expl. Var. of y",ylab="",xlab=expression(lambda))
+      if(length(id_h)>0){
+        matplot(res$bootstrap$lambdas_h[[h]][id_h],
+                cbind(res$bootstrap$vars_h_boot[[h]][id_h],
+                      res$bootstrap$vars_h_boot_sd_plus[[h]][id_h],
+                      res$bootstrap$vars_h_boot_sd_moins[[h]][id_h])*100
+                ,lty=c(1,2,2),type="l",col=cols[h],add=T,lwd=2)
+      }
+      if(h<=h_opt){
+        points(res$optimal_parameters$lambda[h],
+               res$bootstrap$vars_h_boot[[h]][which(
+                 res$bootstrap$lambdas_h[[h]]==res$optimal_parameters$lambda[h])]*100,
+               col=cols[h],pch=16)
+        points(res$optimal_parameters$lambda[h],
+               res$explained_variance_cum[h],
+               col=cols[h],pch=4)
+      }
+      legend(bty="n","topleft",fill=cols,legend = c(unlist(lapply(1:h_opt,function(h){
+        paste("Component ",h," (",round(res$explained_variance[h]),"%)",sep="",collapse = "")})),
+        "Not selected component"))
+      legend("top",ncol=2,c("Median",paste(round(c(aa,1-aa),2),collapse=" / ")),lty=c(1,2),bty="n")
     }
     abline(v=res$optimal_parameters$lambda,col=cols,lty=3)
-    for(h in 1:h_opt){
+    for(h in 1:(h_opt+1)){
+      id_h <- res$id_ALL_TEST_h[[h]]
       add <- T;if(h==1) add<-F
       matplot(res$bootstrap$lambdas_h[[h]],
               cbind(res$bootstrap$Q2_all_sum_star[[h]],
@@ -1033,7 +1056,32 @@ plot_res <- function(res){
                     res$bootstrap$Q2_all_sum_star_sd_moins[[h]])
               ,lty=c(1,2,2),type="l",col=cols[h],add=add,ylim=c(0,1),
               main=expression("Q"[B]^"2"),ylab="",xlab=expression(lambda))
+      if(length(id_h)>0){
+        matplot(res$bootstrap$lambdas_h[[h]][id_h],
+                cbind(res$bootstrap$Q2_all_sum_star[[h]][id_h],
+                      res$bootstrap$Q2_all_sum_star_sd_plus[[h]][id_h],
+                      res$bootstrap$Q2_all_sum_star_sd_moins[[h]][id_h])
+                ,lty=c(1,2,2),type="l",col=cols[h],add=T,lwd=2)
+      }
+      if(h<=h_opt){
+        points(res$optimal_parameters$lambda[h],
+               res$bootstrap$Q2_all_sum_star[[h]][which(
+                 res$bootstrap$lambdas_h[[h]]==res$optimal_parameters$lambda[h])],
+               col=cols[h],pch=16)
+      }
+      legend(bty="n","topleft",fill=cols,legend = c(unlist(lapply(1:h_opt,function(h){
+        paste("Component ",h," (",round(res$explained_variance[h]),"%)",sep="",collapse = "")})),
+        "Not selected component"))
+      legend("top",ncol=2,c("Median",paste(round(c(aa,1-aa),2),collapse=" / ")),lty=c(1,2),bty="n")
     }
     abline(v=res$optimal_parameters$lambda,col=cols,lty=3)
+    ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},
+                                            res$bootstrap$Q2_all_sum_star_boxplot)))
+    names(ddff) <- c("h","Q2")
+    boxplot(Q2~h,ddff,ylim=c(0,1),col=cols,main=expression("Q"[B]^"2"),xlab="Component",ylab="")
+
+    # plot(1:h_opt,res$bootstrap$Q2_tot_s,col=1,type="l",lty=1,ylim=c(0,1),
+    #      main=expression("Q"[B]^"2"),xlab=expression(lambda),ylab="")
+    # points(1:h_opt,res$bootstrap$Q2_tot_s,col=cols,pch=16)
   }
 }

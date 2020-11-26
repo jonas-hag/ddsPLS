@@ -441,7 +441,7 @@ give_me_plot_comm <- function(){
   abline(v=0.5+c(0:(length(ns)-1) )*length(unique(df$method)),lty=3)
   axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
        labels = paste("n=",ns,sep=""),cex.axis=0.9)
-  legend("bottomright",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
+  # legend("bottomright",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
 
   boxplot(sqrt(SE_B)~method*n,df[-which(df$method=="OLS_esp"),],main=expression('||'~hat(B)-A^"+"*C~'||/||'~A^"+"*C~'||'),
           col=col_box,border=cols[rep(1:l_m,i)],xlab="",xaxt="n",ylab="",lwd=lwd,ylim=c(0,3.5));abline(h=0,lty=2)
@@ -600,8 +600,9 @@ test <- function(){
     load("../../Hadrien/data_signalFort_no_1_2.RData")#load("../data_simu/data_signalFaible.RData")
     i <- 6 ; i_m <- 1
   }
-  posINIT <- unique(which(df$method==method[1] & df$n %in% c(20,220) ))
-  for(i in posINIT[which(posINIT>=305)]){#1:NNs){#386
+  posINIT <- unique(which(df$method==method[1] & df$n %in% c(20) ))
+  posBAD <- which(posINIT>17)
+  for(i in posINIT[posBAD]){#1:NNs){#386
     n <- paras[i,1]
     pos <- intersect(which(df$n==n),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
@@ -636,16 +637,23 @@ test <- function(){
       if(toPlot){#T){#
         if(method_i %in% c("ddsPLS_local","ddsPLS_global","PLS")){
           lambda_max <- 1
-          N_lambdas <- 100
+          N_lambdas <- 150
           if(method_i=="PLS"){
             lambda_max <- 0
             N_lambdas <- 1
             df[pos_i,id_sel] <- sel_no_sp
           }
-          if(n==20) n_B <- 1000
-          if(n==220) n_B <- 100
+          alpha <- 1/4
+          NCORES <- 15
+          if(n==20){alpha <- 4/9;NCORES <- 22;n_B <- 4000
+          }else if(n==60){alpha <- 3/7;n_B <- 500
+          }else if(n==140){alpha <- 1/4;n_B <- 800
+          }else if(n==300){alpha <- 1/4;n_B <- 400}
+
           res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
-                                 n_B = n_B,NCORES=20,verbose = T)
+                                 n_B = n_B,NCORES=NCORES,verbose = T,alpha = alpha)
+          print(sqrt(sum((res$B_cbind-B_th_all)^2)))
+          cat("\n")
           if(F){
             R_hat <- res$optimal_parameters$R
             uu <- do.call(rbind,res$Us)
