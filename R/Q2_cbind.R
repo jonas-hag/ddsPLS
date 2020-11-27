@@ -268,7 +268,8 @@ do_loo <- function(xs0,y0,lam=0,remove_COV=NULL,NCORES=1,deflatX=T){
   list(id=1:n,PRESS_y=PRESS_y,B=B,var_selected_y=var_selected_y)
 }
 
-bootstrap_pls <- function(X_init,Y_init,B_previous,u,v,h=1,lambdas=0){
+bootstrap_pls <- function(X_init,Y_init,h=1,lambdas=0,B_previous,
+                          lambda_prev=NA,u,v){
   N_lambdas <- length(lambdas)
   n <- nrow(X_init)
   q <- ncol(Y_init)
@@ -300,9 +301,19 @@ bootstrap_pls <- function(X_init,Y_init,B_previous,u,v,h=1,lambdas=0){
   Y_defla[[1]] <- Y_train
   B_youyou <- matrix(0,p,q)
   X_r <- X_train;Y_r <- Y_train
+  if(length(na.omit(lambda_prev))==0){
+    u <- matrix(NA,p,n)
+    v <- matrix(NA,q,n)
+  }
   if(h>1){
     U_reconstruct[,1:(h-1)] <- u[,1:(h-1)]
     for(r in 1:(h-1)){
+      if(length(na.omit(lambda_prev))==0){
+        m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],
+                             to.scale = F)
+        u[,r] <- m_gogo$U_out
+        v[,r] <- m_gogo$V_optim
+      }
       t_r <- X_r%*%u[,r]
       t_all[,r] <- t_r
       bt <- crossprod(t_r,X_r)/sum(t_r^2)
@@ -641,7 +652,9 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
       registerDoParallel(cl);out},{out <- `%do%`;out})
     Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",.combine='c',.multicombine=TRUE) %my_do% {
-      out <- bootstrap_pls(X_init=X_init,Y_init=Y_init,B_previous=B_previous,u=u,v=V_phi,h=h,lambdas=lambdas_h)
+      out <- bootstrap_pls(X_init=X_init,Y_init=Y_init,B_previous=B_previous,
+                           u=u,v=V_phi,h=h,lambdas=lambdas_h,
+                           lambda_prev = lambda)
       res_measure <- cbind(1:length(lambdas_h),
                            out$Q2,
                            out$Q2_all,
@@ -670,7 +683,7 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
     test_batchas <- TRUE
 
     i_l <- 1
-    aa <- min(alpha,1-alpha)
+    aa <- 1/4#min(alpha,1-alpha)
     probabilities <- c(aa,0.5,1-aa)
     while(test_batchas){
       pos <- which(res_measure[[h]][,1]==i_l)
@@ -703,37 +716,11 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
       i_l <- i_l + 1
     }
     vars <- vars_boot
-    # id_vars_loo_ok <- which(vars_boot_sd_moins>0)# & mod_exists==1)
-    id_ALL_TEST <- which(q2_boot_sd_moins > 0)
+    id_ALL_TEST <- which(q2_boot > 0)#q2_boot_sd_moins > 0)
     if(h!=1){
-      # q2_all_boot_sd_moins > Q2_all_sum_star_sd_plus[[h-1]]
-      # l_s_before <- lambdas_out[[h-1]]
-      # l_s_now <- lambdas_h
-      # l_s_unif <- sort(unique(c(l_s_now,l_s_before[which(l_s_before<=max(l_s_now))])))
-      # N_unif <- length(l_s_unif)
-      # Vec_before = Vec_now <- rep(NA,N_unif)
-      # for(i_l in 1:N_unif){
-      #   pos_before <- which(l_s_before==l_s_unif[i_l])
-      #   pos_now <- which(l_s_now==l_s_unif[i_l])
-      #   if(length(pos_now)>0){
-      #     Vec_now[i_l] <- q2_all_boot_sd_moins[pos_now]
-      #   }else{
-      #     i_last <- max(which(!is.na(Vec_now[1:(i_l-1)])))
-      #     Vec_now[i_l] <- Vec_now[i_last]
-      #   }
-      #   if(length(pos_before)>0){
-      #     Vec_before[i_l] <- Q2_all_sum_star_sd_plus[[h-1]][pos_before]
-      #   }else{
-      #     i_last <- max(which(!is.na(Vec_before[1:(i_l-1)])))
-      #     Vec_before[i_l] <- Vec_before[i_last]
-      #   }
-      # }
-      # pos_ok <- which(Vec_before<Vec_now)
-      # lambdas_ok <- l_s_unif[pos_ok]
-      # id_test_h <- which(lambdas_h %in% lambdas_ok)
-      # id_ALL_TEST <- intersect(id_ALL_TEST,id_test_h)
-      id_test_h <- which(q2_all_boot_sd_moins>Q2_all_sum_star_sd_plus[[h-1]][
-        which(lambdas_out[[h-1]]==lambda[h-1])
+      id_test_h <- which(
+        q2_all_boot>Q2_all_sum_star[[h-1]][which(lambdas_out[[h-1]]==lambda[h-1])
+        # q2_all_boot_sd_moins>Q2_all_sum_star_sd_plus[[h-1]][which(lambdas_out[[h-1]]==lambda[h-1])
       ])
       id_ALL_TEST <- intersect(id_ALL_TEST,id_test_h)
     }
@@ -1019,7 +1006,7 @@ Q2_local_ddsPLS <- function(Xs,Y,N_lambdas = 100,
                 Us=Us,V=V[,1:h_opt,drop=F],B_cbind=B,
                 id_ALL_TEST_h=id_ALL_TEST_h,
                 x0_deflated=x0_deflated,y0_deflated=y0_deflated,
-                alpha=alpha,
+                alpha=aa,
                 t_h=t_h[,1:h_opt,drop=F],
                 explained_variance=na.omit(VAR_h_s)*100,
                 explained_variance_cum=na.omit(CUM_VAR_h_s)*100,
