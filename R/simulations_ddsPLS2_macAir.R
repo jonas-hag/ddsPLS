@@ -576,9 +576,9 @@ test <- function(){
     lambdas <- seq(0,1,length.out = 100)
 
     ns <- c(25,50,100,200,400)#unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
-    NCORES_S <- rep(4,5)
-    ALPHA <- rep(1/2,5)
-    n_Bs <- c(150,120,100,80,70)
+    NCORES_S <- rep(7,5)
+    ALPHA <- rep(1/4,5)#rep(1/2,5)
+    n_Bs <- c(150,120,100,80,70)*2
     Ns <- 1:100
     paras <- expand.grid(ns,Ns)
     NNs <- nrow(paras)
@@ -600,26 +600,26 @@ test <- function(){
     datas <- list(Xs=list(),Y=list(),phi=list())
     LAMBDAS_SOL <- list()
     varExplained <- list()
-    ALL_RES_US <- list()
-    # load("../../Hadrien/data_last.RData")#load("../data_simu/data_signalFaible.RData")
+    ALL_RES_US_noALpha <- list()#ALL_RES_US <- list()
+    load("/Users/hlorenzo/Dropbox/data_last_noAlpha.RData")#load("../data_simu/data_signalFaible.RData")
     i <- 6 ; i_m <- 1
   }
-  # posINIT <- unique(which(df$method==method[1] & df$n %in% c(20) ))
-  # posBAD <- which(df[posINIT,]$R==1)
-  for(i in 5:NNs){#386
+  posINIT <- unique(which(df$method==method[1] & df$n %in% c(400) ))
+  posBAD <- which(df[posINIT,]$SE_B>0.35)
+  for(i in posINIT[posBAD]){#386
     n <- paras[i,1]
     pos <- intersect(which(df$n==n),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
     LAMBDAS_SOL[[i]]=varExplained[[i]] <- list()
     # # Do data
-    phi <- matrix(rnorm(n*d),nrow = n)
-    X <- phi%*%A;Y <- phi%*%C;X2 <- phi%*%A2;X3 <- phi%*%A3
-    Xs <- list(X,X2,X3)
-    datas$Xs[[i]] <- Xs
-    datas$Y[[i]] <- Y
-    datas$phi[[i]] <- phi
+    # phi <- matrix(rnorm(n*d),nrow = n)
+    # X <- phi%*%A;Y <- phi%*%C;X2 <- phi%*%A2;X3 <- phi%*%A3
+    # Xs <- list(X,X2,X3)
+    # datas$Xs[[i]] <- Xs
+    # datas$Y[[i]] <- Y
+    # datas$phi[[i]] <- phi
     if(i%%5==0){
-      save(datas,df,varExplained,LAMBDAS_SOL,file = "/Users/hlorenzo/Dropbox/data_last.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+      save(datas,df,varExplained,ALL_RES_US_noALpha,LAMBDAS_SOL,file = "/Users/hlorenzo/Dropbox/data_last_noAlpha.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
       # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
     }
     # Load data
@@ -649,11 +649,12 @@ test <- function(){
             df[pos_i,id_sel] <- sel_no_sp
           }
           pos_n <- which(ns==n)
+          cat(paste("===================\n n =",n,"\n"))
           res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
-                                 n_B = n_Bs[pos_n],NCORES=NCORES_S[pos_n],verbose = T,alpha = ALPHA[pos_n])
-          cat(paste("n =",n,"\n"))
+                                 n_B = n_Bs[pos_n],NCORES=NCORES_S[pos_n],verbose = T,
+                                 alpha = ALPHA[pos_n])
           cat(sqrt(sum((res$B_cbind-B_th_all)^2))/sqrt(sum((B_th_all)^2)))
-          ALL_RES_US[[i_m]] <- res
+          ALL_RES_US_noALpha[[pos_i]] <- res
           cat("\n")
           if(F){
             R_hat <- res$optimal_parameters$R
@@ -779,17 +780,24 @@ test <- function(){
       # give_me_plot_select()
       # dev.off()
 
-      # pdf(file = "/Users/hlorenzo/Dropbox/Results/Simulations.pdf",width = 15,height = 8)
-      postscript("/Users/hlorenzo/Dropbox/Results_Last/Simulations.eps", width=30, height=10, onefile=TRUE, horizontal=T)
+      pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_noAlpha.pdf",width = 15,height = 8)
+      # postscript("/Users/hlorenzo/Dropbox/Results_Last/Simulations_noAlpha.eps", width=30, height=10, onefile=TRUE, horizontal=T)
       give_me_plot_comm()
       dev.off()
 
-      pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x.pdf",width = 14,height = 9)
+      # dd <- data.frame(do.call(rbind,lapply(ns,function(ni){
+      #   po <- which(df$n==ni)
+      #   cbind(ni,df$Q2[po],df$SE_B[po],df$R)})))
+      # names(dd) <- c("n","Q2","SE_B","R")
+      # plot(Q2~SE_B,dd,col=factor(dd$n),pch=as.numeric(factor(dd$n)),cex=0.8)
+      # legend("bottomleft",pch = unique(as.numeric(factor(dd$n))),col = unique(as.numeric(factor(dd$n))),legend = unique(dd$n))
+
+      pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x_noAlpha.pdf",width = 14,height = 9)
       # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
       plot_sel_simu_x()
       dev.off()
 
-      pdf(file = paste("/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_y.pdf",sep=""),width = 14,height = 9)
+      pdf(file = paste("/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_y_noAlpha.pdf",sep=""),width = 14,height = 9)
       # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
       plot_sel_simu_y()
       dev.off()
