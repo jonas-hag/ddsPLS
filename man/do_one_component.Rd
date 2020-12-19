@@ -14,8 +14,7 @@ do_one_component(
   abs_COV,
   max_COV,
   lam,
-  remove_COV = NULL,
-  NZV = 0.001
+  remove_COV = NULL
 )
 }
 \arguments{
@@ -36,8 +35,6 @@ do_one_component(
 \item{max_COV}{max_COV}
 
 \item{lam}{lam}
-
-\item{NZV}{NZV}
 }
 \value{
 

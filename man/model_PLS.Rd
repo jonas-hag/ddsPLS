@@ -12,7 +12,6 @@ model_PLS(
   R = 1,
   remove_COV = NULL,
   RSS0 = NULL,
-  NZV = 0.001,
   to.scale = T,
   COV_init = NULL
 )
@@ -25,8 +24,6 @@ model_PLS(
 \item{deflatX}{deflatX}
 
 \item{R}{R}
-
-\item{NZV}{NZV}
 
 \item{to.scale}{to.scale}
 }

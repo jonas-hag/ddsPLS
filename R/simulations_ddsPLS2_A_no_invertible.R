@@ -423,7 +423,7 @@ give_me_plot_comm <- function(){
   #                 3,4,
   #                 3,5), 4, byrow = TRUE),mar=c(3,3,3,2))
   # layout(matrix(c(1,2), nrow = 1, byrow = TRUE))
-  layout(matrix(c(1,2,3,4),ncol=2,byrow = T))
+  layout(matrix(c(1,2,1,3),ncol=2,byrow = T))
   # par(mfrow=c(1,3),mar=c(3,3,3,2))
   cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
   col_box <- RColorBrewer::brewer.pal(9,"Pastel1")[7]
@@ -450,24 +450,41 @@ give_me_plot_comm <- function(){
   legend("topright",legend = level_legend,fill = cols,
          ncol = 1,bg = "white",cex = cex.leg)
 
-  boxplot(DIST_B_hat~method*n,df,#[-which(df$method=="OLS_esp"),],
-          main=expression("1-||A"~hat(B)~"-C||"^2/"||C||"^2),
-          col=col_box,border=cols,xlab="",xaxt="n",ylab="",lwd=lwd)#,ylim=c(0,1))
-  abline(h=0,lty=2)
+  # boxplot(Q2_CUM~method*n,col=col_box,border=cols[rep(1:l_m,i)],df,main=expression("Q"[1:R]^2),
+  #         xlab="",xaxt="n",ylim=ylim,ylab="",lwd=lwd);abline(h=0.0975,lty=3,lwd=2)
+  # abline(v=0.5+c(0:(length(ns)) )*length(levels(df$method)),lty=3)
+  # axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+  #      labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  # legend("bottomright",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
+
+  # boxplot(R~method*n,df,main=expression(hat(R)),col=col_box,border=cols[rep(1:l_m,i)],lwd=lwd,xlab="",xaxt="n",ylab="")
+  # abline(h=length(which(svd(B_th_all)$d>1e-9)),lty=3,lwd=2)
+  # abline(v=0.5+c(0:(length(ns)-1) )*length(unique(df$method)),lty=3)
+  # axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+  #      labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  # legend("bottomright",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
+
+  boxplot(R2_B~method*n,df,#[-which(df$method=="OLS_esp"),],
+          main=expression("R"^"2"~"(B)"),
+          col=col_box,border=cols,xlab="",xaxt="n",ylab="",lwd=lwd,ylim=c(0,1));abline(h=0,lty=2)
   abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
   axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
        labels = paste("n=",ns,sep=""),cex.axis=0.9)
-  legend("topright",legend = level_legend,fill = cols,ncol = 1,bg = "white",cex = cex.leg)
+  legend("bottomright",legend = level_legend,fill = cols,ncol = 1,bg = "white",cex = cex.leg)
 
-  boxplot(NORM_B_hat~method*n,df,#[-which(df$method=="OLS_esp"),],
-          main=expression("||"~hat(B)~"||"^2),
-          col=col_box,border=cols,xlab="",xaxt="n",ylab="",lwd=lwd)#,ylim=c(0,1))
-  abline(h=0,lty=2)
-  abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
-  axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
-       labels = paste("n=",ns,sep=""),cex.axis=0.9)
-  legend("topright",legend = level_legend,fill = cols,ncol = 1,bg = "white",cex = cex.leg)
-
+  # boxplot(SEL_X~method*n,df,main="Number of X selected variables (true=3)",
+  #         col=col_box,border=cols[rep(1:l_m,i)],las=2,xlab="",xaxt="n",ylab="",lwd=lwd);abline(h=3,lty=3,lwd=2)
+  # axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+  #      labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  # abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  # legend("bottomright",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
+  #
+  # boxplot(SEL_Y~method*n,df,main="Number of Y selected variables (true=2)",
+  #         col=col_box,border=cols[rep(1:l_m,i)],las=2,xlab="",xaxt="n",ylab="",lwd=lwd);abline(h=2,lty=3,lwd=2)
+  # axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+  #      labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  # abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  # legend("right",legend = level_legend,fill = cols,ncol = ncols,bg = "white",cex = cex.leg)
 }
 
 plot_R <- function(){
@@ -477,7 +494,7 @@ plot_R <- function(){
   layout(matrix(1:(n_n_s*n_meth),nrow = n_n_s,byrow = T))
   par(mar=c(2,2,2,3))
   cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
-  breaks <- (min(c(2,na.omit(df$R)))-0.5):(max(c(2,na.omit(df$R)))+0.5)
+  breaks <- (min(c(R_th,na.omit(df$R)))-0.5):(max(c(R_th,na.omit(df$R)))+0.5)
   for(i_n in 1:n_n_s){
     for(i_mm in 1:n_meth){
       Ri <- df$R[which(df$method==method[i_mm] & df$n==ns[i_n])]
@@ -494,30 +511,6 @@ plot_R <- function(){
       xx <- unique(na.omit(df$R))
       yy <- unlist(lapply(xx,function(xxx){length(which(Ri==xxx))}))
       text(xx,yy,labels = yy,pos = 3,col=cols[i_mm])
-    }
-  }
-}
-
-plot_X <- function(){
-  n_s <- sort(unique(df$n))
-  n_n_s <- length(n_s)
-  n_meth <- length(method[1:3])
-  layout(matrix(1:(n_n_s*n_meth),nrow = n_n_s,byrow = T))
-  par(mar=c(2,2,2,3))
-  cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
-  breaks <- (min(c(2,na.omit(df$SEL_X)))-0.5):(max(c(2,na.omit(df$SEL_X)))+0.5)
-  max_sel_X <- max(na.omit(df$SEL_X))
-  max_VP_X <- max(na.omit(df$VP_X))
-  for(i_n in 1:n_n_s){
-    for(i_mm in 1:n_meth){
-      sel_X <- df$SEL_X[which(df$method==method[i_mm] & df$n==ns[i_n])]
-      vp_X <- df$VP_X[which(df$method==method[i_mm] & df$n==ns[i_n])]
-      plot(1,1,col="white",xlim=c(0,1*max_sel_X),ylim=c(0,1.1*max_VP_X),pch=16,
-           main="",xlab="",ylab="")
-      abline(h=100,v=100,col="gray")
-      points(sel_X,vp_X,col=cols[i_mm],pch=16)
-      title(paste(method[i_mm],"\n n=",ns[i_n],sep=""),line = -1)
-      title(xlab="Positive",ylab="True positive",line = 1)
     }
   }
 }
@@ -578,7 +571,7 @@ plot_sel_simu_y <- function(){
   # plot(c(-1,1),c(-1,1),axes=FALSE,col="white")#,xlab="",ylab="")
   legend("center",ncol=3,legend = 1:3,fill=col_sel_y,cex=1.5,bty="n")
 
-  sel_y <- df[,c(1,3,10)]
+  sel_y <- df[,c(1,3,9)]
   nsiii <- sort(unique(sel_y$n))
   paras <- expand.grid(nsiii,unique(as.character(sel_y$method[which(sel_y$method %in% method[1:3])])))
   sel_y_good <- matrix(0,nrow(paras),max(as.numeric(names(table(sel_y$SEL_Y)))))
@@ -609,38 +602,40 @@ test <- function(){
     NCORES <- 15
     NZV <- 1e-2
 
-    eps1=eps2=eps3=epsY=eps <- 0.9#0.8#
-
-    ff <- function(cc){out <- cc/sqrt(sum(cc^2));if(is.na(out[1])) out <- cc;out}
-    A <- apply(cbind(c(1,1),c(0,1),c(0,0)),2,ff)
-    d <- nrow(A)
-    A <- eps1*cbind(A,matrix(0,nrow = d,ncol = 2))
-    # A2 <- apply(cbind(c(2,1)),2,ff)
-    # A2 <- eps1*cbind(A2,matrix(0,nrow = d,ncol = 1))
-    # A3 <- eps3*matrix(0,nrow = d,ncol = 2)
-    p1 = p2 <- 50; p <- 1000
-    R1 <- 3; R2 <- 2; R3 <- 0;d <- R1+R2+R3
-    A <- rbind(
-      matrix(rep(c(rep(1,p1),rep(0,p2),rep(0,p-p1-p2)),R1),nrow = R1,byrow = T),
-      matrix(rep(c(rep(0,p1),rep(2,p2),rep(0,p-p1-p2)),R2),nrow = R2,byrow = T)#,
-      # matrix(rep(c(rep(0,p1),rep(1,p2),rep(0,p-p1-p2)),R3),nrow = R3,byrow = T)
-    )
-    A <- eps1*apply(A,2,ff)
-    C <- rbind(
-      matrix(rep(c(2,0,0),R1),nrow = R1,byrow = T),
-      matrix(rep(c(0,1,0),R2),nrow = R2,byrow = T)#,
-      # matrix(rep(c(0,1,0),R3),nrow = R3,byrow = T)
-    )
-    C <- eps1*apply(C,2,ff)
-    # C <- epsY*apply(cbind(c(2,1),c(0,-1),rep(0,d)),2,ff)
-
-    A_all <- A#cbind(A1,A2,A3)
+    a <- 1/sqrt(2)
+    a2 <- 2/sqrt(5)
+    b <- 1/sqrt(5)
+    a4 <- 1/2
+    a26<-1/sqrt(26)
+    a15<-1/sqrt(15)
+    a10 <- 1/sqrt(10)
+    eps1=eps2=eps3=epsY <- 0.999#0.8#
+    A1 <- eps1*cbind(rep(b,5),c(0,rep(a4,4)),matrix(0,nrow = 5,ncol = 2))
+    Eps1 <- c(sqrt(1-eps1^2),sqrt(1-eps1^2),1,1)
+    A2 <- eps2*matrix(c(3*a10,a10,0,0,0,0,0,0,0,0),nrow = 5,byrow = F)
+    Eps2 <- c(sqrt(1-eps2^2),1)
+    A3 <- eps3*matrix(0,nrow = 5,ncol = 2)
+    Eps3 <- c(1,1)
+    C <- epsY*cbind(c(sqrt(5)*a15,2*a15,sqrt(3)*a15,sqrt(2)*a15,a15),c(-1,0,0,0,0),rep(0,5))
+    EpsY <- c(sqrt(1-epsY^2),sqrt(1-epsY^2),1)
+    ## Add noise
+    # eps <- 0.99;eps2 <- 0.99;eps3 <- 0.99;epsY <- 0.99#eps <- 0.95;eps2 <- 0.9;eps3 <- 0.99;epsY <- 0.9
+    d = R_th<- nrow(C)
+    A_all <- cbind(A1,A2,A3)
     B_th_all=B_th <- MASS::ginv(A_all)%*%C
-    L_total <- ncol(C)+ncol(A_all)
 
-    LAMBDAS <- seq(0,1,length.out = 66)
-    KXS <- unique(round(seq(1,ncol(A_all),length.out = 22)))
-    KYS <- unique(round(seq(1,ncol(C),length.out = 3)))
+    A_psi <- A_all[1:5,c(1,2,5)]
+    # B_psi_th <- t(A_psi)%*%solve(tcrossprod(A_psi))
+    C_psi <- C[1:5,]
+    B_th_th <- matrix(0,ncol(A_all),ncol(C))
+    B_th_th[c(1,2,5),] <- MASS::ginv(A_psi)%*%C_psi
+
+    aa<-A_all[1:5,]
+    cc <- C[1:5,]
+    list_arcr <- lapply(1:5,function(r){tcrossprod(aa[r,],cc[r,])})
+    round(svd(do.call(rbind,lapply(list_arcr,as.vector)))$d,4)
+
+    lambdas <- seq(0,1,length.out = 100)
 
     ns <- c(25,50,100,200,400)#unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
     NCORES_S <- rep(20,5)
@@ -651,15 +646,14 @@ test <- function(){
     NNs <- nrow(paras)
     Q2_cum = error_B <- rep(NA,NNs)
     method <- c("ddsPLS Boot",
-                "ddsPLS Unik Boot",
                 "sPLS Boot",
+                "SPLS Boot",
                 "PLS Boot",
-                "SPLS Boot")
-    level_legend <- c("ddsPLS Boot","ddsPLS Unik Boot","sPLS [4] Boot",
-                      "PLS Boot","SPLS [16] Boot")
+                "PLS BootMixomics")
+    level_legend <- c("ddsPLS Boot","sPLS [16] Boot","SPLS [4] Boot",
+                      "PLS Boot", "PLS2 [26] BootMixomics")
     l_m <- length(method)
-    names_df <- c("n","id","method","Q2","DIST_B_hat","NORM_B_hat",
-                  "VP_X","SEL_X","VP_Y","SEL_Y","R","time")
+    names_df <- c("n","id","method","Q2","R2_B","VP_X","SEL_X","VP_Y","SEL_Y","R","time")
     mat_0 <- expand.grid(ns,Ns,method)
     mat_plus <- matrix(NA,nrow(mat_0),length(names_df)-3)
     df <- data.frame(cbind(mat_0,mat_plus))
@@ -671,30 +665,29 @@ test <- function(){
       ALL_FUCKING_MODELS[[method_i]] <- list()
     }
     # load(../../Hadrien/data_last.RData")#load("../data_simu/data_signalFaible.RData")
-    # i <- 6 ; i_m <- 1
-    file_data <- "/Users/hlorenzo/Dropbox/data_last_with_unik.RData"
-    load(file_data)
+    i <- 3 ; i_m <- 1
+    file_data <- "/Users/hlorenzo/Dropbox/data_last_BIG_PHI.RData"
+    # load(file_data)
+    source('/Users/hlorenzo/Documents/GitHub/ddsPLS/R/bootstrap_sPLS_mixOmics.R')
   }
   # posINIT <- which(df$method==method[1] & df$R>2)
-  for(i in 1:500){#c(1:63)[posINIT]){#447:500){#386
+  # posBAD <- which(df[posINIT,]$R==1)
+  for(i in 56:500){#447:500){#386
     n <- paras[i,1]
-    cat("\n\n______________________________________________________________________________")
+    cat("\n\n===============================================================")
     cat(paste("\n n =",n,"  ---   i =",i))
     pos <- intersect(which(df$n==n),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
     # # Do data
-    psi <- MASS::mvrnorm(n,mu = rep(0,d+L_total),Sigma = diag(d+L_total))
-    phi <- psi[,1:d,drop=F];pt <- d
-    # SIs <- lapply(list(A1,A2,A3,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
-    # X1 <- phi%*%A1 + SIs[[1]]*psi[,pt+1:ncol(A1),drop=F];pt <- pt + ncol(A1)
-    # X2 <- phi%*%A2 + SIs[[2]]*psi[,pt+1:ncol(A2),drop=F];pt <- pt + ncol(A2)
-    # X3 <- phi%*%A3 + SIs[[3]]*psi[,pt+1:ncol(A3),drop=F];pt <- pt + ncol(A3)
-    SIs <- lapply(list(A,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
-    Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
-    Y <- phi%*%C + SIs[[2]]*psi[,pt+1:ncol(C),drop=F];pt <- pt + ncol(Y)
+    phi <- matrix(rnorm(n*d),nrow = n)
+    X <- phi%*%A1+matrix(rnorm(n = n*ncol(A1)),nrow = n)*do.call(cbind,lapply(Eps1,function(ii){rep(ii,n)} ))
+    Y <- phi%*%C+matrix(rnorm(n = n*ncol(C)),nrow = n)*do.call(cbind,lapply(EpsY,function(ii){rep(ii,n)} ))
+    X2 <- phi%*%A2+matrix(rnorm(n = n*ncol(A2)),nrow = n)*do.call(cbind,lapply(Eps2,function(ii){rep(ii,n)} ))
+    X3 <- phi%*%A3+matrix(rnorm(n = n*ncol(A3)),nrow = n)*do.call(cbind,lapply(Eps3,function(ii){rep(ii,n)} ))
+    Xs <- list(X,X2,X3)
     datas$Xs[[i]] <- Xs
     datas$Y[[i]] <- Y
-    datas$phi[[i]] <- phi
+    datas$phi[[i]] <- phi ; phi_ok <- phi[,1:2]
     if(i%%2==0){
       save(datas,df,ALL_FUCKING_MODELS,file = file_data)
       #save(datas,df,file = "../data_simu/data_signalFaible.RData")
@@ -709,52 +702,109 @@ test <- function(){
     for(i_m in 1:length(pos)){
       pos_i <- pos[i_m]
       method_i <- method[which(pos_method==pos_i)]
-      cat(paste("\n     <- ",method_i,"... ",sep=""))
-      toPlot <- method_i %in% method[c(1,2,3,4)]#[c(1,2,4,5)]
-      if(toPlot){
+      cat(paste("\n********** ",method_i,"... ",sep=""))
+      toPlot <- method_i %in% method[c(1,2,4,5)]#[c(1,2,4,5)]
+      if(toPlot){#T){#
         time_1 <- Sys.time()
         if(method_i %in% c("ddsPLS Boot","PLS Boot")){
-          lambdas <- LAMBDAS
+          lambda_max <- 1
+          N_lambdas <- 100
           pos_n <- which(ns==n)
           n_b_i <- n_Bs[pos_n]
           ncores_i <- NCORES_S[pos_n]
           if(method_i=="PLS Boot"){
-            lambdas <- 0
+            lambda_max <- 0
+            N_lambdas <- 1
+            # df[pos_i,id_sel] <- sel_no_sp
             ncores_i <- 7
           }
-          res <- Q2_local_ddsPLS(Xs,Y,lambdas=lambdas,
+          res <- Q2_local_ddsPLS(Xs,Y,N_lambdas = N_lambdas,lambda_max = lambda_max,
                                  n_B = n_b_i,NCORES=ncores_i,verbose = T)
+          # t_r <- res$t_h
+          # b_phi <- solve(crossprod(t_r))%*%crossprod(t_r,phi)
+          # R2_phi <- 1-sum((phi-t_r%*%b_phi)^2)/sum((phi)^2)
+          # cat(paste("\n R2_phi =",round(R2_phi,3)))
+          R2_psi_B <- 1-sum((B_th_th-res$B_cbind)^2)/sum((res$B_cbind)^2)
+          cat(paste("\n R2_psi_B =",round(R2_psi_B,3)))
           cat("\n")
-        }else if(method_i %in% "ddsPLS Unik Boot"){
-          lambdas <- LAMBDAS
-          pos_n <- which(ns==n)
-          n_b_i <- n_Bs[pos_n]
-          ncores_i <- NCORES_S[pos_n]
-          res <- Q2_UNIK_ddsPLS(Xs,Y,lambdas=lambdas,
-                                n_B = n_b_i,NCORES=ncores_i,verbose = T)
-        }else if(method_i %in% c("sPLS Boot") ){
-          pos_n <- which(ns==n)
-          n_b_i <- n_Bs[pos_n]
-          ncores_i <- NCORES_S[pos_n]
-          kxs <- KXS;kys <- KYS; sparse <- T
-          if(!(method_i %in% c("sPLS Boot")) ){
-            kxs <- ncol(x);kys <- ncol(Y); sparse <- F;ncores_i <- 7
+          if(!is.null(res)){
+            df[pos_i,]$Q2 <- res$optimal_parameters$Q2
+            df[pos_i,]$R2_B <- R2_psi_B
+            df[pos_i,]$R <- res$optimal_parameters$R
+            df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
           }
-          res <- Q2_boot_sPLS(Xs,Y,keepXs = kxs,keepYs=kys,
-                              n_B=n_b_i,deflatX=T,NCORES=ncores_i,center=T,
-                              NZV=1e-9,verbose=T,sparse = sparse)
-        }
-        if(!is.null(res)){
-          df[pos_i,]$Q2 <- res$optimal_parameters$Q2
-          df[pos_i,]$DIST_B_hat <- 1-sum((A_all%*%res$B_cbind-C)^2)/sum((C)^2)
-          df[pos_i,]$NORM_B_hat <- sqrt(sum((res$B_cbind)^2))
-          df[pos_i,]$R <- res$optimal_parameters$R
-          df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
+        }else if(method_i %in% c("sPLS Boot","PLS BootMixomics") ){
+          pos_n <- which(ns==n)
+          n_b_i <- n_Bs[pos_n]
+          ncores_i <- NCORES_S[pos_n]
+          if(method_i %in% c("sPLS Boot") ){
+            res <- tryCatch({
+              # do_sPLS_all_comp(as.data.frame(x),Y,B_th=B_th,Ks=1:8,kYs=1:3,NCORES = 10,NZV = NZV)
+              Q2_boot_sPLS(Xs,Y,keepXs = 1:8,
+                           keepYs=3,
+                           n_B=n_b_i,
+                           deflatX=T,NCORES=ncores_i,center=T,
+                           NZV=1e-9,verbose=T,sparse = T)
+            }, error = function(error_condition) {
+              NULL
+            })
+          }else{
+            res <- tryCatch({
+              Q2_boot_sPLS(Xs,Y,keepXs = 8,
+                           keepYs=3,
+                           n_B=n_b_i,
+                           deflatX=T,NCORES=7,center=T,
+                           NZV=1e-9,verbose=T,sparse = F)# do_sPLS_all_comp(as.data.frame(x),Y,B_th=B_th,Ks=1:8,kYs=1:3,NCORES = 10,NZV = NZV,sparse=F)
+            }, error = function(error_condition) {
+              NULL
+            })
+          }
+          if(!is.null(res)){
+            cat(paste("\n Q2 =",round(res$optimal_parameters$Q2,2)))
+            # t_r <- res$t_h
+            # b_phi <- solve(crossprod(t_r))%*%crossprod(t_r,phi_ok)
+            # R2_phi <- 1-sum((phi_ok-t_r%*%b_phi)^2)/sum((phi_ok)^2)
+            # cat(paste("\n R2_phi =",round(R2_phi,3)))
+            R2_psi_B <- 1-sum((B_th_th-res$B_cbind)^2)/sum((res$B_cbind)^2)
+            cat(paste("\n R2_psi_B =",round(R2_psi_B,3)))
+            df$Q2[pos_i] <- res$optimal_parameters$Q2
+            df$R2_B[pos_i] <- R2_psi_B
+            df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
+            df$R[pos_i] <- res$optimal_parameters$R
+          }
+          # varExplained[[i]][[method_i]] <- res$VAR_h_s
+        }else if(method_i=="SPLS LOO"){
+          etas <- seq(0.05,0.95,length.out = 5)
+          kappas <- seq(0.05,0.45,length.out = 5)
+          res = tryCatch({
+            Q2_chun(x,Y,K=5,B_th=B_th,etas=etas,kappas=kappas,NCORES = length(kappas),NZV=NZV)
+          }, error = function(error_condition) {
+            NULL
+          })
+          if(!is.null(res)){
+            df$Q2_CUM[pos_i] <- res$Q2_cum
+            df$Q2[pos_i] <- res$Q2
+            df$Q2_CUM_star[pos_i] <- res$Q2_cum_star
+            df$Q2_star[pos_i] <- res$Q2_star
+            df$SE_B[pos_i] <- res$SE_B
+            df[pos_i,id_sel] <- res[,c("VP_X","SEL_X","VP_Y","SEL_Y")]
+            df$R[pos_i] <- res$R
+          }
+        }else if(method_i=="OLS"){
+          df[pos_i,]$Q2 <- Q2_OLS(x,Y)
+          df$Q2_star[pos_i] <-  df[pos_i,]$Q2
+          df[pos_i,]$SE_B <- sum((MASS::ginv(scale(do.call(cbind,Xs)))%*%scale(Y)-B_th_all)^2)
+          # df[pos_i,id_sel] <- sel_no_sp
+        }else if(method_i=="OLS_esp"){
+          df[pos_i,]$Q2 <- Q2_OLS_th(x,Y,B_th_all)
+          df$Q2_star[pos_i] <-  df[pos_i,]$Q2
+          df[pos_i,]$SE_B <- 0
+          # df[pos_i,id_sel] <- sel_no_sp
         }
         ALL_FUCKING_MODELS[[method_i]][[i]] <- res
         df$time[pos_i] <- as.numeric(difftime(Sys.time(), time_1, units = "secs"))
       }
-      cat("\n\n______________________________________________________________________________")
+      cat("\n... Done **********")
       ##########################
       ########## PLOT ##########
       ##########################
@@ -783,21 +833,21 @@ test <- function(){
         # give_me_plot_select()
         # dev.off()
 
-        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_2.pdf",width = 15,height = 8)
+        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_A_NO_INV.pdf",width = 15,height = 8)
         # postscript("/Users/hlorenzo/Dropbox/Results_Last/Simulations.eps", width=30, height=10, onefile=TRUE, horizontal=T)
         give_me_plot_comm()
         dev.off()
 
-        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_R_2.pdf",width = 12,height = 10)
+        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_R_A_NO_INV.pdf",width = 12,height = 10)
         plot_R()
         dev.off()
 
-                pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x_2.pdf",width = 14,height = 9)
-                # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
-                plot_X()
-                dev.off()
+        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x_A_NO_INV.pdf",width = 14,height = 9)
+        # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
+        plot_sel_simu_x()
+        dev.off()
 
-        pdf(file = paste("/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_y_2.pdf",sep=""),width = 14,height = 9)
+        pdf(file = paste("/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_y_A_NO_INV.pdf",sep=""),width = 14,height = 9)
         # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
         plot_sel_simu_y()
         dev.off()
