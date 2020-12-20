@@ -609,7 +609,7 @@ test <- function(){
     NCORES <- 15
     NZV <- 1e-2
 
-    eps1=eps2=eps3=epsY=eps <- 0.9#0.8#
+    eps1=eps2=eps3=epsY=eps <- 0.99#0.8#
 
     ff <- function(cc){out <- cc/sqrt(sum(cc^2));if(is.na(out[1])) out <- cc;out}
     A <- apply(cbind(c(1,1),c(0,1),c(0,0)),2,ff)
