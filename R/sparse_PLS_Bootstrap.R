@@ -63,12 +63,12 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
       t_all[,r] <- t_r
       bt <- crossprod(t_r,X_r)/sum(t_r^2)
       C[,r] <- t(bt)
-      Y_r_mask <- Y_r;Y_r_mask[which(abs(v[,r])<1e-9),] <- 0;Y_r_mask[which(abs(v[,r])>=1e-9),] <- 1
+      Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0#;Y_r_mask[which(abs(v[,r])>=1e-9),] <- 1
       D[,r] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
-      U_star_cl <- u[,1:r]%*%solve(crossprod(C[,1:r],u[,1:r]))
-      B_youyou <- tcrossprod(U_star_cl,D[,1:r])
-      y_r <- tcrossprod(t_r,D[,r])
-      x_r <- tcrossprod(t_r,C[,r])
+      U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+      B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
+      y_r <- tcrossprod(t_r,D[,r,drop=F])
+      x_r <- tcrossprod(t_r,C[,r,drop=F])
       # Do deflation
       Y_r <- Y_r - y_r
       X_r <- X_r - x_r
@@ -90,7 +90,7 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
     t_r <- X_r%*%u_il
     bt <- crossprod(t_r,X_r)/sum(t_r^2)
     C[,h] <- t(bt)
-    Y_r_mask <- Y_r;Y_r_mask[which(abs(V_il)<1e-9),] <- 0;Y_r_mask[which(abs(V_il)>=1e-9),] <- 1
+    Y_r_mask <- Y_r;Y_r_mask[,which(abs(V_il)<1e-9)] <- 0#;Y_r_mask[which(abs(V_il)>=1e-9),] <- 1
     D[,h] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
     if(h>1){
       u_cur_il <- cbind(u[,1:(h-1)],u_il)
@@ -297,7 +297,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
       i_l <- i_l + 1
     }
     vars <- vars_boot
-    id_ALL_TEST <- which(q2_boot > 0 & vars_boot_h > lowExplainedVariance)
+    id_ALL_TEST <- which(q2_boot > lowExplainedVariance)# > 0 & vars_boot_h > lowExplainedVariance)
     if(h!=1){
       id_test_h <- which(q2_all_boot>Q2_all_sum_star[[h-1]][
         which(rowSums(
@@ -329,8 +329,11 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
     vars_h_boot_single_sd_moins[[h]] <- vars_boot_h_sd_moins
     vars_h_boot_single_sd_plus[[h]] <- vars_boot_h_sd_plus
     if(length(id_ALL_TEST)>0){
-      q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
-      id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
+      # q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
+      # id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
+      diff_R2_Q2 <- abs(q2_boot-vars_boot)
+      q2_max_h[h] <- min(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
+      id_s_cool <- which(diff_R2_Q2==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])
       if(length(id_s_cool)>0){
         best_id_h <- max(1,min(id_s_cool))
         if(length(best_id_h)>0){
@@ -358,17 +361,19 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
                                  to.scale=F,R=1)
           }
           u_sol_boot_h <- m_gogo$U_out
-          V_optim_boot_h <- m_gogo$V_out
+          V_optim_boot_h <- m_gogo$V_optim
           u[,h] <- u_sol_boot_h
           if(sum(u_sol_boot_h^2)>1e-9){
             t_r <- x0%*%u_sol_boot_h
             bt <- crossprod(t_r,x0)/sum(t_r^2)
             C[,h] <- t(bt)
-            D[,h] <- crossprod(y0,t_r)/sum(t_r^2)
-            U_star_cl <- u[,1:h]%*%solve(crossprod(C[,1:h],u[,1:h]))
-            B_current <- tcrossprod(U_star_cl,D[,1:h])
-            y_r <- tcrossprod(t_r,D[,h])
-            x_r <- tcrossprod(t_r,C[,h])
+            Y_r_mask <- y0;Y_r_mask[,which(abs(V_optim_boot_h)<1e-9)] <- 0
+            D[,h] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
+            # D[,h] <- crossprod(y0,t_r)/sum(t_r^2)
+            U_star_cl <- u[,1:h,drop=F]%*%solve(crossprod(C[,1:h,drop=F],u[,1:h,drop=F]))
+            B_current <- tcrossprod(U_star_cl,D[,1:h,drop=F])
+            y_r <- tcrossprod(t_r,D[,h,drop=F])
+            x_r <- tcrossprod(t_r,C[,h,drop=F])
             ### End
             sd_y <- apply(Y,2,sd)
             ## Variance per component
@@ -393,7 +398,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
             # Do deflation
             y0 <- y0 - y_r
             x0 <- x0 - x_r
-            # V[,h] <- V_r
+            V[,h] <- V_optim_boot_h
+            t_h[,h] <- t_r
             # y0 <- y0-x0%*%B_boot_h
             y0_deflated[[h]] <- y0
             x0_deflated[[h]] <- x0
@@ -424,8 +430,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
     Q2_cum_star <- 1-prod(1-Q2_sum_star[1:h_opt])
     for(h in 1:h_opt){
       B_r_out[[h]] <- B_r_out[[h]]*sd_y_x_inv
-      B <- B + B_r_out[[h]]
     }
+    B <- B_r_out[[h_opt]]
     i_0 <- 0
     for(k in 1:K){
       Us[[k]] <- u[i_0+1:ps[k],1:h_opt,drop=F]
@@ -452,7 +458,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
     bootstrap <- list(paras_out=paras_out_list,
                       Q2_mean=Q2_mean,
                       Q2_all_mean=Q2_all_mean,
-                      Q2_tot_s=na.omit(Q2_tot_s),
+                      Q2_tot_s=Q2_tot_s[1:h_opt],
                       q2_max_h=q2_max_h[1:h_opt],
                       Q2_h_star=Q2_h_sum_star,
                       Q2_h_star_sd_plus=Q2_h_sum_star_sd_plus,
@@ -476,8 +482,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
                 id_ALL_TEST_h=id_ALL_TEST_h,
                 x0_deflated=x0_deflated,y0_deflated=y0_deflated,
                 t_h=t_h[,1:h_opt,drop=F],
-                explained_variance=na.omit(VAR_h_s)*100,
-                explained_variance_cum=na.omit(CUM_VAR_h_s)*100,
+                explained_variance=VAR_h_s[1:h_opt]*100,
+                explained_variance_cum=CUM_VAR_h_s[1:h_opt]*100,
                 Bs=Bs,B_r=B_r_out,
                 y_est=y_est,parameters=parameters,
                 mu_k=c(mu_x_s),mu_y=mu_y,sd_y=apply(Y,2,sd))
@@ -492,12 +498,25 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
   res
 }
 
-
-plot_res <- function(res){
-  h_opt <- res$optimal_parameters$R
+#' Title
+#'
+#' @param res res
+#' @param h_opt h_opt
+#'
+#' @return
+#' @export
+#'
+#' @useDynLib ddsPLS
+plot_res <- function(res,h_opt=NULL){
+  if(is.null(h_opt)){
+    h_opt <- res$optimal_parameters$R
+  }
   lambdas_out <- res$bootstrap$paras_out
   cols <- c(RColorBrewer::brewer.pal(max(h_opt,3),"Set1")[1:h_opt],"gray80")
-  layout(matrix(c(1,1,3,2,2,4,4,5,5,6), 2, 5, byrow = TRUE))
+  layout(matrix(c(1,1,3,2,2,8,8,8,
+                  4,4,5,5,6,8,8,8,
+                  rep(7,5),8,8,8), nrow=3, byrow = TRUE))
+  # layout(matrix(c(1,1,3,2,2,4,4,5,5,6), 2, 5, byrow = TRUE))
   # layout(matrix(c(1,1,2,2,3,7,7,4,4,5,5,6,7,7), 2, 7, byrow = TRUE))
   par(mar=c(3,3,2,1),mgp=c(2,1,0))
   aa <- min(1/4,1-1/4)
@@ -539,7 +558,7 @@ plot_res <- function(res){
                c(plots[[i]]$q75[[h_opt+1]][ii],plots[[i]]$q75[[h_opt+1]][ii]),
                col="gray80",type="l")
       })
-    points(ls,plots[[i]]$q50[[h_opt+1]],col="gray80",pch=1)
+    # points(ls,plots[[i]]$q50[[h_opt+1]],col="gray80",pch=1)
     for(h in (h_opt):1){
       id_h <- res$id_ALL_TEST_h[[h]]
       add <- T
@@ -579,6 +598,26 @@ plot_res <- function(res){
       names(ddff) <- c("h","Q2")
       bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"[B]^"2"),xlab="Component",ylab="")
       abline(h=0,lty=5,col=1)
+
+      id_rev <- rev(1:h_opt)
+      uu<-res$Us[[1]][,id_rev];uu[which(uu==0)] <- NA
+      matplot(uu,pch=id_rev,col="white",xlab="Index",ylab="Weight",main="Weights")
+      abline(h=0,col="gray80")
+      matplot(uu,pch=id_rev,col=cols[id_rev],add=T)
+
+      f <- do.call(cbind,lapply(
+        1:h_opt,
+        function(hh){
+          id_h <- res$id_ALL_TEST_h[[hh]]
+          out <- abs(res$bootstrap$Q2_h_star[[hh]]-res$bootstrap$vars_h_boot[[hh]])
+          out[-id_h] <- NA
+          out
+        }))
+      matplot(ls,f,pch=1:h_opt,col=cols,xlab="Parameter",ylab="Weight",
+              main=expression("|"~bar("R"["B,h"]^"2")~"-"~bar("Q"["B,h"]^"2")~"|"))
+      abline(v=res$optimal_parameters$paras,col=cols,lty=3)
+
+
       # for(h in 1:(h_opt+1)){
       #   id_h <- res$id_ALL_TEST_h[[h]]
       #   if(h!=1){

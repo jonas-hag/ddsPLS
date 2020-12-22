@@ -4,16 +4,7 @@
 \alias{bootstrap_pls_CT}
 \title{Title}
 \usage{
-bootstrap_pls_CT(
-  X_init,
-  Y_init,
-  h = 1,
-  lambdas = 0,
-  B_previous,
-  lambda_prev = NA,
-  u,
-  v
-)
+bootstrap_pls_CT(X_init, Y_init, h = 1, lambdas = 0, lambda_prev = NA, u, v)
 }
 \arguments{
 \item{Xs}{Xs}

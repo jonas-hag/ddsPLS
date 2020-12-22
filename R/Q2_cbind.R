@@ -35,25 +35,18 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,remove_COV=NULL
     V0 <- matrix(0,q,1)
     ## X part
     if(norm(COV_COV_high)>1e-9){
-      # model_NULL <- svd(COV_high,nu = 1,nv = 1)
-      # svd_XY <- svd(COV_COV_high,nv = 1,nu=1)#svd(COV_COV_high,nv = 1,nu=0)#
-
-      svd_mix_Y <- svd(COV_COV_high,nu = 1,nv = 1)#tcrossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
-      # svd_mix_X <- svd(COV_COV_high,nu = 0,nv = 1)#crossprod(COV_COV_high,COV_high),nu = 0,nv = 1)
-      # u_x_no_std <- t(COV_COV_high)%*%model_NULL$u
-      U0[id_x_high,] <- svd_mix_Y$v#svd_mix_X$v#u_x_no_std/sqrt(sum(u_x_no_std^2))#svd_XY$v#
-      ## Y part
-      # u_y_no_std <- COV_COV_high%*%model_NULL$v
-      V0[id_y_high,] <- svd_mix_Y$u#u_y_no_std/sqrt(sum(u_y_no_std^2))#svd_XY$u#
+      svd_mix_Y <- svd(COV_COV_high,nu = 1,nv = 1)
+      U0[id_x_high,] <- svd_mix_Y$v
+      V0[id_y_high,] <- svd_mix_Y$u
     }
   }else{
     U0 <- matrix(0,p,1)
     V0 <- matrix(0,q,1)
   }
   t <- x0%*%U0
-  # y0_mask <- y0;y0_mask[which(abs(V0)<1e-9),] <- 0;y0_mask[which(abs(V0)>=1e-9),] <- 1
-  # V_svd0 <- crossprod(y0_mask,t)#
-  V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
+  y0_mask <- y0;y0_mask[which(abs(V0)<1e-9),] <- 0;y0_mask[which(abs(V0)>=1e-9),] <- 1
+  V_svd0 <- crossprod(y0_mask,t)#
+  # V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
   norm_t_0 <- sum(t^2)
   if(norm_t_0>1e-9){
     V_svd <- V_svd0/norm_t_0
@@ -523,14 +516,15 @@ bootstrap_sPLS_lasso <- function(X_init,Y_init,h=1,paras_keep=paras_keep,
   B_youyou <- matrix(0,p,q)
   X_r <- X_train;Y_r <- Y_train
   no_prev <- nrow(na.omit(paras_prev))==0
-  if(no_prev){
+  C <- matrix(0,p,h)
+  D <- matrix(0,q,h)
+  if(T){
     u <- matrix(NA,p,n)
     v <- matrix(NA,q,n)
   }
   if(h>1){
-    U_reconstruct[,1:(h-1)] <- u[,1:(h-1)]
     for(r in 1:(h-1)){
-      if(no_prev){
+      if(T){
         kX_r <- p;kY_r <- q
         if(sparse){
           kX_r <- paras_prev[r,1];kY_r <- paras_prev[r,2]
@@ -543,41 +537,20 @@ bootstrap_sPLS_lasso <- function(X_init,Y_init,h=1,paras_keep=paras_keep,
       t_r <- X_r%*%u[,r]
       t_all[,r] <- t_r
       bt <- crossprod(t_r,X_r)/sum(t_r^2)
-      # V_svd0 <- crossprod(Y_r,t_r)
-      # norm_t_0 <- sum(t_r^2)
-      # if(norm_t_0>1e-9){
-      #   V_svd <- V_svd0/norm_t_0
-      # }else{
-      #   V_svd <- V_svd0*0
-      # }
+      C[,r] <- t(bt)
+      D[,r] <- crossprod(Y_r,t_r)/sum(t_r^2)
+      U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+      B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
+      y_r <- tcrossprod(t_r,D[,r,drop=F])#tcrossprod(t_r,V_out[,r,drop=F])
       V_svd <- v[,r]
-      y_r <- tcrossprod(t_r,V_svd)
-      V_reconstruct[,r] <- V_svd
       # Do deflation
       Y_r <- Y_r - y_r
-      X_r <- X_r - t_r%*%bt
+      X_r <- X_r - tcrossprod(t_r,C[,r,drop=F])
       X_defla[[r+1]] <- X_r
       Y_defla[[r+1]] <- Y_r
     }
     # Create weights
-    if(h>2){
-      for(r in 2:(h-1)){
-        for(s_r in (r-1):1){
-          x_s_r <- X_defla[[s_r]]
-          u_s_r <- U_reconstruct[,s_r,drop=F]
-          u_r <- U_reconstruct[,r]
-          t_s_r <- t_all[,s_r]
-          bt <- c(crossprod(t_s_r,x_s_r)/sum(t_s_r^2))
-          U_reconstruct[,r] <- u_r-u_s_r*sum(bt*u_r)
-        }
-      }
-    }
     # Build regression matrix
-    if(h>1){
-      for(r in 1:(h-1)){
-        B_youyou <- B_youyou + tcrossprod(U_reconstruct[,r],V_reconstruct[,r])
-      }
-    }
   }
   vars_expl_star = vars_expl = vars_expl_h = Q2_star = Q2 = Q2_all = model_exists <- rep(0,N_paras)
   B_out <- matrix(0,q*p,N_paras)
@@ -593,48 +566,32 @@ bootstrap_sPLS_lasso <- function(X_init,Y_init,h=1,paras_keep=paras_keep,
                       to.scale=F,R=1)
     u_il <- m_1$U_out
     V_il <- m_1$V_out
-    # if(sparse){
-    #   m_1 <-  mixOmics::spls(X = X_r,Y=Y_r,ncomp = 1,scale = F,
-    #                          keepX = paras_keep[i_l,1],
-    #                          keepY = paras_keep[i_l,2],tol = 1e-9)#model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
-    # }else{
-    #   m_1 <-  mixOmics::pls(X = X_r,Y=Y_r,ncomp = 1,scale = F,tol = 1e-9)
-    # }
-    # u_il <- m_1$loadings$X
-    # V_il <- m_1$loadings$Y
+
     u_out[,i_l] <- u_il
     V_optim_phi[,i_l] <- V_il
     t_r <- X_r%*%u_il
     bt <- crossprod(t_r,X_r)/sum(t_r^2)
-    # V_svd0 <- crossprod(Y_r,t_r)
-    # norm_t_0 <- sum(t_r^2)
-    # if(norm_t_0>NZV){
-    #   V_svd <- V_svd0/norm_t_0
-    # }else{
-    #   V_svd <- V_svd0*0
-    # }
+    C[,h] <- t(bt)
+    D[,h] <- crossprod(Y_r,t_r)/sum(t_r^2)
+    u[,h] <- u_il
+    U_star_cl <- u[,1:h,drop=F]%*%solve(crossprod(C[,1:h,drop=F],u[,1:h,drop=F]))
+    B_all <- tcrossprod(U_star_cl,D)
+    y_r <- tcrossprod(t_r,D[,h,drop=F])#tcrossprod(t_r,V_out[,r,drop=F])
     V_svd <- V_il
     # Create weights
-    U_reconstruct[,h] <- u_il
-    if(h>1){
-      for(s_r in (h-1):1){
-        x_s_r <- X_defla[[s_r]]
-        u_s_r <- U_reconstruct[,s_r,drop=F]
-        u_r <- U_reconstruct[,h]
-        t_s_r <- t_all[,s_r]
-        bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
-        U_reconstruct[,h] <- u_r-u_s_r*sum(bt*u_r)
-      }
-    }
+
     # Modify regression matrix
-    B_next <- tcrossprod(U_reconstruct[,h],V_svd)
+    # B_next <- tcrossprod(U_reconstruct[,h],V_svd)
     # All components
-    B_all <- B_youyou + B_next
+    # B_all <- B_youyou + B_next
     y_train_pred <- X_train%*%B_all
     y_test_pred <- X_test_normalize%*%B_all
     # Previous components
-    y_train_pred_next <- X_train%*%B_next
+    y_train_pred_next <- X_train%*%(B_all-B_youyou)
     y_test_pred_RSS <- X_test_normalize%*%B_youyou
+
+    # y_train_pred_next <- X_train%*%B_next
+    # y_test_pred_RSS <- X_test_normalize%*%B_youyou
     # Compute criterions
     vars_expl[i_l] <- 1 - sum( (Y_train-y_train_pred)^2 ) / sum( (Y_train)^2 )
     vars_expl_h[i_l] <- 1 - sum( (Y_train-y_train_pred_next)^2 ) / sum((Y_train)^2)
@@ -754,6 +711,8 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
   V_phi = V <- matrix(NA,q,n)
   P <- matrix(0,sum(ps),n)
   B <- matrix(0,sum(ps),q)
+  C <- matrix(0,p,n)
+  D <- matrix(0,q,n)
   t_h <- matrix(NA,n,n)
   Us = Bs = B_r_out = Q2_mean = Q2_all_mean =
     Q2_h_sum_star = Q2_h_sum_star_sd_moins = Q2_h_sum_star_sd_plus =
@@ -856,7 +815,6 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
     }
     id_ALL_TEST_h[[h]] <- id_ALL_TEST
     Q2_h_sum_star[[h]] <- q2_boot
-    plot(q2_boot)
     Q2_h_sum_star_sd_moins[[h]] <- q2_boot_sd_moins
     Q2_h_sum_star_sd_plus[[h]] <- q2_boot_sd_plus
     Q2_mean[[h]] <- q2_boot_mean
@@ -871,13 +829,12 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
     vars_h_boot_single_sd_moins[[h]] <- vars_boot_h_sd_moins
     vars_h_boot_single_sd_plus[[h]] <- vars_boot_h_sd_plus
     if(length(id_ALL_TEST)>0){
-      q2_max_h[h] <- max(na.omit(q2_boot_mean[id_ALL_TEST]))
-      id_s_cool <- which(q2_boot_mean==q2_max_h[h])
-
+      q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))
+      id_s_cool <- which(q2_boot==q2_max_h[h])
       if(length(id_s_cool)>0){
         best_id_h <- id_s_cool
         if(length(best_id_h)>0){
-          test_h <- q2_boot_mean[best_id_h]>0
+          test_h <- q2_boot[best_id_h]>0
           if(h>1){
             best_id_h_before <- id_paras_out[h-1]
             test2 <-
@@ -904,20 +861,21 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
           u_sol_boot_h <- m_gogo$U_out
           V_optim_boot_h <- m_gogo$V_out
           V_phi[,h] <- V_optim_boot_h
-          # t_boot_h <- x0%*%u_sol_boot_h
-          # norm_t_0 <- sum(t_boot_h^2)
-          # if(norm_t_0>1e-9){
-          #   bt <- crossprod(t_boot_h,x0)/norm_t_0
-          #   V_sol_boot_h <- crossprod(y0,t_boot_h)
-          #   V_sol_boot_h <- V_sol_boot_h/norm_t_0
-          # }else{
-          #   V_sol_boot_h <- V_sol_boot_h*0
-          # }
+          t_r <- x0%*%u_sol_boot_h
+          bt <- crossprod(t_r,x0)/sum(t_r^2)
+          C[,h] <- t(bt)
+          D[,h] <- crossprod(y0,t_r)/sum(t_r^2)
+          u[,h] <- u_sol_boot_h
+          U_star_cl <- u[,1:h,drop=F]%*%solve(crossprod(C[,1:h,drop=F],u[,1:h,drop=F]))
+          B_all <- tcrossprod(U_star_cl,D[,1:h,drop=F])
+          x_r <- tcrossprod(t_r,C[,h,drop=F])#tcrossprod(t_r,V_out[,r,drop=F])
+          y_r <- tcrossprod(t_r,D[,h,drop=F])#tcrossprod(t_r,V_out[,r,drop=F])
+
           V_sol_boot_h <- V_optim_boot_h
-          B_boot_h <- tcrossprod(u_sol_boot_h,V_sol_boot_h)
+          B_boot_h <- B_all-B_previous
           ### End
           ## Variance per component
-          y_est_boot <- x0%*%B_boot_h
+          y_est_boot <- X_init%*%B_boot_h
           varia_expl <- 1 - sum((Y_init-y_est_boot)^2)/sum(RSS0)
           ##
           if(varia_expl>1e-9){
@@ -929,21 +887,6 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
             paras_prev[h,1] <- paras_keep[best_id_h[1],1]
             paras_prev[h,2] <- paras_keep[best_id_h[1],2]
             # Get the regression matrix of the optimal model
-            u[,h] <- u_sol_boot_h
-            if(h!=1){
-              for(s_r in (h-1):1){
-                if(s_r!=1){
-                  x_s_r <- x0_deflated[[s_r-1]]
-                }else{
-                  x_s_r <- do.call(cbind,Xs_init)
-                }
-                u_s_r <- u[,s_r,drop=F]
-                t_s_r <- x_s_r%*%u_s_r
-                bt <- crossprod(t_s_r,x_s_r)/sum(t_s_r^2)
-                u[,h] <- u[,h]-u_s_r*sum(bt*u[,h])
-              }
-            }
-            t_r <- x0%*%u_sol_boot_h
             t_h[,h] <- t_r
 
             V_r <- V_sol_boot_h
@@ -957,18 +900,13 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
             }
             B_r_out[[h]] <- B_boot_h
             V[,h] <- V_r
-            y0 <- y0-x0%*%B_boot_h
+            y0 <- Y_init-y_r
             y0_deflated[[h]] <- y0
             if(deflatX){
-              if(is.null(t_r)){
-                t_r <- x0%*%u_sol_boot_h
-              }
-              bt <- crossprod(t_r,x0)/sum(t_r^2)
-              x0 <- x0 - t_r%*%bt
+              x0 <- X_init - x_r
               x0_deflated[[h]] <- x0
             }
-            B_boot_h <- tcrossprod(u[,h],V_sol_boot_h)
-            B_previous <- B_previous + tcrossprod(u[,h],V_sol_boot_h)
+            B_previous <- B_all
             ## Variance total
             y_est_boot_tot <- X_init%*%B_previous
             cum_vari_h <- 1-sum((Y_init-y_est_boot_tot)^2)/sum(RSS0)
@@ -994,8 +932,8 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
     Q2_cum_star <- 1-prod(1-Q2_sum_star[1:h_opt])
     for(h in 1:h_opt){
       B_r_out[[h]] <- B_r_out[[h]]*sd_y_x_inv
-      B <- B + B_r_out[[h]]
     }
+    B <- B_r_out[[h_opt]]
     i_0 <- 0
     for(k in 1:K){
       Us[[k]] <- u[i_0+1:ps[k],1:h_opt,drop=F]
@@ -1279,9 +1217,9 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas=NULL,
           norm_t_0 <- sum(t_boot_h^2)
           if(norm_t_0>1e-9){
             bt <- crossprod(t_boot_h,x0)/norm_t_0
-            # y0_mask <- y0;y0_mask[,which(abs(V_optim_boot_h)<1e-9)] <- 0
-            # V_sol_boot_h <- crossprod(y0_mask,t_boot_h)#
-            V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))
+            y0_mask <- y0;y0_mask[,which(abs(V_optim_boot_h)<1e-9)] <- 0
+            V_sol_boot_h <- crossprod(y0_mask,t_boot_h)#
+            # V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))
             V_sol_boot_h <- V_sol_boot_h/norm_t_0
           }else{
             V_sol_boot_h <- V_sol_boot_h*0
@@ -1329,18 +1267,13 @@ Q2_local_ddsPLS <- function(Xs,Y,lambdas=NULL,
             }
             B_r_out[[h]] <- B_boot_h
             V[,h] <- V_r
-            y0 <- y0-x0%*%B_boot_h
-            y0_deflated[[h]] <- y0
+            y_r <- tcrossprod(t_r,D[,h,drop=F])
+            x_r <- tcrossprod(t_r,C[,h,drop=F])
+            y0 <- y0 - y_r
             if(deflatX){
-              if(is.null(t_r)){
-                t_r <- x0%*%u_sol_boot_h
-              }
-              bt <- crossprod(t_r,x0)/sum(t_r^2)
-              x0 <- x0 - t_r%*%bt
-              x0_deflated[[h]] <- x0
+              x0 <- x0 - x_r
             }
-            B_boot_h <- tcrossprod(u[,h],V_sol_boot_h)
-            B_previous <- B_previous + tcrossprod(u[,h],V_sol_boot_h)
+            B_previous <- B_all
             ## Variance total
             y_est_boot_tot <- X_init%*%B_previous
             cum_vari_h <- 1-sum((Y_init-y_est_boot_tot)^2)/sum(RSS0)
@@ -1661,9 +1594,9 @@ Q2_UNIK_ddsPLS <- function(Xs,Y,lambdas=NULL,
           norm_t_0 <- sum(t_boot_h^2)
           if(norm_t_0>1e-9){
             bt <- crossprod(t_boot_h,x0)/norm_t_0
-            # y0_mask <- y0;y0_mask[which(abs(V_optim_boot_h)<1e-9),] <- 0;y0_mask[which(abs(V_optim_boot_h)>=1e-9),] <- 1
-            # V_sol_boot_h <- crossprod(y0_mask,t_boot_h)#
-            V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))
+            y0_mask <- y0;y0_mask[which(abs(V_optim_boot_h)<1e-9),] <- 0;y0_mask[which(abs(V_optim_boot_h)>=1e-9),] <- 1
+            V_sol_boot_h <- crossprod(y0_mask,t_boot_h)#
+            # V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))
             V_sol_boot_h <- V_sol_boot_h/norm_t_0
           }else{
             V_sol_boot_h <- V_sol_boot_h*0
@@ -1815,7 +1748,7 @@ Q2_UNIK_ddsPLS <- function(Xs,Y,lambdas=NULL,
   res
 }
 
-plot_res <- function(res){
+plot_res_init <- function(res){
   h_opt <- res$optimal_parameters$R
   lambdas_out <- res$bootstrap$lambdas_h
   cols <- c(RColorBrewer::brewer.pal(max(h_opt,3),"Set1")[1:h_opt],"gray80")

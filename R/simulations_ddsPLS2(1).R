@@ -522,6 +522,84 @@ plot_X <- function(){
   }
 }
 
+plot_TVP_TFP_X <- function(){
+  n_n_s <- length(unique(df$n))
+  p <- ncol(A)
+  var_star <- which(colSums(abs(A))>0)
+  p_star <- length(var_star)
+  sel_x <- df[,c(1,3,7,8)]
+  TVP <- (sel_x$VP_X)/(p_star)
+  TFP <- (sel_x$SEL_X- sel_x$VP_X)/(p-p_star)
+  sel_x <- cbind(sel_x,TVP,TFP)
+
+  layout(matrix(c(1,2),ncol=2,byrow = T))
+  # par(mfrow=c(1,3),mar=c(3,3,3,2))
+  cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
+  col_box <- RColorBrewer::brewer.pal(9,"Pastel1")[7]
+
+  ylim <- c(-0.05,1.1*1)
+  lwd <- 1.5
+  ncols <- 3
+  cex.leg <- 1
+  boxplot(TVP~method*n,border=cols,col=col_box,df,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
+          xlab="",xaxt="n",ylim=ylim,ylab="",lwd=lwd);#abline(h=c(0,0.0975),lty=3,lwd=2)
+  abline(h=c(0,1),lty=1,col="gray")
+  axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+       labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  legend("top",legend = level_legend,fill = cols,
+         ncol = 2,bg = "white",cex = cex.leg,bty="n")
+
+  boxplot(TFP~method*n,border=cols,col=col_box,df,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
+          xlab="",xaxt="n",ylim=ylim,ylab="",lwd=lwd);#abline(h=c(0,0.0975),lty=3,lwd=2)
+  abline(h=c(0,1),lty=1,col="gray")
+  abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+       labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  legend("top",legend = level_legend,fill = cols,
+         ncol = 2,bg = "white",cex = cex.leg,bty="n")
+
+}
+
+plot_TVP_TFP_Y <- function(){
+  n_n_s <- length(unique(df$n))
+  p <- ncol(D)
+  var_star <- which(colSums(abs(D))>0)
+  p_star <- length(var_star)
+  sel_x <- df[,c(1,3,9,10)]
+  TVP <- (sel_x$VP_Y)/(p_star)
+  TFP <- (sel_x$SEL_Y- sel_x$VP_Y)/(p-p_star)
+  sel_x <- cbind(sel_x,TVP,TFP)
+
+  layout(matrix(c(1,2),ncol=2,byrow = T))
+  # par(mfrow=c(1,3),mar=c(3,3,3,2))
+  cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
+  col_box <- RColorBrewer::brewer.pal(9,"Pastel1")[7]
+
+  ylim <- c(-0.05,1.1*1)
+  lwd <- 1.5
+  ncols <- 3
+  cex.leg <- 1
+  boxplot(TVP~method*n,border=cols,col=col_box,df,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
+          xlab="",xaxt="n",ylim=ylim,ylab="",lwd=lwd);#abline(h=c(0,0.0975),lty=3,lwd=2)
+  abline(h=c(0,1),lty=1,col="gray")
+  abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+       labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  legend("top",legend = level_legend,fill = cols,
+         ncol = 2,bg = "white",cex = cex.leg,bty="n")
+
+  boxplot(TFP~method*n,border=cols,col=col_box,df,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
+          xlab="",xaxt="n",ylim=ylim,ylab="",lwd=lwd);#abline(h=c(0,0.0975),lty=3,lwd=2)
+  abline(h=c(0,1),lty=1,col="gray")
+  abline(v=0.5+c(0:(length(ns)) )*length(unique(df$method)),lty=3)
+  axis(side = 1,at = length(levels(df$method))/2+0.5+c(0:(length(ns)-1) )*length(levels(df$method)),
+       labels = paste("n=",ns,sep=""),cex.axis=0.9)
+  legend("top",legend = level_legend,fill = cols,
+         ncol = 2,bg = "white",cex = cex.leg,bty="n")
+
+}
+
 plot_sel_simu_x <- function(ncolX=8){
   CUMS <- 5
   n_n_s <- length(unique(df$n))
@@ -626,26 +704,26 @@ test <- function(){
       # matrix(rep(c(rep(0,p1),rep(1,p2),rep(0,p-p1-p2)),R3),nrow = R3,byrow = T)
     )
     A <- eps1*apply(A,2,ff)
-    C <- rbind(
+    D <- rbind(
       matrix(rep(c(2,0,0),R1),nrow = R1,byrow = T),
       matrix(rep(c(0,1,0),R2),nrow = R2,byrow = T)#,
       # matrix(rep(c(0,1,0),R3),nrow = R3,byrow = T)
     )
-    C <- eps1*apply(C,2,ff)
+    D <- eps1*apply(D,2,ff)
     # C <- epsY*apply(cbind(c(2,1),c(0,-1),rep(0,d)),2,ff)
 
     A_all <- A#cbind(A1,A2,A3)
-    B_th_all=B_th <- MASS::ginv(A_all)%*%C
-    L_total <- ncol(C)+ncol(A_all)
+    B_th_all=B_th <- MASS::ginv(A_all)%*%D
+    L_total <- ncol(D)+ncol(A_all)
 
     LAMBDAS <- seq(0,1,length.out = 66)
     KXS <- unique(round(seq(1,ncol(A_all),length.out = 22)))
-    KYS <- unique(round(seq(1,ncol(C),length.out = 3)))
+    KYS <- unique(round(seq(1,ncol(D),length.out = 3)))
 
     ns <- c(25,50,100,200,400)#unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
     NCORES_S <- rep(20,5)
     ALPHA <- rep(1/2,5)
-    n_Bs <- c(1200,700,500,200,200)
+    n_Bs <- c(1000,500,300,100,100)
     Ns <- 1:100
     paras <- expand.grid(ns,Ns)
     NNs <- nrow(paras)
@@ -673,7 +751,7 @@ test <- function(){
     # load(../../Hadrien/data_last.RData")#load("../data_simu/data_signalFaible.RData")
     # i <- 6 ; i_m <- 1
     file_data <- "/Users/hlorenzo/Dropbox/data_last_with_unik.RData"
-    load(file_data)
+    # load(file_data)
   }
   # posINIT <- which(df$method==method[1] & df$R>2)
   for(i in 1:500){#c(1:63)[posINIT]){#447:500){#386
@@ -689,9 +767,9 @@ test <- function(){
     # X1 <- phi%*%A1 + SIs[[1]]*psi[,pt+1:ncol(A1),drop=F];pt <- pt + ncol(A1)
     # X2 <- phi%*%A2 + SIs[[2]]*psi[,pt+1:ncol(A2),drop=F];pt <- pt + ncol(A2)
     # X3 <- phi%*%A3 + SIs[[3]]*psi[,pt+1:ncol(A3),drop=F];pt <- pt + ncol(A3)
-    SIs <- lapply(list(A,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
+    SIs <- lapply(list(A,D),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
     Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
-    Y <- phi%*%C + SIs[[2]]*psi[,pt+1:ncol(C),drop=F];pt <- pt + ncol(Y)
+    Y <- phi%*%D + SIs[[2]]*psi[,pt+1:ncol(D),drop=F];pt <- pt + ncol(Y)
     datas$Xs[[i]] <- Xs
     datas$Y[[i]] <- Y
     datas$phi[[i]] <- phi
@@ -710,7 +788,7 @@ test <- function(){
       pos_i <- pos[i_m]
       method_i <- method[which(pos_method==pos_i)]
       cat(paste("\n     <- ",method_i,"... ",sep=""))
-      toPlot <- method_i %in% method[c(1,2,3,4)]#[c(1,2,4,5)]
+      toPlot <- method_i %in% method[c(1,3,4)]
       if(toPlot){
         time_1 <- Sys.time()
         if(method_i %in% c("ddsPLS Boot","PLS Boot")){
@@ -722,8 +800,13 @@ test <- function(){
             lambdas <- 0
             ncores_i <- 7
           }
-          res <- Q2_local_ddsPLS(Xs,Y,lambdas=lambdas,
-                                 n_B = n_b_i,NCORES=ncores_i,verbose = T)
+          # res <- Q2_local_ddsPLS(Xs,Y,lambdas=lambdas,
+          #                        n_B = n_b_i,NCORES=ncores_i,verbose = T)
+          res <- sparse_PLS_Bootstrap(Xs,Y,type="CT",
+                                      paras=lambdas,
+                                      n_B=n_b_i,
+                                      lowExplainedVariance=0,
+                                      deflatX=T,NCORES=ncores_i,center=T,verbose=T)
           cat("\n")
         }else if(method_i %in% "ddsPLS Unik Boot"){
           lambdas <- LAMBDAS
@@ -746,7 +829,7 @@ test <- function(){
         }
         if(!is.null(res)){
           df[pos_i,]$Q2 <- res$optimal_parameters$Q2
-          df[pos_i,]$DIST_B_hat <- 1-sum((A_all%*%res$B_cbind-C)^2)/sum((C)^2)
+          df[pos_i,]$DIST_B_hat <- 1-sum((A%*%res$B_cbind-D)^2)/sum(D^2)
           df[pos_i,]$NORM_B_hat <- sqrt(sum((res$B_cbind)^2))
           df[pos_i,]$R <- res$optimal_parameters$R
           df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
@@ -792,14 +875,16 @@ test <- function(){
         plot_R()
         dev.off()
 
-                pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x_2.pdf",width = 14,height = 9)
-                # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
-                plot_X()
-                dev.off()
+        pdf(file = "/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_x_2.pdf",width = 14,height = 9)
+        # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
+        # plot_X()
+        plot_TVP_TFP_X()
+        dev.off()
 
         pdf(file = paste("/Users/hlorenzo/Dropbox/Results_Last/Simulations_sel_y_2.pdf",sep=""),width = 14,height = 9)
         # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
-        plot_sel_simu_y()
+        # plot_sel_simu_y()
+        plot_TVP_TFP_Y()
         dev.off()
       }
     }
