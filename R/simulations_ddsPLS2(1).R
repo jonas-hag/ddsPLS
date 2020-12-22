@@ -717,7 +717,7 @@ test <- function(){
     L_total <- ncol(D)+ncol(A_all)
 
     LAMBDAS <- seq(0,1,length.out = 66)
-    KXS <- unique(round(seq(1,ncol(A_all),length.out = 22)))
+    KXS <- unique(sort(c(round(seq(1,ncol(A_all),length.out = 22)),100) ))
     KYS <- unique(round(seq(1,ncol(D),length.out = 3)))
 
     ns <- c(25,50,100,200,400)#unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
@@ -754,7 +754,7 @@ test <- function(){
     # load(file_data)
   }
   # posINIT <- which(df$method==method[1] & df$R>2)
-  for(i in 1:500){#c(1:63)[posINIT]){#447:500){#386
+  for(i in 13:500){#c(1:63)[posINIT]){#447:500){#386
     n <- paras[i,1]
     cat("\n\n______________________________________________________________________________")
     cat(paste("\n n =",n,"  ---   i =",i))
