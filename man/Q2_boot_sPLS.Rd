@@ -10,6 +10,7 @@ Q2_boot_sPLS(
   keepXs = 1,
   keepYs = 1,
   n_B = 20,
+  whichCriterion = "Q2",
   deflatX = T,
   NCORES = 1,
   center = T,

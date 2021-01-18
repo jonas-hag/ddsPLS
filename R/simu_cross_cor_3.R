@@ -19,7 +19,7 @@ give_me_plot_comm_rho <- function(){
   ncols <- 3
   cex.leg <- 1
   b<-boxplot(Q2~method*rho,border=cols,col=col_box,df,main=expression("Q"^"2"),#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -49,9 +49,9 @@ give_me_plot_comm_rho <- function(){
   #        ncol = 1,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(log(1-DIST_B_hat)~method*rho,df,#[-which(df$method=="OLS_esp"),],
-          main=expression("||A"~hat(B)~"-D||"^2/"||D||"^2~"(logarithmic scale)"),#log="y",
-          col=col_box,border=cols,xlab=expression(rho),xaxt="n",yaxt="n",ylab="",
-          lwd=lwd,pch=1:length(level_legend))#,ylim=c(0,1))
+             main=expression("||A"~hat(B)~"-D||"^2/"||D||"^2~"(logarithmic scale)"),#log="y",
+             col=col_box,border=cols,xlab=expression(rho),xaxt="n",yaxt="n",ylab="",
+             lwd=lwd,pch=1:length(level_legend))#,ylim=c(0,1))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -140,7 +140,7 @@ plot_TVP_TFP_X_rho <- function(){
   cex.leg <- 1
 
   b<-boxplot(SEL_X~method*rho,border=cols,col=col_box,df,main="Number of selected variables",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -156,7 +156,7 @@ plot_TVP_TFP_X_rho <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TVP~method*rho,border=cols,col=col_box,df,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -172,7 +172,7 @@ plot_TVP_TFP_X_rho <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TFP~method*rho,border=cols,col=col_box,df,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -216,7 +216,7 @@ plot_TVP_TFP_Y_rho <- function(){
   cex.leg <- 1
 
   b<-boxplot(SEL_Y~method*rho,border=cols,col=col_box,df,main="Number of selected variables",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -232,7 +232,7 @@ plot_TVP_TFP_Y_rho <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TVP~method*rho,border=cols,col=col_box,df,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -248,7 +248,7 @@ plot_TVP_TFP_Y_rho <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TFP~method*rho,border=cols,col=col_box,df,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
-          xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab=expression(rho),xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$rho)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -277,13 +277,13 @@ test <- function(){
     NCORES <- 15
     NZV <- 1e-2
 
-    eps1=eps2=eps3=epsY=eps <- 0.99#0.8#
+    eps1=eps2=eps3=epsY=eps <- 0.9#0.8#
     n <- c(100)#unique(round(seq(20,300,length.out = 8)))#unique(round(seq(20,150,length.out = 5)))
     NCORES_S <- 22
     ALPHA <- rep(1/2,5)
     n_Bs <- 300#c(1000,500,300,100,100)
     Ns <- 1:100
-    rhos <- c(0.2,0.8)
+    rhos <- c(0.1,0.9)
 
     ff <- function(cc){out <- cc/sqrt(sum(cc^2));if(is.na(out[1])) out <- cc;out}
     p1 = p2 = p3 <- 50; p <- 1000
@@ -321,7 +321,7 @@ test <- function(){
     }
     # load(../../Hadrien/data_last.RData")#load("../data_simu/data_signalFaible.RData")
     # i <- 6 ; i_m <- 1
-    file_data <- "/Users/hlorenzo/Documents/GitHub/data_last_with_rho.RData"
+    file_data <- "/Users/hlorenzo/Documents/GitHub/data_last_with_rho3.RData"
     load(file_data)
     pos_old_unik <- which(df$method=="ddsPLS Unik Boot")
     if(length(pos_old_unik)>0){
@@ -341,7 +341,7 @@ test <- function(){
   }
   # posINIT <- which(df$method==method[1] & df$R>2)
   i = i_m <- 1
-  posNA <- which(is.na(df$Q2))
+  # posNA <- which(is.na(df$Q2))
   for(i in 1:200){
     rho <- paras[i,1]
     A <- rbind(
@@ -350,10 +350,11 @@ test <- function(){
       matrix(rep(c(rep(0,p1),rep(1,p2),rep(1,p3),rep(0,p-p1-p2-p3)),R3),nrow = R3,byrow = T)
     )
     A <- eps1*apply(A,2,ff)
+    al1 <- (sqrt(1+rho)+sqrt(1-rho))/2;al2 <- (sqrt(1+rho)-sqrt(1-rho))/2
     D <- rbind(
       matrix(rep(c(1,0,0,0),R1),nrow = R1,byrow = T),
-      matrix(rep(c(0,1,1-rho,0),R2),nrow = R2,byrow = T),
-      matrix(rep(c(0,0,rho,0),R3),nrow = R3,byrow = T)
+      matrix(rep(c(0,al1,al2,0),R2),nrow = R2,byrow = T),
+      matrix(rep(c(0,al2,al1,0),R3),nrow = R3,byrow = T)
     )
     D <- eps1*apply(D,2,ff)
     q <- ncol(D)
@@ -364,35 +365,36 @@ test <- function(){
     cat(paste("\n rho =",rho,"  ---   i =",i))
     pos <- intersect(which(df$rho==rho),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
-    # # Do data
-    # psi <- MASS::mvrnorm(n,mu = rep(0,d+L_total),Sigma = diag(d+L_total))
-    # phi <- psi[,1:d,drop=F];pt <- d
+    # Do data
+    psi <- MASS::mvrnorm(n,mu = rep(0,d+L_total),Sigma = diag(d+L_total))
+    phi <- psi[,1:d,drop=F];pt <- d
     # SIs <- lapply(list(A1,A2,A3,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
     # X1 <- phi%*%A1 + SIs[[1]]*psi[,pt+1:ncol(A1),drop=F];pt <- pt + ncol(A1)
     # X2 <- phi%*%A2 + SIs[[2]]*psi[,pt+1:ncol(A2),drop=F];pt <- pt + ncol(A2)
     # X3 <- phi%*%A3 + SIs[[3]]*psi[,pt+1:ncol(A3),drop=F];pt <- pt + ncol(A3)
-    # SIs <- lapply(list(A,D),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
-    # Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
-    # Y <- phi%*%D + SIs[[2]]*psi[,pt+1:ncol(D),drop=F];pt <- pt + ncol(Y)
-    # datas$Xs[[i]] <- Xs
-    # datas$Y[[i]] <- Y
-    # datas$phi[[i]] <- phi
-    # if(i%%100==0){
-    #   save(datas,df,ALL_FUCKING_MODELS,file = file_data)
-    #   #save(datas,df,file = "../data_simu/data_signalFaible.RData")
-    #   # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
-    # }
+    SIs <- lapply(list(A,D),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
+    Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
+    Y <- phi%*%D + SIs[[2]]*psi[,pt+1:ncol(D),drop=F];pt <- pt + ncol(Y)
+    datas$Xs[[i]] <- Xs
+    datas$Y[[i]] <- Y
+    datas$phi[[i]] <- phi
+    if(i%%50==0){
+      save(datas,df,ALL_FUCKING_MODELS,file = file_data)
+      #save(datas,df,file = "../data_simu/data_signalFaible.RData")
+      # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
+    }
     # Load data
-    datas$phi[[i]] -> phi #; phi_ok <- phi[,1:2]
-    datas$Xs[[i]] -> Xs
-    datas$Y[[i]] -> Y
+    # datas$phi[[i]] -> phi #; phi_ok <- phi[,1:2]
+    # datas$Xs[[i]] -> Xs
+    # datas$Y[[i]] -> Y
     x <- do.call(cbind,Xs)
     ##############
     for(i_m in 1:length(pos)){
       pos_i <- pos[i_m]
       method_i <- method[which(pos_method==pos_i)]
       cat(paste("\n     <- ",method_i,"... ",sep=""))
-      toPlot <- pos_i %in% posNA#method_i %in% method[1:4]
+      # toPlot <- pos_i %in% posNA#method_i %in% method[1:4]
+      toPlot<-T
       if(toPlot){
         time_1 <- Sys.time()
         if(method_i %in% c("ddsPLS Boot","PLS Boot")){
@@ -443,7 +445,7 @@ test <- function(){
           mo <- spls::spls(Xs[[1]],Y,K = res_all[id_max,2],eta = res_all[id_max,3])
           res <- list(optimal_parameters=list(Q2=max(res_all[,1]),R=as.numeric(res_all[id_max,2])),B_cbind=mo$betahat)
         }else if(method_i %in% "sPLS classik"){
-          ncores_i <- NCORES_S[pos_n]
+          ncores_i <- NCORES_S
           kxs <- KXS;kys <- KYS; sparse <- T
           res <- do_mixomics(Xs,Y,kxs,kys,ncores_i)
         }
@@ -453,7 +455,11 @@ test <- function(){
           df[pos_i,]$NORM_B_hat <- sqrt(sum((res$B_cbind)^2))
           df[pos_i,]$R <- res$optimal_parameters$R
           if(method_i %in% c("sPLS classik",method[c(2,3)])){
-            df[pos_i,id_sel] <- compare_selection(tcrossprod(res$U[[1]],res$V),B_th_all)
+            if(is.list(res$U)){
+              df[pos_i,id_sel] <- compare_selection(tcrossprod(res$U[[1]],res$V),B_th_all)
+            }else{
+              df[pos_i,id_sel] <- compare_selection(tcrossprod(res$U,res$V),B_th_all)
+            }
           }else{
             df[pos_i,id_sel] <- compare_selection(res$B_cbind,B_th_all)
           }
@@ -465,21 +471,21 @@ test <- function(){
       ##########################
       ########## PLOT ##########
       ##########################
-      if(toPlot){
+      if(toPlot & i>1){
         # pdf(file = "/Users/hlorenzo/Documents/GitHub/Simulations_rho.pdf",width = 15,height = 5)
-        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_rho.eps", onefile=TRUE, horizontal=F,
+        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_rho3.eps", onefile=TRUE, horizontal=F,
                    width=6, height=2,pointsize=0.1)
         give_me_plot_comm_rho()
         dev.off()
 
         # pdf(file = "/Users/hlorenzo/Documents/GitHub/Simulations_R_rho.pdf",width = 15,height = 5)
-        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_R_rho.eps", onefile=TRUE, horizontal=F,
+        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_R_rho3.eps", onefile=TRUE, horizontal=F,
                    width=11, height=3,pointsize=8)
         plot_R_rho()
         dev.off()
 
         # pdf(file = "/Users/hlorenzo/Documents/GitHub/Simulations_sel_x_rho.pdf",width = 15,height = 5)
-        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_sel_x_rho.eps", onefile=TRUE, horizontal=F,
+        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_sel_x_rho3.eps", onefile=TRUE, horizontal=F,
                    width=6, height=2,pointsize=0.1)
         # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_x.eps", width=14, height=9, onefile=TRUE, horizontal=FALSE)
         # plot_X()
@@ -487,7 +493,7 @@ test <- function(){
         dev.off()
 
         # pdf(file = paste("/Users/hlorenzo/Documents/GitHub/Simulations_sel_y_rho.pdf",sep=""),width = 15,height = 5)
-        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_sel_y_rho.eps", onefile=TRUE, horizontal=F,
+        postscript("/Users/hlorenzo/Documents/GitHub/Simulations_sel_y_rho3.eps", onefile=TRUE, horizontal=F,
                    width=6, height=2,pointsize=0.1)
         # postscript("/Users/hlorenzo/Dropbox/Results/Simulations_sel_y.eps", width=14, height=9, onefile=TRUE, horizontal=F)
         # plot_sel_simu_y()

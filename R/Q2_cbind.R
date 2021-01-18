@@ -123,11 +123,11 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,remove_COV=NULL,RSS0=NULL,
     }
     # covs[[r]] <- COV
     abs_COV <- abs(COV)
+    if(length(which(!(is.na(c(abs_COV)))))==0) browser()
     max_COV <- max(na.omit(c(abs_COV)))
     lam_r <- lam
     if(length(lam)>1) lam_r <- lam[r]
     if(lam_r<max_COV){
-
       c_h <- do_one_component(x0 = x0,y0 = y0,n = n,p = p,q = q,COV = COV,abs_COV = abs_COV,
                               max_COV=max_COV,lam = lam_r,remove_COV=remove_COV)
       t_r <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd ; V0  <- c_h$V0
@@ -672,7 +672,7 @@ Q2_OLS_th <- function(x,y,B_th){
 #' @useDynLib ddsPLS
 Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
                          keepYs=1,
-                         n_B=20,
+                         n_B=20,whichCriterion="Q2",
                          deflatX=T,NCORES=1,center=T,
                          NZV=1e-9,verbose=F,sparse=F){
   n <- nrow(Xs[[1]])
@@ -748,6 +748,7 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
       registerDoParallel(cl);out},{out <- `%do%`;out})
     Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",.combine='c',.multicombine=TRUE) %my_do% {
+      source('~/Documents/GitHub/ddsPLS/R/Q2_cbind.R')
       out <- bootstrap_sPLS_lasso(X_init=X_init,Y_init=Y_init,
                                   u=u,v=V_phi,h=h,paras_keep=paras_keep,
                                   paras_prev = paras_prev,sparse=sparse)
@@ -778,8 +779,8 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
       toto <- na.omit(res_measure[[h]][pos,c(2,3,4,5)])
       if(length(toto)>0){
         m <- 1
-        # Q2_qtles <- mean(toto[,m])+c(-sd(toto[,m]),0,sd(toto[,m]))#quantile(toto[,1],probs = probabilities)#quantile(toto[,1],probs = probabilities)#quantile(toto[,m],c(1/10,1/2,9/10))#
         q2_boot[i_l] <- mean(toto[,m])#Q2_qtles[2]
+        # Q2_qtles <- mean(toto[,m])+c(-sd(toto[,m]),0,sd(toto[,m]))#quantile(toto[,1],probs = probabilities)#quantile(toto[,1],probs = probabilities)#quantile(toto[,m],c(1/10,1/2,9/10))#
         q2_boot_sd_plus[i_l] <- mean(toto[,m])+sd(toto[,m])#Q2_qtles[3]
         q2_boot_sd_moins[i_l] <- mean(toto[,m])-sd(toto[,m])#Q2_qtles[1]
         q2_boot_mean[i_l] <- mean(toto[,m])/(sd(toto[,m]))#(1+sd(toto[,m])/n)
@@ -829,8 +830,15 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
     vars_h_boot_single_sd_moins[[h]] <- vars_boot_h_sd_moins
     vars_h_boot_single_sd_plus[[h]] <- vars_boot_h_sd_plus
     if(length(id_ALL_TEST)>0){
-      q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))
-      id_s_cool <- which(q2_boot==q2_max_h[h])
+      if(whichCriterion=="Q2"){
+        diff_R2_Q2 <- abs(q2_boot)
+        q2_max_h[h] <- max(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
+        id_s_cool <- which(diff_R2_Q2==q2_max_h[h])
+      }else{
+        diff_R2_Q2 <- abs(q2_boot-vars_boot)
+        q2_max_h[h] <- min(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
+        id_s_cool <- which(diff_R2_Q2==q2_max_h[h])
+      }
       if(length(id_s_cool)>0){
         best_id_h <- id_s_cool
         if(length(best_id_h)>0){
@@ -898,7 +906,7 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
                         "   Q2_h=",round(q2_max_h[h]*100)/100,
                         sep=""))
             }
-            B_r_out[[h]] <- B_boot_h
+            B_r_out[[h]] <- B_all
             V[,h] <- V_r
             y0 <- Y_init-y_r
             y0_deflated[[h]] <- y0

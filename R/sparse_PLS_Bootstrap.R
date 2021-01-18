@@ -52,55 +52,91 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
   }
   if(h>1){
     U_reconstruct[,1:(h-1)] <- u[,1:(h-1)]
-    for(r in 1:(h-1)){
-      if(T){#length(na.omit(lambda_prev))==0){
-        m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],
-                             to.scale = F)
-        u[,r] <- m_gogo$U_out
-        v[,r] <- m_gogo$V_optim
-      }
+    r <- 0
+    test_no_null <- T
+    while(test_no_null){
+      r <- r + 1
+      # for(r in 1:(h-1)){
+      m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],
+                           to.scale = F)
+      u[,r] <- m_gogo$U_out
+      v[,r] <- m_gogo$V_optim
       t_r <- X_r%*%u[,r]
       t_all[,r] <- t_r
-      bt <- crossprod(t_r,X_r)/sum(t_r^2)
-      C[,r] <- t(bt)
-      Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0#;Y_r_mask[which(abs(v[,r])>=1e-9),] <- 1
-      D[,r] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
-      U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
-      B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
-      y_r <- tcrossprod(t_r,D[,r,drop=F])
-      x_r <- tcrossprod(t_r,C[,r,drop=F])
-      # Do deflation
-      Y_r <- Y_r - y_r
-      X_r <- X_r - x_r
-      X_defla[[r+1]] <- X_r
-      Y_defla[[r+1]] <- Y_r
-    }
-  }
-  vars_expl_star = vars_expl = vars_expl_h = Q2_star = Q2 = Q2_all = model_exists <- rep(0,N_lambdas)
 
+      # bt <- crossprod(t_r,X_r)/sum(t_r^2)
+      # C[,r] <- t(bt)
+      # Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0#;Y_r_mask[which(abs(v[,r])>=1e-9),] <- 1
+      # D[,r] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
+      # U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+
+      norm_2 <- sum(t_r^2)
+      if(norm_2>1e-9){
+        bt <- crossprod(t_r,X_r)/norm_2
+        C[,r] <- t(bt)
+        Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0
+        D[,r] <- crossprod(Y_r_mask,t_r)/norm_2
+        # U_star_cl  <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+        U_star_cl = tryCatch({
+          u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+        }, error = function(error_condition) {
+          browser()
+        })
+        B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
+        y_r <- tcrossprod(t_r,D[,r,drop=F])
+        x_r <- tcrossprod(t_r,C[,r,drop=F])
+        # Do deflation
+        Y_r <- Y_r - y_r
+        X_r <- X_r - x_r
+        X_defla[[r+1]] <- X_r
+        Y_defla[[r+1]] <- Y_r
+      }else{
+        test_no_null <- F
+      }
+      if(r==h-1) test_no_null <- F
+    }
+  }else{
+    norm_2 <- 1
+  }
+  test_previous_ok <- norm_2>1e-9
+  vars_expl_star = vars_expl = vars_expl_h = Q2_star = Q2 = Q2_all = model_exists <- rep(0,N_lambdas)
   u_out <- matrix(0,p,N_lambdas)
+  V_il <- matrix(0,q,1)
   V_optim_phi = V_model <- matrix(0,q,N_lambdas)
   B_next_out <- list()
+  B_all <- B_youyou
   for(i_l in 1:N_lambdas){
-    m_1 <-  model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
-    u_il <- m_1$U_out
-    V_il <- m_1$V_optim
-    u_out[,i_l] <- u_il
-    V_optim_phi[,i_l] <- V_il
-    t_r <- X_r%*%u_il
-    bt <- crossprod(t_r,X_r)/sum(t_r^2)
-    C[,h] <- t(bt)
-    Y_r_mask <- Y_r;Y_r_mask[,which(abs(V_il)<1e-9)] <- 0#;Y_r_mask[which(abs(V_il)>=1e-9),] <- 1
-    D[,h] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
-    if(h>1){
-      u_cur_il <- cbind(u[,1:(h-1)],u_il)
-    }else{
-      u_cur_il <- u_il
+    if(test_previous_ok){
+      m_1 <-  model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
+      u_il <- m_1$U_out
+      V_il <- m_1$V_optim
+      u_out[,i_l] <- u_il
+      V_optim_phi[,i_l] <- V_il
+      t_r <- X_r%*%u_il
+      norm_2 <- sum(t_r^2)
+      if(norm_2>1e-9){
+        bt <- crossprod(t_r,X_r)/norm_2
+        C[,h] <- t(bt)
+        Y_r_mask <- Y_r;Y_r_mask[,which(abs(V_il)<1e-9)] <- 0
+        D[,h] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
+        if(h>1){
+          u_cur_il <- cbind(u[,1:(h-1)],u_il)
+        }else{
+          u_cur_il <- u_il
+        }
+        # U_star_cl  <- u_cur_il%*%solve(crossprod(C,u_cur_il))
+        U_star_cl = tryCatch({
+          u_cur_il%*%solve(crossprod(C,u_cur_il))
+        }, error = function(error_condition) {
+          browser()
+        })
+      }else{
+        U_star_cl <- matrix(0,p,h)
+      }
+      B_all <- tcrossprod(U_star_cl,D)
+      y_r <- tcrossprod(t_r,D[,h])
+      x_r <- tcrossprod(t_r,C[,h])
     }
-    U_star_cl <- u_cur_il%*%solve(crossprod(C,u_cur_il))
-    B_all <- tcrossprod(U_star_cl,D)
-    y_r <- tcrossprod(t_r,D[,h])
-    x_r <- tcrossprod(t_r,C[,h])
 
     y_train_pred <- X_train%*%B_all
     y_test_pred <- X_test_normalize%*%B_all
@@ -188,7 +224,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
   test <- T
   y0 <- Y_init
   h <- 0
-  id_ALL_TEST_h = Q2_all_sum_star_boxplot = R2_all_sum_star_boxplot <- list()
+  id_ALL_TEST_h = Q2_all_boxplot = Q2_h_boxplot = R2_h_boxplot = R2_all_boxplot <- list()
   K_h <- 1:K
   # Check paras and stuff
   paras_in <- matrix(paras,ncol=1) ; paras_out <- matrix(NA,n,1)
@@ -331,11 +367,14 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
     if(length(id_ALL_TEST)>0){
       # q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
       # id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
-      diff_R2_Q2 <- abs(q2_boot-vars_boot)
+      diff_R2_Q2 <- abs(vars_boot-q2_all_boot)#abs(q2_boot-vars_boot_h)#vars_boot)
       q2_max_h[h] <- min(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
       id_s_cool <- which(diff_R2_Q2==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])
+      # oo <- vars_boot_h-q2_boot
+      # dd <- sign(oo[-1])-sign(oo[-length(oo)])
+      # id_s_cool <- which(dd!=0)
       if(length(id_s_cool)>0){
-        best_id_h <- max(1,min(id_s_cool))
+        best_id_h <- max(1,min(id_s_cool))#id_s_cool#
         if(length(best_id_h)>0){
           test_h <- q2_boot_mean[best_id_h]>0
           if(h>1){
@@ -348,6 +387,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
             test2 <-
               Q2_all_sum_star[[h-1]][best_id_h_before]<Q2_all_sum_star[[h]][best_id_h]
             test_h <- test_h & test2
+            best_id_h <- max(best_id_h[which(test_h)])
           }
           best_paras_h <- paras_in[best_id_h,]
           if(type=="CT"){
@@ -381,8 +421,10 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
             ##
             VAR_h_s[h] <- varia_expl
             Q2_tot_s[h] <- Q2_all_sum_star[[h]][best_id_h]#c(Q2_tot_s,Q2_all_sum_star[[h]][best_id_h])
-            Q2_all_sum_star_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),3]
-            R2_all_sum_star_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),5]
+            Q2_all_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),3]
+            Q2_h_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),2]
+            R2_h_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),4]
+            R2_all_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),5]
             paras_out[h,] <- best_paras_h
             if(verbose){
               if(h==1){
@@ -391,7 +433,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
               cat(paste("\n Component ",h,
                         "   paras=",paste(round(best_paras_h,3)),
                         "   var.expl._h=",round(varia_expl*100),"%",
-                        "   Q2_h=",round(q2_all_boot[best_id_h]*100)/100,
+                        "   Q2_h=",round(q2_boot[best_id_h]*100)/100,
                         sep=""))
             }
             B_r_out[[h]] <- B_current
@@ -466,8 +508,10 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
                       Q2_all_sum_star=Q2_all_sum_star,
                       Q2_all_sum_star_sd_plus=Q2_all_sum_star_sd_plus,
                       Q2_all_sum_star_sd_moins=Q2_all_sum_star_sd_moins,
-                      Q2_all_sum_star_boxplot=Q2_all_sum_star_boxplot,
-                      R2_all_sum_star_boxplot=R2_all_sum_star_boxplot,
+                      R2_all_boxplot=R2_all_boxplot,
+                      R2_h_boxplot=R2_h_boxplot,
+                      Q2_all_boxplot=Q2_all_boxplot,
+                      Q2_h_boxplot=Q2_h_boxplot,
                       vars_h_boot=vars_h_boot,
                       vars_h_boot_sd_plus=vars_h_boot_sd_plus,
                       vars_h_boot_sd_moins=vars_h_boot_sd_moins,
@@ -507,15 +551,17 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
 #' @export
 #'
 #' @useDynLib ddsPLS
-plot_res <- function(res,h_opt=NULL){
+plot_res <- function(res,h_opt=NULL,type="p",lty=NA){
   if(is.null(h_opt)){
     h_opt <- res$optimal_parameters$R
   }
   lambdas_out <- res$bootstrap$paras_out
   cols <- c(RColorBrewer::brewer.pal(max(h_opt,3),"Set1")[1:h_opt],"gray80")
-  layout(matrix(c(1,1,3,2,2,8,8,8,
-                  4,4,5,5,6,8,8,8,
-                  rep(7,5),8,8,8), nrow=3, byrow = TRUE))
+  col_B <- RColorBrewer::brewer.pal(nrow(res$V),"Paired")
+  layout(matrix(c(1,1,2,3,3,4,rep(10,3),
+                  5,5,6,7,7,8,rep(10,3),
+                  rep(9,9),
+                  rep(11,9)), nrow=4, byrow = TRUE))
   # layout(matrix(c(1,1,3,2,2,4,4,5,5,6), 2, 5, byrow = TRUE))
   # layout(matrix(c(1,1,2,2,3,7,7,4,4,5,5,6,7,7), 2, 7, byrow = TRUE))
   par(mar=c(3,3,2,1),mgp=c(2,1,0))
@@ -583,58 +629,67 @@ plot_res <- function(res,h_opt=NULL){
         "Not selected component"))
     }
     abline(v=res$optimal_parameters$paras,col=cols,lty=3)
-    if(i==2){
-      abline(v=res$optimal_parameters$paras,col=cols,lty=3)
-      ## Boxplot R2
-      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},
-                                              res$bootstrap$R2_all_sum_star_boxplot)))
+    abline(v=res$optimal_parameters$paras,col=cols,lty=3)
+    if(i==1){
+      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$R2_h_boxplot)))
       names(ddff) <- c("h","R2")
       bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B,h"]^"2"),xlab="Component",ylab="")
-      points(1:h_opt,res$explained_variance/100,col=1,pch=18,cex=2)
       abline(h=0,lty=5,col=1)
-    }else if(i==4){
-      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},
-                                              res$bootstrap$Q2_all_sum_star_boxplot)))
+    }else if(i==2){
+      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$R2_all_boxplot )))
+      names(ddff) <- c("h","R2")
+      bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B"]^"2"),xlab="Component",ylab="")
+      points(1:h_opt,res$explained_variance[1:h_opt]/100,col=1,pch=18,cex=2)
+      abline(h=0,lty=5,col=1)
+    }else if(i==3){
+      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$Q2_h_boxplot )))
       names(ddff) <- c("h","Q2")
-      bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"[B]^"2"),xlab="Component",ylab="")
+      bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"["B,h"]^"2"),xlab="Component",ylab="")
       abline(h=0,lty=5,col=1)
-
-      id_rev <- rev(1:h_opt)
-      uu<-res$Us[[1]][,id_rev];uu[which(uu==0)] <- NA
-      matplot(uu,pch=id_rev,col="white",xlab="Index",ylab="Weight",main="Weights")
-      abline(h=0,col="gray80")
-      matplot(uu,pch=id_rev,col=cols[id_rev],add=T)
-
-      f <- do.call(cbind,lapply(
-        1:h_opt,
-        function(hh){
-          id_h <- res$id_ALL_TEST_h[[hh]]
-          out <- abs(res$bootstrap$Q2_h_star[[hh]]-res$bootstrap$vars_h_boot[[hh]])
-          out[-id_h] <- NA
-          out
-        }))
-      matplot(ls,f,pch=1:h_opt,col=cols,xlab="Parameter",ylab="Weight",
-              main=expression("|"~bar("R"["B,h"]^"2")~"-"~bar("Q"["B,h"]^"2")~"|"))
-      abline(v=res$optimal_parameters$paras,col=cols,lty=3)
-
-
-      # for(h in 1:(h_opt+1)){
-      #   id_h <- res$id_ALL_TEST_h[[h]]
-      #   if(h!=1){
-      #     points(res$bootstrap$paras_out[[h]],res$bootstrap$Q2_mean[[h]],
-      #            type="l",lty=1,col=cols[h])
-      #     points(res$bootstrap$paras_out[[h]][id_h ],res$bootstrap$Q2_mean[[h]][id_h ],
-      #            type="l",lty=1,col=cols[h],lwd=2)
-      #   }else{
-      #     plot(res$bootstrap$paras_out[[h]],res$bootstrap$Q2_mean[[h]],
-      #          type="l",lty=1,col=cols[h],ylim=range(na.omit(unlist(res$bootstrap$Q2_mean))),
-      #          main=expression(mu[r]/sigma[r]),ylab="",xlab="Parameter",lwd=1)
-      #     abline(h=0,lty=5,col=1)
-      #     points(res$bootstrap$paras_out[[h]][id_h ],res$bootstrap$Q2_mean[[h]][id_h ],
-      #            type="l",lty=1,col=cols[h],lwd=2)
-      #   }
-      #   abline(v=res$optimal_parameters$paras,col=cols,lty=3)
-      # }
+    }else{
+      ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$Q2_all_boxplot )))
+      names(ddff) <- c("h","Q2")
+      bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"["B"]^"2"),xlab="Component",ylab="")
+      abline(h=0,lty=5,col=1)
     }
   }
+
+  id_rev <- rev(1:h_opt)
+  # uu<-res$Us[[1]][,id_rev];uu[which(uu==0)] <- NA
+  uu<-lapply(res$Us,function(u){u[,id_rev]})#[[1]][,id_rev]
+  uu <- do.call(rbind,uu)
+  uu[which(uu==0)] <- NA
+  matplot(uu,pch=id_rev,col="white",xlab="Index",ylab="Weight",main="Weights")
+  abline(h=0,col="gray80")
+  if(is.na(lty)){
+    matplot(uu,pch=id_rev,col=cols[id_rev],add=T,type=type)
+  }else{
+    matplot(uu,pch=id_rev,col=cols[id_rev],add=T,type=type,lty=lty)
+  }
+  ps <- c(0,unlist(lapply(res$Us,nrow )))
+  abline(v=cumsum(ps),lty=5)
+  ############
+  f <- do.call(cbind,lapply(
+    1:h_opt,
+    function(hh){
+      id_h <- res$id_ALL_TEST_h[[hh]]
+      out <- abs(res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])
+      out[-id_h] <- NA
+      out
+    }))
+  matplot(ls,f,pch=1:h_opt,col=cols,xlab="Parameter",ylab="Weight",
+          main=expression("|"~bar("R"["B"]^"2")~"-"~bar("Q"["B"]^"2")~"|"))
+  abline(v=res$optimal_parameters$paras,col=cols,lty=3)
+  #########
+  bb <- res$B_cbind
+  id_b <- 1:ncol(bb)
+  bb[which(bb==0)] <- NA
+  matplot(bb,col="white",xlab="Index",ylab="Value",main="Regression coefficients (B)",pch=id_b)
+  abline(h=0,col="gray80")
+  if(is.na(lty)){
+    matplot(bb,col=col_B,add=T,type=type,pch=id_b)
+  }else{
+    matplot(bb,col=col_B,add=T,type=type,pch=id_b,lty=lty)
+  }
+  abline(v=cumsum(ps),lty=5)
 }
