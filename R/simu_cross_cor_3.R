@@ -346,15 +346,15 @@ test <- function(){
     rho <- paras[i,1]
     A <- rbind(
       matrix(rep(c(rep(1,p1),rep(0,p-p1)),R1),nrow = R1,byrow = T),
-      matrix(rep(c(rep(0,p1),rep(1,p2),rep(0,p-p1-p2)),R2),nrow = R2,byrow = T),
+      matrix(rep(c(rep(0,p1),rep(1,p2),rep(0,p3),rep(0,p-p1-p2-p3)),R2),nrow = R2,byrow = T),
       matrix(rep(c(rep(0,p1),rep(1,p2),rep(1,p3),rep(0,p-p1-p2-p3)),R3),nrow = R3,byrow = T)
     )
     A <- eps1*apply(A,2,ff)
-    al1 <- (sqrt(1+rho)+sqrt(1-rho))/2;al2 <- (sqrt(1+rho)-sqrt(1-rho))/2
+    # al1 <- (sqrt(1+rho)+sqrt(1-rho))/2;al2 <- (sqrt(1+rho)-sqrt(1-rho))/2
     D <- rbind(
       matrix(rep(c(1,0,0,0),R1),nrow = R1,byrow = T),
-      matrix(rep(c(0,al1,al2,0),R2),nrow = R2,byrow = T),
-      matrix(rep(c(0,al2,al1,0),R3),nrow = R3,byrow = T)
+      matrix(rep(c(0,1,rho,0),R2),nrow = R2,byrow = T),
+      matrix(rep(c(0,0,sqrt(1-rho^2),0),R3),nrow = R3,byrow = T)
     )
     D <- eps1*apply(D,2,ff)
     q <- ncol(D)

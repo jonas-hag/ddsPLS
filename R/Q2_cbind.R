@@ -44,7 +44,8 @@ do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam,remove_COV=NULL
     V0 <- matrix(0,q,1)
   }
   t <- x0%*%U0
-  y0_mask <- y0;y0_mask[which(abs(V0)<1e-9),] <- 0;y0_mask[which(abs(V0)>=1e-9),] <- 1
+  y0_mask <- y0;y0_mask[,which(abs(V0)<1e-9)] <- 0
+  y0_mask[,which(abs(V0)>=1e-9)] <- 1
   V_svd0 <- crossprod(y0_mask,t)#
   # V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
   norm_t_0 <- sum(t^2)
@@ -123,7 +124,6 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,remove_COV=NULL,RSS0=NULL,
     }
     # covs[[r]] <- COV
     abs_COV <- abs(COV)
-    if(length(which(!(is.na(c(abs_COV)))))==0) browser()
     max_COV <- max(na.omit(c(abs_COV)))
     lam_r <- lam
     if(length(lam)>1) lam_r <- lam[r]
@@ -908,10 +908,10 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
             }
             B_r_out[[h]] <- B_all
             V[,h] <- V_r
-            y0 <- Y_init-y_r
+            y0 <- y0 - y_r#Y_init-y_r
             y0_deflated[[h]] <- y0
             if(deflatX){
-              x0 <- X_init - x_r
+              x0 <- x0 - x_r#X_init - x_r
               x0_deflated[[h]] <- x0
             }
             B_previous <- B_all
@@ -927,11 +927,15 @@ Q2_boot_sPLS <- function(Xs,Y,keepXs = 1,
         }
       }else{
         test <- F
-        cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
+        if(verbose){
+          cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
+        }
       }
     }else{
       test <- F
-      cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
+      if(verbose){
+        cat(paste("\n  --  Component ",h," not built, no accessible parameter.\n",sep=""))
+      }
     }
   }
   h_opt <- h - 1
@@ -1602,7 +1606,7 @@ Q2_UNIK_ddsPLS <- function(Xs,Y,lambdas=NULL,
           norm_t_0 <- sum(t_boot_h^2)
           if(norm_t_0>1e-9){
             bt <- crossprod(t_boot_h,x0)/norm_t_0
-            y0_mask <- y0;y0_mask[which(abs(V_optim_boot_h)<1e-9),] <- 0;y0_mask[which(abs(V_optim_boot_h)>=1e-9),] <- 1
+            y0_mask <- y0;y0_mask[,which(abs(V_optim_boot_h)<1e-9)] <- 0;y0_mask[,which(abs(V_optim_boot_h)>=1e-9)] <- 1
             V_sol_boot_h <- crossprod(y0_mask,t_boot_h)#
             # V_sol_boot_h <- V_optim_boot_h%*%crossprod(V_optim_boot_h,crossprod(y0,t_boot_h))
             V_sol_boot_h <- V_sol_boot_h/norm_t_0

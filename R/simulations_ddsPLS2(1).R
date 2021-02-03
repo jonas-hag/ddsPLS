@@ -381,9 +381,15 @@ do_mixomics <- function(Xs,Y,kxs,kys,ncores_i,R_max = 10){
       r_oo <- r_oo-1
     }
   }
-  model.spls = mixOmics::spls(x, scale(Y), ncomp = r_oo, mode = 'regression',
-                              keepX = kXi, keepY = kYi)
-  Bb <- predict(model.spls,x)$B.hat[,,r_oo]
+  if(r_oo!=0){
+    model.spls = mixOmics::spls(x, scale(Y), ncomp = r_oo, mode = 'regression',
+                                keepX = kXi, keepY = kYi)
+    Bb <- predict(model.spls,x)$B.hat[,,r_oo]
+  }else{
+    p <-ncol(x);q <- ncol(Y)
+    Bb <- matrix(0,p,q)
+    model.spls <- list(loadings=list(X=matrix(0,p,1),Y=matrix(0,q,1)))
+  }
   list(optimal_parameters=list(Q2=Q2_final,Q2_h=Q2_h,R=r_oo,keepX=kXi,keepY=kYi),
        B_cbind=Bb,U=model.spls$loadings$X,V=model.spls$loadings$Y)
 }
@@ -497,7 +503,7 @@ give_me_plot_comm <- function(){
   ncols <- 3
   cex.leg <- 1
   b<-boxplot(Q2~method*n,border=cols,col=col_box,df,main=expression("Q"^"2"),#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -521,8 +527,8 @@ give_me_plot_comm <- function(){
   # legend("topright",legend = level_legend,fill = cols,ncol = 1,bg = "white",cex = cex.leg)
 
   b<-boxplot(log(1-DIST_B_hat)~method*n,df,#[-which(df$method=="OLS_esp"),],
-          main=expression("||A"~hat(B)~"-D||"^2/"||D||"^2~" (logarithmic scale)"),
-          col=col_box,border=cols,xlab="",yaxt="n",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
+             main=expression("||A"~hat(B)~"-D||"^2/"||D||"^2~" (logarithmic scale)"),
+             col=col_box,border=cols,xlab="",yaxt="n",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -566,9 +572,8 @@ plot_R <- function(){
     for(i_mm in 1:n_meth){
       Ri <- df$R[which(df$method==method[i_mm] & df$n==ns[i_n])]
       # Ri[which(is.na(Ri))] <- 0
-
-      hist(rep(2,100),breaks = breaks,xaxt="n",yaxt="n",col="gray",ylim=c(0,110),
-           main="",xlab="",ylab="",density=20 , angle=33,border="gray80")
+      hist(rep(2,100),breaks = breaks,xaxt="n",yaxt="n",col="gray90",ylim=c(0,110),
+           main="",xlab="",ylab="",border="gray90")
       axis(side = 1,unique(na.omit(df$R)),line = -1,labels = unique(na.omit(df$R)),tick = F)
       axis(side = 2,(0:10)*10,line = -1,labels = (0:10)*10,tick = F,las=2,gap.axis=1/4)
       abline(h=(0:5)*20,lty=2,col="gray")
@@ -605,7 +610,7 @@ plot_TVP_TFP_X <- function(){
   cex.leg <- 1
 
   b<-boxplot(SEL_X~method*n,border=cols,col=col_box,sel_x,main="Number of selected variables",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -621,7 +626,7 @@ plot_TVP_TFP_X <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TVP~method*n,border=cols,col=col_box,sel_x,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -637,7 +642,7 @@ plot_TVP_TFP_X <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TFP~method*n,border=cols,col=col_box,sel_x,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -678,7 +683,7 @@ plot_TVP_TFP_Y <- function(){
   cex.leg <- 1
 
   b<-boxplot(SEL_Y~method*n,border=cols,col=col_box,df,main="Number of selected variables",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend))
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -695,7 +700,7 @@ plot_TVP_TFP_Y <- function(){
 
 
   b<-boxplot(TVP~method*n,border=cols,col=col_box,df,main="True Positive Rate (TPR)",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -711,7 +716,7 @@ plot_TVP_TFP_Y <- function(){
   #        ncol = 2,bg = "white",cex = cex.leg,bty="n")
 
   b<-boxplot(TFP~method*n,border=cols,col=col_box,df,main="False Positive Rate (FPR)",#border=cols[rep(1:l_m,i)]
-          xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
+             xlab="",xaxt="n",ylab="",lwd=lwd,pch=1:length(level_legend));#abline(h=c(0,0.0975),lty=3,lwd=2)
   id_meth <- rep(1:nlevels(df$method),length(unique(df$n)))
   coli_s <- cols[id_meth]
   for(ii in 1:length(coli_s)){
@@ -730,6 +735,57 @@ plot_TVP_TFP_Y <- function(){
   plot(0,type='n',axes=FALSE,ann=FALSE)
   legend("top",legend = level_legend,angle=angle,border=cols,fill=cols,density=density,col = cols,pch=1:length(level_legend),
          ncol = 6,bty = "n",cex = cex.leg,pt.cex=2)
+}
+
+plot_barplot_sel_Y <- function(){
+  cols <- RColorBrewer::brewer.pal(length(method)+1,"Set1")[-6]
+  cex.leg <- 1
+  n_unik <- sort(unique(df$n ))
+  id_meth_sel <- c(1,2,3,6)
+  mat_sel <- lapply(1:length(n_unik),function(ii,df){
+    df_i <- unstack(df[which(df$n==n_unik[ii]),],SEL_Y~method)
+    R_i <- range(df_i,na.rm = T)
+    tab_i <- matrix(0,length(R_i),ncol(df_i))
+    for(m in 1:ncol(tab_i)){
+      df_i_m <- na.omit(df_i[,m])
+      for(i_r in 1:length(R_i)){
+        tab_i[i_r,m] <- sum((df_i_m==R_i[i_r])*1)
+      }
+    }
+    colnames(tab_i) <- level_legend
+    rownames(tab_i) <- R_i
+    tab_i[,id_meth_sel]
+  },df=df)
+
+  n_n <- length(n_unik)
+  n_m <- ncol(mat_sel[[1]])
+  n_R <- length(unique(rownames(do.call(rbind,mat_sel))))
+  bb <- t(mat_sel[[1]])
+  bb[,1] <- 100;bb[,2] <- 0
+  layout(matrix(c(rep(1:n_n,9),rep(n_n+1,n_n)),byrow = T,ncol = n_n))
+  par(mar=c(2,3,2.5,1.5))
+  barplot(bb,beside = TRUE,col="gray90",border = "gray90",
+          main=paste("n=",n_unik[1],sep=""))
+  abline(h=(0:10)*10+5,lty=2,col="gray90",lwd=0.7)
+  abline(h=(0:10)*10,lty=2,col="gray65",lwd=0.7)
+  abline(h=c(0,25,50,75,100),lty=1,col="gray50",lwd=1.1)
+  barplot(t(mat_sel[[1]]),beside = TRUE,density = density[id_meth_sel],
+          angle=angle[id_meth_sel],col=cols[id_meth_sel],add=T)
+  for(ii in 2:n_n){
+    par(mar=c(2,2,2.5,1.5))
+    barplot(bb,beside = TRUE,col="gray90",border = "gray90",
+            main=paste("n=",n_unik[ii],sep=""),yaxt="n")
+    abline(h=(0:10)*10+5,lty=2,col="gray90",lwd=0.7)
+    abline(h=(0:10)*10,lty=2,col="gray65",lwd=0.7)
+    abline(h=c(0,25,50,75,100),lty=1,col="gray50",lwd=1.1)
+    barplot(t(mat_sel[[ii]]),yaxt="n",ylab="",density = density[id_meth_sel],
+            angle=angle[id_meth_sel],col=cols[id_meth_sel],add=T,beside = TRUE)
+  }
+  par(mar=rep(0,4))
+  plot(0,type='n',axes=FALSE,ann=FALSE)
+  legend("center",legend = level_legend[id_meth_sel],angle=angle[id_meth_sel],
+         border=cols[id_meth_sel],fill=cols[id_meth_sel],density=density[id_meth_sel],
+         col = cols[id_meth_sel],ncol = length(id_meth_sel),bty = "n",cex = 2*cex.leg,pt.cex=2)
 }
 
 plot_sel_simu_x <- function(ncolX=8){
@@ -904,9 +960,10 @@ test <- function(){
     # density=density ,angle=angle
 
   }
-  # posINIT <- which(df$method==method[1] & df$R>2)
-  posNA <- which(is.na(df$Q2))
-  for(i in 41:500){#c(1:63)[posINIT]){#447:500){#386
+  # posINIT <- which(df$method %in% method[c(2,3)])
+  # df[posINIT,-c(1:3)] <- NA
+  posNA <- df$which(is.na(df$Q2))
+  for(i in 270:500){#c(1:63)[posINIT]){#447:500){#386
     n <- paras[i,1]
     cat("\n\n______________________________________________________________________________")
     cat(paste("\n n =",n,"  ---   i =",i))
@@ -940,7 +997,7 @@ test <- function(){
       pos_i <- pos[i_m]
       method_i <- method[which(pos_method==pos_i)]
       cat(paste("\n     <- ",method_i,"... ",sep=""))
-      toPlot <- pos_i %in% posNA#method_i %in% method[c(5,6)]
+      toPlot <- method_i %in% method[c(2,3)]
       if(toPlot){
         time_1 <- Sys.time()
         if(method_i %in% c("ddsPLS Boot","PLS Boot")){

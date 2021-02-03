@@ -342,7 +342,7 @@ test <- function(){
   # posINIT <- which(df$method==method[1] & df$R>2)
   i = i_m <- 1
   posNA <- which(is.na(df$Q2))
-  for(i in 2:200){
+  for(i in 1:200){
     rho <- paras[i,1]
     A <- rbind(
       matrix(rep(c(rep(1,p1),rep(0,p-p1)),R1),nrow = R1,byrow = T),
@@ -365,27 +365,27 @@ test <- function(){
     pos <- intersect(which(df$rho==rho),which(df$id==paras[i,2]))
     pos_method <- unlist(lapply(method,function(mm){pos[which(df$method[pos]==mm)]}))
     # Do data
-    psi <- MASS::mvrnorm(n,mu = rep(0,d+L_total),Sigma = diag(d+L_total))
-    phi <- psi[,1:d,drop=F];pt <- d
-    # SIs <- lapply(list(A1,A2,A3,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
-    # X1 <- phi%*%A1 + SIs[[1]]*psi[,pt+1:ncol(A1),drop=F];pt <- pt + ncol(A1)
-    # X2 <- phi%*%A2 + SIs[[2]]*psi[,pt+1:ncol(A2),drop=F];pt <- pt + ncol(A2)
-    # X3 <- phi%*%A3 + SIs[[3]]*psi[,pt+1:ncol(A3),drop=F];pt <- pt + ncol(A3)
-    SIs <- lapply(list(A,D),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
-    Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
-    Y <- phi%*%D + SIs[[2]]*psi[,pt+1:ncol(D),drop=F];pt <- pt + ncol(Y)
-    datas$Xs[[i]] <- Xs
-    datas$Y[[i]] <- Y
-    datas$phi[[i]] <- phi
+    # psi <- MASS::mvrnorm(n,mu = rep(0,d+L_total),Sigma = diag(d+L_total))
+    # phi <- psi[,1:d,drop=F];pt <- d
+    # # SIs <- lapply(list(A1,A2,A3,C),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
+    # # X1 <- phi%*%A1 + SIs[[1]]*psi[,pt+1:ncol(A1),drop=F];pt <- pt + ncol(A1)
+    # # X2 <- phi%*%A2 + SIs[[2]]*psi[,pt+1:ncol(A2),drop=F];pt <- pt + ncol(A2)
+    # # X3 <- phi%*%A3 + SIs[[3]]*psi[,pt+1:ncol(A3),drop=F];pt <- pt + ncol(A3)
+    # SIs <- lapply(list(A,D),function(M){do.call(cbind,lapply(sqrt(1-diag(crossprod(M))),function(sisi){rep(sisi,n)}))})
+    # Xs <- list(x=phi%*%A + SIs[[1]]*psi[,pt+1:ncol(A),drop=F]);pt <- pt + ncol(A)
+    # Y <- phi%*%D + SIs[[2]]*psi[,pt+1:ncol(D),drop=F];pt <- pt + ncol(Y)
+    # datas$Xs[[i]] <- Xs
+    # datas$Y[[i]] <- Y
+    # datas$phi[[i]] <- phi
     if(i%%50==0){
       save(datas,df,ALL_FUCKING_MODELS,file = file_data)
       #save(datas,df,file = "../data_simu/data_signalFaible.RData")
       # save(datas,df,varExplained,LAMBDAS_SOL,file = "../../Hadrien/data_signalFaible.RData")#save(datas,df,file = "../data_simu/data_signalFaible.RData")
     }
     # Load data
-    # datas$phi[[i]] -> phi #; phi_ok <- phi[,1:2]
-    # datas$Xs[[i]] -> Xs
-    # datas$Y[[i]] -> Y
+    datas$phi[[i]] -> phi #; phi_ok <- phi[,1:2]
+    datas$Xs[[i]] -> Xs
+    datas$Y[[i]] -> Y
     x <- do.call(cbind,Xs)
     ##############
     for(i_m in 1:length(pos)){

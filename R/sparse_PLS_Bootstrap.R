@@ -77,11 +77,7 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
         Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0
         D[,r] <- crossprod(Y_r_mask,t_r)/norm_2
         # U_star_cl  <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
-        U_star_cl = tryCatch({
-          u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
-        }, error = function(error_condition) {
-          browser()
-        })
+        U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
         B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
         y_r <- tcrossprod(t_r,D[,r,drop=F])
         x_r <- tcrossprod(t_r,C[,r,drop=F])
@@ -125,11 +121,7 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
           u_cur_il <- u_il
         }
         # U_star_cl  <- u_cur_il%*%solve(crossprod(C,u_cur_il))
-        U_star_cl = tryCatch({
-          u_cur_il%*%solve(crossprod(C,u_cur_il))
-        }, error = function(error_condition) {
-          browser()
-        })
+        U_star_cl <- u_cur_il%*%solve(crossprod(C,u_cur_il))
       }else{
         U_star_cl <- matrix(0,p,h)
       }
@@ -367,7 +359,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
     if(length(id_ALL_TEST)>0){
       # q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
       # id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
-      diff_R2_Q2 <- abs(vars_boot-q2_all_boot)#abs(q2_boot-vars_boot_h)#vars_boot)
+      diff_R2_Q2 <- vars_boot-q2_all_boot#abs(vars_boot-q2_all_boot)#abs(q2_boot-vars_boot_h)#vars_boot)
       q2_max_h[h] <- min(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
       id_s_cool <- which(diff_R2_Q2==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])
       # oo <- vars_boot_h-q2_boot
@@ -457,13 +449,17 @@ sparse_PLS_Bootstrap <- function(Xs,Y,type="CT",
         }
       }else{
         test <- F
-        cat(paste("\n  --  Component ",h," not built, no accessible parameter.",sep=""))
-        cat("\n ==============================")
+        if(verbose){
+          cat(paste("\n  --  Component ",h," not built, no accessible parameter.",sep=""))
+          cat("\n ==============================")
+        }
       }
     }else{
       test <- F
-      cat(paste("\n  --  Component ",h," not built, no accessible parameter.",sep=""))
-      cat("\n ==============================")
+      if(verbose){
+        cat(paste("\n  --  Component ",h," not built, no accessible parameter.",sep=""))
+        cat("\n ==============================")
+      }
     }
   }
   h_opt <- h - 1
@@ -655,8 +651,7 @@ plot_res <- function(res,h_opt=NULL,type="p",lty=NA){
   }
 
   id_rev <- rev(1:h_opt)
-  # uu<-res$Us[[1]][,id_rev];uu[which(uu==0)] <- NA
-  uu<-lapply(res$Us,function(u){u[,id_rev]})#[[1]][,id_rev]
+  uu<-lapply(res$Us,function(u){u[,id_rev,drop=F]})
   uu <- do.call(rbind,uu)
   uu[which(uu==0)] <- NA
   matplot(uu,pch=id_rev,col="white",xlab="Index",ylab="Weight",main="Weights")
@@ -673,7 +668,7 @@ plot_res <- function(res,h_opt=NULL,type="p",lty=NA){
     1:h_opt,
     function(hh){
       id_h <- res$id_ALL_TEST_h[[hh]]
-      out <- abs(res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])
+      out <- (res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])#abs(res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])
       out[-id_h] <- NA
       out
     }))
