@@ -139,8 +139,8 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
   if(res_perf_mdd$mod=="reg"){
     ylab2<-"Occurences per variable (%)"
     ylim1 <- range(abs(RMSEP[,3:ncol(RMSEP)]))^2
-    y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2
-    y_mean <- rowMeans(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]^2)
+    y1 <- RMSEP[order(RMSEP[,2]),3:ncol(RMSEP),drop=FALSE]^2
+    y_mean <- rowMeans(RMSEP[order(RMSEP[,2]),3:ncol(RMSEP),drop=FALSE]^2)
     if(is.null(main)){
       main2 <- "Occurences per variable versus regularization coefficient mdd-sPLS"
     }else{
@@ -157,13 +157,13 @@ plot.perf_mddsPLS <- function(x,plot_mean=FALSE,
     ylab1<-"#Good Classif Rate"
     ylab2<-"Occurences per class"
     ylim1<- c(0,1)
-    y1 <- RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE]
+    y1 <- RMSEP[order(RMSEP[,2]),3:ncol(RMSEP),drop=FALSE]
     TAB <- table(res_perf_mdd$Y)
     for(r in 1:nlevels(res_perf_mdd$Y)){
       r_here <- which(names(TAB)==colnames(y1)[r])
       y1[,r] <- 1-y1[,r]/TAB[r_here]
     }
-    y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2,drop=FALSE]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
+    y_mean <- 1-rowSums(RMSEP[order(RMSEP[,2]),3:ncol(RMSEP),drop=FALSE])/sum(TAB)
     main1 <- "Good classification rate versus regularization coefficient mdd-sPLS"
     main2 <- "Occurences per class versus regularization coefficient mdd-sPLS"
     if(!no_plot)par(mfrow=c(1,1),ann=T)
