@@ -1,13 +1,194 @@
 #' Title
 #'
-#' @param Xs Xs
-#' @param Y Y
-#' @param type "CT" and "l1
-#' @param lambdas list
-#' @param NCORES number of cores
-#' @param verbose verbose
+#' @param x0 x0
+#' @param y0 y0
+#' @param n n
+#' @param p p
+#' @param q q
+#' @param COV COV
+#' @param abs_COV abs_COV
+#' @param max_COV max_COV
+#' @param lam lam
 #'
-#' @return
+#' @return Internal object
+#' @export
+#'
+#' @useDynLib ddsPLS
+do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam){#,remove_COV=NULL){
+  max_cov_y <- apply(abs_COV,1,max)
+  max_cov_x <- apply(abs_COV,2,max)
+  id_y_high <- which(max_cov_y>lam)
+  id_x_high <- which(max_cov_x>lam)
+  if(length(id_x_high)>0 & length(id_y_high)>0){
+    COV_high <- COV[id_y_high,id_x_high,drop=F]
+    abs_COV_high <- abs(COV_high)
+    COV_COV_high <- abs_COV_high - lam
+    # if(!is.null(remove_COV)){
+    #   if(norm(remove_COV)>1e-9){
+    #     COV_COV_high <- COV_COV_high - abs(remove_COV[id_y_high,id_x_high,drop=F])
+    #   }
+    # }
+    COV_COV_high[which(COV_COV_high<0)] <- 0
+    COV_COV_high <- COV_COV_high*sign(COV_high)
+    # Do svd
+    U0 <- matrix(0,p,1)
+    V0 <- matrix(0,q,1)
+    ## X part
+    if(norm(COV_COV_high)>1e-9){
+      svd_mix_Y <- svd(COV_COV_high,nu = 1,nv = 1)
+      U0[id_x_high,] <- svd_mix_Y$v
+      V0[id_y_high,] <- svd_mix_Y$u
+    }
+  }else{
+    U0 <- matrix(0,p,1)
+    V0 <- matrix(0,q,1)
+  }
+  t <- x0%*%U0
+  y0_mask <- y0;y0_mask[which(abs(V0)<1e-9),] <- 0;y0_mask[which(abs(V0)>=1e-9),] <- 1
+  V_svd0 <- crossprod(y0_mask,t)#
+  # V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
+  norm_t_0 <- sum(t^2)
+  if(norm_t_0>1e-9){
+    V_svd <- V_svd0/norm_t_0
+  }else{
+    U0 <- matrix(0,p,1)
+    V_svd <- matrix(0,q,1)
+  }
+  ##
+  list(t=t,U0=U0,V_svd=V_svd,V0=V0)
+}
+########
+
+
+#' Title
+#'
+#' @param x x
+#' @param y y
+#' @param deflatX deflatX
+#' @param lam Lambda coefficient
+#' @param R R
+#' @param to.scale to.scale
+#'
+#' @return Internal object
+#' @export
+#'
+#' @useDynLib ddsPLS
+model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
+                      to.scale=T){
+  p <- ncol(x)
+  q <- ncol(y)
+  n <- nrow(y)
+  if(to.scale){
+    mu_x <- matrix(rep(colMeans(x),n),ncol = p,byrow = T)
+    mu_y <- matrix(rep(colMeans(y),n),ncol = q,byrow = T)
+    sd_x_inv <- unlist(lapply(apply(x,2,sd),function(ss){if(abs(ss)>1e-9){out <- 1/ss}else{out <- 0};out}))
+    sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
+    sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+    sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
+    x_init <- scale(x)
+    y_init <- scale(y)
+  }else{
+    x_init <- scale(x,scale = F)
+    y_init <- scale(y,scale = F)
+    mu_y <- matrix(0,n,q)
+    sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+  }
+  x0 <- x_init
+  y0 <- y_init
+  if(is.null(RSS0)){
+    RSS0 <- sum(sd_y_mat^2)
+  }else{
+    RSS0 <- sum(RSS0)
+  }
+  var_y_init <- sum(y^2)
+  U_out = U_star <- matrix(0,p,R)
+  score_x <- matrix(0,n,R)
+  V_out <- matrix(0,q,R)
+  bXr <- matrix(0,R,p)
+  bYr <- matrix(0,R,q)
+  B <- matrix(0,p,q)
+  B_r <- list()
+  if(to.scale){
+    y_est <- mu_y
+  }else{
+    y_est <- matrix(0,n,q)
+  }
+  stop <- F
+  no_model <- F
+  var_expl <- rep(NA,R)
+  # covs <- list()
+  for(r in 1:R){
+    # if(r==1 & !is.null(COV_init)){
+    #   COV <- COV_init
+    # }else{
+    #   COV <- crossprod(y0,x0)/(n-1)
+    # }
+    # covs[[r]] <- COV
+    COV <- crossprod(y0,x0)/(n-1)
+    abs_COV <- abs(COV)
+    max_COV <- max(na.omit(c(abs_COV)))
+    lam_r <- lam
+    if(length(lam)>1) lam_r <- lam[r]
+    if(lam_r<max_COV){
+
+      c_h <- do_one_component(x0 = x0,y0 = y0,n = n,p = p,q = q,COV = COV,abs_COV = abs_COV,
+                              max_COV=max_COV,lam = lam_r)#,remove_COV=remove_COV)
+      t_r <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd ; V0  <- c_h$V0
+      ## DEFLAT ##
+      if(sum(U0^2)>1e-9){
+        score_x[,r] <- t_r
+        bt <- crossprod(t_r,x0)/sum(t_r^2)
+        U_out[,r] <- U0
+        U_star[,r] <- U0
+        V_out[,r] <- V_svd
+        B_r_0 <- tcrossprod(U0,V_svd)
+        y_est <- y_est + x0%*%B_r_0
+        bXr[r,] <- bt
+        bYr[r,] <- t(V_svd)
+        if(r!=1){
+          for(s_r in (r-1):1){
+            U_star[,r] <- U_star[,r]-U_star[,s_r]*sum(bXr[s_r,]*U_star[,r])
+          }
+        }
+        if(to.scale){
+          B_r[[r]] <- tcrossprod(U_star[,r],V_svd)*sd_y_x_inv
+        }else{
+          B_r[[r]] <- tcrossprod(U_star[,r],V_svd)
+        }
+        B <- B + B_r[[r]]
+        y_plus_un <- tcrossprod(t_r,V_out[,r,drop=F])
+        x0_plus <- t_r%*%bt
+        # var_y_plus_un <-
+        var_expl[r] <- 1-sum((y_init-mu_y-y_plus_un)^2)/sum((y_init-mu_y)^2)
+        y0 <- y0 - y_plus_un
+        if(deflatX){
+          x0 <- x0 - x0_plus
+        }
+      }
+    }else{
+      V0 <- matrix(0,q,1)
+    }
+  }
+  if(to.scale){
+    y_est <- y_est - mu_x%*%B
+  }
+  list(no_model=no_model,U_out=U_out,U_star=U_star,
+       V_out=V_out,V_optim=V0,
+       B=B,B_r=B_r,var_expl=var_expl,#covs=covs,
+       score_x=score_x,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
+}
+
+#' Title
+#'
+#' @param X_init matrix of covariates
+#' @param Y_init matrix of response
+#' @param h number of components to build
+#' @param lambdas vector
+#' @param lambda_prev lambdas used to build the previous components
+#' @param u X weights of the previous components
+#' @param v Y weights of the previous components
+#'
+#' @return Internal object
 #' @export
 #'
 #' @useDynLib ddsPLS
@@ -56,20 +237,12 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
     test_no_null <- T
     while(test_no_null){
       r <- r + 1
-      # for(r in 1:(h-1)){
       m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],
                            to.scale = F)
       u[,r] <- m_gogo$U_out
       v[,r] <- m_gogo$V_optim
       t_r <- X_r%*%u[,r]
       t_all[,r] <- t_r
-
-      # bt <- crossprod(t_r,X_r)/sum(t_r^2)
-      # C[,r] <- t(bt)
-      # Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0#;Y_r_mask[which(abs(v[,r])>=1e-9),] <- 1
-      # D[,r] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
-      # U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
-
       norm_2 <- sum(t_r^2)
       if(norm_2>1e-9){
         bt <- crossprod(t_r,X_r)/norm_2
@@ -153,10 +326,17 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
 #' @param Xs Xs
 #' @param Y Y
 #' @param lambdas list
+#' @param n_B NUmber of Bootstrap samples
+#' @param lowExplainedVariance Q_2 value above which component is not build. Default to "0".
+#' @param deflatX wether or not to deflat X. Default to TRUE. Do not change unless good reasons.
+#' @param center wether or not to center X and Y. Default to TRUE. Do not change unless good reasons.
 #' @param NCORES number of cores
 #' @param verbose verbose
 #'
-#' @return
+#' @return A "sparse_PLS_Bootstrap" object with results of bootstrap simulations
+#'
+#' @importFrom stats quantile
+#'
 #' @export
 #'
 #' @useDynLib ddsPLS
@@ -221,7 +401,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
   lambdas_in <- matrix(lambdas,ncol=1) ; lambdas_out <- matrix(NA,n,1)
   N_lambdas <- nrow(lambdas_in)
   x0_deflated = y0_deflated = prop_models_ok <- list()
-  remove_COV <- matrix(0,q,p)
+  # remove_COV <- matrix(0,q,p)
   V_boot = u_boot = res_measure <- list()
   vars_boot_50 = vars_boot_25 = vars_boot_75 =
     vars_boot_h_50 = vars_boot_h_25 = vars_boot_h_75 =
@@ -233,12 +413,12 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
     Bis <- list()
     pos_decoupe <- 1
     Q2_Boot_y[[h]] <- matrix(0,N_lambdas,q)
+    i_B <- 1
     NCORES_w <- min(NCORES,n_B)
     `%my_do%` <- ifelse(NCORES_w!=1,{
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
       registerDoParallel(cl);out},{out <- `%do%`;out})
     Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",.combine='c',.multicombine=TRUE) %my_do% {
-
       out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
                               u=u,v=V_phi,h=h,lambdas=lambdas_in,
                               lambda_prev = lambdas_out)
@@ -369,7 +549,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
             best_id_h <- max(best_id_h[which(test_h)])
           }
           best_lambdas_h <- lambdas_in[best_id_h,]
-          m_gogo <-  model_PLS(x = x0,y=y0,lam=best_lambdas_h,to.scale = F)
+          m_gogo <-  model_PLS(x = x0,y=y0,lam=best_lambdas_h,
+                               to.scale = F)
           u_sol_boot_h <- m_gogo$U_out
           V_optim_boot_h <- m_gogo$V_optim
           u[,h] <- u_sol_boot_h
@@ -505,166 +686,15 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
                 Bs=Bs,B_r=B_r_out,
                 y_est=y_est,parameters=parameters,
                 mu_k=c(mu_x_s),mu_y=mu_y,sd_y=apply(Y,2,sd))
+    class(res) <- "sparse_PLS_Bootstrap"
     if(verbose){
       if(h_opt>0){
-        plot_res(res)
+        plot(res)
       }
     }
   }else{
     res <- NULL
+    class(res) <- "sparse_PLS_Bootstrap"
   }
   res
-}
-
-#' Title
-#'
-#' @param res res
-#' @param h_opt h_opt
-#'
-#' @return
-#' @export
-#'
-#' @useDynLib ddsPLS
-plot_res <- function(res,h_opt=NULL,type="p",lty=NA){
-  if(is.null(h_opt)){
-    h_opt <- res$optimal_parameters$R
-  }
-  if(length(h_opt)>0){
-    lambdas_out <- res$bootstrap$lambdas_out
-    cols <- c(RColorBrewer::brewer.pal(max(h_opt,3),"Set1")[1:h_opt],"gray80")
-    col_B <- RColorBrewer::brewer.pal(nrow(res$V),"Paired")
-    layout(matrix(c(1,1,2,3,3,4,rep(10,3),
-                    5,5,6,7,7,8,rep(10,3),
-                    rep(9,9),
-                    rep(11,9)), nrow=4, byrow = TRUE))
-    # layout(matrix(c(1,1,3,2,2,4,4,5,5,6), 2, 5, byrow = TRUE))
-    # layout(matrix(c(1,1,2,2,3,7,7,4,4,5,5,6,7,7), 2, 7, byrow = TRUE))
-    par(mar=c(3,3,2,1),mgp=c(2,1,0))
-    aa <- min(1/4,1-1/4)
-    quart <- res$bootstrap$quartiles
-    ls <- res$bootstrap$lambdas_out[[1]]
-    plots <- list(
-      R2_h=list(q50=quart$vars_boot_h_50,q75=quart$vars_boot_h_75,q25=quart$vars_boot_h_25,
-                main=expression("R"["B,h"]^"2"),
-                lam_opt=res$optimal_parameters$lambdas,
-                vars_single=res$bootstrap$vars_h_boot_single),
-      R2=list(q50=quart$vars_boot_50,q75=quart$vars_boot_75,q25=quart$vars_boot_25,
-              main=expression("R"["B"]^"2"),
-              lam_opt=res$optimal_parameters$lambdas,
-              vars_single=res$bootstrap$vars_boot_single),
-      Q2_h=list(q50=quart$q2_boot_50,q75=quart$q2_boot_75,q25=quart$q2_boot_25,
-                main=expression("Q"["B,h"]^"2"),
-                lam_opt=res$optimal_parameters$lambdas,
-                vars_single=res$bootstrap$Q2_h_star),
-      Q2=list(q50=quart$q2_all_boot_50,q75=quart$q2_all_boot_75,q25=quart$q2_all_boot_25,
-              main=expression("Q"["B"]^"2"),
-              lam_opt=res$optimal_parameters$lambdas,
-              vars_single=res$bootstrap$Q2_all_sum_star)
-    )
-    widths <- (ls[-1]+ls[-length(ls)])/2;widths <- c(ls[1],widths,ls[length(ls)])
-    for(i in 1:4){
-      plot(0,0,xlim=range(ls),ylim=c(-0.1,1.15),
-           main=plots[[i]]$main,ylab="",xlab="Parameter",col="white")
-      abline(h=0,lty=5,col=1)
-      add <- T
-      oo<-lapply(
-        1:length(ls),
-        function(ii){
-          points(rep(ls[ii],2),c(plots[[i]]$q25[[h_opt+1]][ii],plots[[i]]$q75[[h_opt+1]][ii]),
-                 col="gray80",type="l",lwd=1)
-          points(c(widths[max(1,ii)],widths[min(length(ls),ii+1)]),
-                 c(plots[[i]]$q25[[h_opt+1]][ii],plots[[i]]$q25[[h_opt+1]][ii]),
-                 col="gray80",type="l")
-          points(c(widths[max(1,ii)],widths[min(length(ls),ii+1)]),
-                 c(plots[[i]]$q75[[h_opt+1]][ii],plots[[i]]$q75[[h_opt+1]][ii]),
-                 col="gray80",type="l")
-        })
-      # points(ls,plots[[i]]$q50[[h_opt+1]],col="gray80",pch=1)
-      for(h in (h_opt):1){
-        id_h <- res$id_ALL_TEST_h[[h]]
-        add <- T
-        oo<-lapply(
-          1:length(ls),
-          function(ii){
-            points(rep(ls[ii],2),c(plots[[i]]$q25[[h]][ii],plots[[i]]$q75[[h]][ii]),
-                   col="gray50",type="l")
-            points(c(widths[max(1,ii)],widths[min(length(ls),ii+1)]),
-                   c(plots[[i]]$q25[[h]][ii],plots[[i]]$q25[[h]][ii]),
-                   col="gray50",type="l")
-            points(c(widths[max(1,ii)],widths[min(length(ls),ii+1)]),
-                   c(plots[[i]]$q75[[h]][ii],plots[[i]]$q75[[h]][ii]),
-                   col="gray50",type="l")
-          })
-        points(ls,plots[[i]]$q50[[h]],col="gray50",pch=1)
-        if(length(id_h)>0){
-          points(ls[id_h],plots[[i]]$q50[[h]][id_h],col=cols[h],pch=16)
-        }
-        legend(bty="n","topleft",fill=cols,legend = c(unlist(lapply(1:h_opt,function(h){
-          paste("Component ",h," (",round(res$explained_variance[h]),"%)",sep="",collapse = "")})),
-          "Not selected component"))
-      }
-      abline(v=res$optimal_parameters$lambdas,col=cols,lty=3)
-      abline(v=res$optimal_parameters$lambdas,col=cols,lty=3)
-      if(i==1){
-        ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$R2_h_boxplot)))
-        names(ddff) <- c("h","R2")
-        bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B,h"]^"2"),xlab="Component",ylab="")
-        abline(h=0,lty=5,col=1)
-      }else if(i==2){
-        ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$R2_all_boxplot )))
-        names(ddff) <- c("h","R2")
-        bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B"]^"2"),xlab="Component",ylab="")
-        points(1:h_opt,res$explained_variance[1:h_opt]/100,col=1,pch=18,cex=2)
-        abline(h=0,lty=5,col=1)
-      }else if(i==3){
-        ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$Q2_h_boxplot )))
-        names(ddff) <- c("h","Q2")
-        bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"["B,h"]^"2"),xlab="Component",ylab="")
-        abline(h=0,lty=5,col=1)
-      }else{
-        ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},res$bootstrap$Q2_all_boxplot )))
-        names(ddff) <- c("h","Q2")
-        bobo <- boxplot(Q2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("Q"["B"]^"2"),xlab="Component",ylab="")
-        abline(h=0,lty=5,col=1)
-      }
-    }
-
-    id_rev <- rev(1:h_opt)
-    uu<-lapply(res$Us,function(u){u[,id_rev,drop=F]})
-    uu <- do.call(rbind,uu)
-    uu[which(uu==0)] <- NA
-    matplot(uu,pch=id_rev,col="white",xlab="Index",ylab="Weight",main="Weights")
-    abline(h=0,col="gray80")
-    if(is.na(lty)){
-      matplot(uu,pch=id_rev,col=cols[id_rev],add=T,type=type)
-    }else{
-      matplot(uu,pch=id_rev,col=cols[id_rev],add=T,type=type,lty=lty)
-    }
-    ps <- c(0,unlist(lapply(res$Us,nrow )))
-    abline(v=cumsum(ps),lty=5)
-    ############
-    f <- do.call(cbind,lapply(
-      1:h_opt,
-      function(hh){
-        id_h <- res$id_ALL_TEST_h[[hh]]
-        out <- (res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])#abs(res$bootstrap$vars_h_boot[[hh]]-res$bootstrap$Q2_all_sum_star[[hh]])
-        out[-id_h] <- NA
-        out
-      }))
-    matplot(ls,f,pch=1:h_opt,col=cols,xlab="Parameter",ylab="Weight",
-            main=expression("|"~bar("R"["B"]^"2")~"-"~bar("Q"["B"]^"2")~"|"))
-    abline(v=res$optimal_parameters$lambdas,col=cols,lty=3)
-    #########
-    bb <- res$B_cbind
-    id_b <- 1:ncol(bb)
-    bb[which(bb==0)] <- NA
-    matplot(bb,col="white",xlab="Index",ylab="Value",main="Regression coefficients (B)",pch=id_b)
-    abline(h=0,col="gray80")
-    if(is.na(lty)){
-      matplot(bb,col=col_B,add=T,type=type,pch=id_b)
-    }else{
-      matplot(bb,col=col_B,add=T,type=type,pch=id_b,lty=lty)
-    }
-    abline(v=cumsum(ps),lty=5)
-  }
 }

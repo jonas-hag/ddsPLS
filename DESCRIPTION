@@ -1,6 +1,6 @@
 Package: ddsPLS
-Version: 1.1.7
-Date: 2020-03-23
+Version: 1.2.2
+Date: 2021-02-16
 Title: Data-Driven Sparse Partial Least Squares Robust to Missing Samples for Mono and Multi-Block Data Sets
 Description: Allows to build Multi-Data-Driven Sparse Partial Least Squares models. Multi-blocks with 
     high-dimensional settings are particularly sensible to this. It comes with visualization
@@ -23,7 +23,7 @@ ByteCompile: true
 RoxygenNote: 7.1.1
 Imports: RColorBrewer,MASS,graphics,stats,Rdpack,doParallel,foreach,parallel,corrplot,Rcpp (>= 0.12.18)
 RdMacros: Rdpack
-Suggests: knitr,rmarkdown,htmltools
+Suggests: knitr,rmarkdown,htmltools,markdown
 VignetteBuilder: knitr
 Depends: R (>= 2.10)
 LinkingTo: Rcpp

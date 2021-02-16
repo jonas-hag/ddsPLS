@@ -7,20 +7,22 @@
 bootstrap_pls_CT(X_init, Y_init, h = 1, lambdas = 0, lambda_prev = NA, u, v)
 }
 \arguments{
-\item{Xs}{Xs}
+\item{X_init}{matrix of covariates}
 
-\item{Y}{Y}
+\item{Y_init}{matrix of response}
 
-\item{type}{"CT" and "l1}
+\item{h}{number of components to build}
 
-\item{paras}{list}
+\item{lambdas}{vector}
 
-\item{NCORES}{number of cores}
+\item{lambda_prev}{lambdas used to build the previous components}
 
-\item{verbose}{verbose}
+\item{u}{X weights of the previous components}
+
+\item{v}{Y weights of the previous components}
 }
 \value{
-
+Internal object
 }
 \description{
 Title

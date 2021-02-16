@@ -7,8 +7,7 @@
 sparse_PLS_Bootstrap(
   Xs,
   Y,
-  type = "CT",
-  paras = NULL,
+  lambdas = NULL,
   n_B = 20,
   lowExplainedVariance = 0,
   deflatX = T,
@@ -22,16 +21,22 @@ sparse_PLS_Bootstrap(
 
 \item{Y}{Y}
 
-\item{type}{"CT" and "l1}
+\item{lambdas}{list}
 
-\item{paras}{list}
+\item{n_B}{NUmber of Bootstrap samples}
+
+\item{lowExplainedVariance}{Q_2 value above which component is not build. Default to "0".}
+
+\item{deflatX}{wether or not to deflat X. Default to TRUE. Do not change unless good reasons.}
 
 \item{NCORES}{number of cores}
+
+\item{center}{wether or not to center X and Y. Default to TRUE. Do not change unless good reasons.}
 
 \item{verbose}{verbose}
 }
 \value{
-
+A "sparse_PLS_Bootstrap" object with results of bootstrap simulations
 }
 \description{
 Title
