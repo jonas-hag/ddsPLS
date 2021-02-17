@@ -153,7 +153,7 @@ plot.sparse_PLS_Bootstrap <- function(x,h_opt=NULL,type="p",
     bb <- x$B_cbind
     id_b <- 1:ncol(bb)
     bb[which(bb==0)] <- NA
-    matplot(bb,col="white",xlab="Index",ylab="Value",main="Regxsion coefficients (B)",pch=id_b)
+    matplot(bb,col="white",xlab="Index",ylab="Value",main="Regression coefficients (B)",pch=id_b)
     abline(h=0,col="gray80")
     if(is.na(lty)){
       matplot(bb,col=col_B,add=T,type=type,pch=id_b)

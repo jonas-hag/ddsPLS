@@ -95,11 +95,12 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
   }
   x0 <- x_init
   y0 <- y_init
-  if(is.null(RSS0)){
-    RSS0 <- sum(sd_y_mat^2)
-  }else{
-    RSS0 <- sum(RSS0)
-  }
+  # if(is.null(RSS0)){
+  #   RSS0 <- sum(sd_y_mat^2)
+  # }else{
+  #   RSS0 <- sum(RSS0)
+  # }
+  RSS0 <- sum(sd_y_mat^2)
   var_y_init <- sum(y^2)
   U_out = U_star <- matrix(0,p,R)
   score_x <- matrix(0,n,R)
@@ -400,7 +401,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
   # Check lambdas and stuff
   lambdas_in <- matrix(lambdas,ncol=1) ; lambdas_out <- matrix(NA,n,1)
   N_lambdas <- nrow(lambdas_in)
-  x0_deflated = y0_deflated = prop_models_ok <- list()
+  # x0_deflated = y0_deflated <- list()
+  prop_models_ok <- list()
   # remove_COV <- matrix(0,q,p)
   V_boot = u_boot = res_measure <- list()
   vars_boot_50 = vars_boot_25 = vars_boot_75 =
@@ -594,8 +596,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
             V[,h] <- V_optim_boot_h
             t_h[,h] <- t_r
             # y0 <- y0-x0%*%B_boot_h
-            y0_deflated[[h]] <- y0
-            x0_deflated[[h]] <- x0
+            # y0_deflated[[h]] <- y0
+            # x0_deflated[[h]] <- x0
             ## Variance total
             y_est_boot_tot <- X_init%*%B_current
             cum_vari_h <- 1-sum((Y_init-y_est_boot_tot)^2)/sum(RSS0)
@@ -679,7 +681,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
                 bootstrap=bootstrap,
                 Us=Us,V=V[,1:h_opt,drop=F],B_cbind=B,
                 id_ALL_TEST_h=id_ALL_TEST_h,
-                x0_deflated=x0_deflated,y0_deflated=y0_deflated,
+                # x0_deflated=x0_deflated,y0_deflated=y0_deflated,
                 t_h=t_h[,1:h_opt,drop=F],
                 explained_variance=VAR_h_s[1:h_opt]*100,
                 explained_variance_cum=CUM_VAR_h_s[1:h_opt]*100,
