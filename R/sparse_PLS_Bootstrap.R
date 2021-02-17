@@ -85,13 +85,17 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
     sd_x_inv_mat <- matrix(rep(sd_x_inv,q),ncol = q,byrow = T)
     sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
     sd_y_x_inv <- sd_y_mat * sd_x_inv_mat
-    x_init <- scale(x)
-    y_init <- scale(y)
+    x_init <- scaleRcpp(x)
+    y_init <- scaleRcpp(y)
   }else{
     x_init <- scale(x,scale = F)
     y_init <- scale(y,scale = F)
     mu_y <- matrix(0,n,q)
-    sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+    # sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
+    II <- matrix(1,ncol = n)
+    sd_y_mat <- crossprod(II,sqrt(colSums((y-crossprod(II,II%*%y)/n )^2/n)))
+    # sd_y_mat <- matrix(1,nrow = n)%*%apply(y,2,sd)
+    # sd_y_mat <- get_sd_matrixRcpp(y)
   }
   x0 <- x_init
   y0 <- y_init

@@ -5,6 +5,10 @@ sdRcpp <- function(x) {
     .Call('_ddsPLS_sdRcpp', PACKAGE = 'ddsPLS', x)
 }
 
+get_sd_matrixRcpp <- function(x) {
+    .Call('_ddsPLS_get_sd_matrixRcpp', PACKAGE = 'ddsPLS', x)
+}
+
 scaleRcpp <- function(x) {
     .Call('_ddsPLS_scaleRcpp', PACKAGE = 'ddsPLS', x)
 }

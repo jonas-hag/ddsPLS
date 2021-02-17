@@ -15,6 +15,21 @@ NumericVector  sdRcpp(NumericMatrix x) {
 }
 
 // [[Rcpp::export]]
+NumericMatrix  get_sd_matrixRcpp(NumericMatrix x) {
+  int n = x.nrow();
+  int p = x.ncol();
+  NumericMatrix out (n,p);
+  for(int i = 0; i < p; ++i) {
+    NumericVector col_i = x(_,i);
+    double sd_i = sd(col_i);
+    for (int j = 0u; j < n; ++j) {
+      out(i,j) = sd_i*sqrt((n-1.0)/n);
+    }
+  }
+  return out;
+}
+
+// [[Rcpp::export]]
 NumericMatrix scaleRcpp(NumericMatrix x) {
   int nrow = x.nrow(), ncol = x.ncol();
   NumericMatrix out = clone(x);
