@@ -1,4 +1,8 @@
 #include <Rcpp.h>
+#include "mn.h"
+#include <chrono>
+#include <random>
+#include "Rfast.h"
 using namespace Rcpp;
 
 // [[Rcpp::export]]

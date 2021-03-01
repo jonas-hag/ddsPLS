@@ -1,3 +1,14 @@
+#[export]
+colMaxs <- function(x,value=FALSE,parallel = FALSE) {
+  if(parallel){
+    .Call(Rfast_col_max_p,x)
+  }else if(value){
+    .Call(Rfast_col_max,x)
+  }else{
+    .Call(Rfast_col_max_indices,x)
+  }
+}
+
 #' Title
 #'
 #' @param x0 x0
@@ -88,11 +99,15 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
     x_init <- scaleRcpp(x)
     y_init <- scaleRcpp(y)
   }else{
-    x_init <- scale(x,scale = F)
-    y_init <- scale(y,scale = F)
+    II <- matrix(1,ncol = n)
+    mu_y <- crossprod(II,II%*%y)
+    mu_x <- crossprod(II,II%*%x)
+    x_init <- x-mu_x
+    y_init <- y-mu_y
+    # x_init <- scale(x,scale = F)
+    # y_init <- scale(y,scale = F)
     mu_y <- matrix(0,n,q)
     # sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
-    II <- matrix(1,ncol = n)
     sd_y_mat <- crossprod(II,sqrt(colSums((y-crossprod(II,II%*%y)/n )^2/n)))
     # sd_y_mat <- matrix(1,nrow = n)%*%apply(y,2,sd)
     # sd_y_mat <- get_sd_matrixRcpp(y)

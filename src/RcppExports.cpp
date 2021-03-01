@@ -51,11 +51,18 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP Rfast_col_max(SEXP);
+RcppExport SEXP Rfast_col_max_indices(SEXP);
+RcppExport SEXP Rfast_col_max_p(SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_ddsPLS_sdRcpp", (DL_FUNC) &_ddsPLS_sdRcpp, 1},
     {"_ddsPLS_get_sd_matrixRcpp", (DL_FUNC) &_ddsPLS_get_sd_matrixRcpp, 1},
     {"_ddsPLS_scaleRcpp", (DL_FUNC) &_ddsPLS_scaleRcpp, 1},
     {"_ddsPLS_mmultC", (DL_FUNC) &_ddsPLS_mmultC, 2},
+    {"Rfast_col_max",         (DL_FUNC) &Rfast_col_max,         1},
+    {"Rfast_col_max_indices", (DL_FUNC) &Rfast_col_max_indices, 1},
+    {"Rfast_col_max_p",       (DL_FUNC) &Rfast_col_max_p,       1},
     {NULL, NULL, 0}
 };
 
