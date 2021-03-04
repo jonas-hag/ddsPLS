@@ -1,76 +1,3 @@
-#[export]
-colMaxs <- function(x,value=FALSE,parallel = FALSE) {
-  if(parallel){
-    .Call(Rfast_col_max_p,x)
-  }else if(value){
-    .Call(Rfast_col_max,x)
-  }else{
-    .Call(Rfast_col_max_indices,x)
-  }
-}
-
-#' Title
-#'
-#' @param x0 x0
-#' @param y0 y0
-#' @param n n
-#' @param p p
-#' @param q q
-#' @param COV COV
-#' @param abs_COV abs_COV
-#' @param max_COV max_COV
-#' @param lam lam
-#'
-#' @return Internal object
-#' @export
-#'
-#' @useDynLib ddsPLS
-do_one_component <- function(x0,y0,n,p,q,COV,abs_COV,max_COV,lam){#,remove_COV=NULL){
-  max_cov_y <- apply(abs_COV,1,max)
-  max_cov_x <- apply(abs_COV,2,max)
-  id_y_high <- which(max_cov_y>lam)
-  id_x_high <- which(max_cov_x>lam)
-  if(length(id_x_high)>0 & length(id_y_high)>0){
-    COV_high <- COV[id_y_high,id_x_high,drop=F]
-    abs_COV_high <- abs(COV_high)
-    COV_COV_high <- abs_COV_high - lam
-    # if(!is.null(remove_COV)){
-    #   if(norm(remove_COV)>1e-9){
-    #     COV_COV_high <- COV_COV_high - abs(remove_COV[id_y_high,id_x_high,drop=F])
-    #   }
-    # }
-    COV_COV_high[which(COV_COV_high<0)] <- 0
-    COV_COV_high <- COV_COV_high*sign(COV_high)
-    # Do svd
-    U0 <- matrix(0,p,1)
-    V0 <- matrix(0,q,1)
-    ## X part
-    if(norm(COV_COV_high)>1e-9){
-      svd_mix_Y <- svd(COV_COV_high,nu = 1,nv = 1)
-      U0[id_x_high,] <- svd_mix_Y$v
-      V0[id_y_high,] <- svd_mix_Y$u
-    }
-  }else{
-    U0 <- matrix(0,p,1)
-    V0 <- matrix(0,q,1)
-  }
-  t <- x0%*%U0
-  y0_mask <- y0;y0_mask[which(abs(V0)<1e-9),] <- 0;y0_mask[which(abs(V0)>=1e-9),] <- 1
-  V_svd0 <- crossprod(y0_mask,t)#
-  # V_svd0 <- V0%*%crossprod(V0,crossprod(y0,t)) #crossprod(y0,t) #
-  norm_t_0 <- sum(t^2)
-  if(norm_t_0>1e-9){
-    V_svd <- V_svd0/norm_t_0
-  }else{
-    U0 <- matrix(0,p,1)
-    V_svd <- matrix(0,q,1)
-  }
-  ##
-  list(t=t,U0=U0,V_svd=V_svd,V0=V0)
-}
-########
-
-
 #' Title
 #'
 #' @param x x
@@ -102,10 +29,10 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
     II <- matrix(1,ncol = n)
     mu_y <- crossprod(II,II%*%y)
     mu_x <- crossprod(II,II%*%x)
-    x_init <- x-mu_x
-    y_init <- y-mu_y
-    # x_init <- scale(x,scale = F)
-    # y_init <- scale(y,scale = F)
+    # x_init <- x-mu_x
+    # y_init <- y-mu_y
+    x_init <- scale(x,scale = F)
+    y_init <- scale(y,scale = F)
     mu_y <- matrix(0,n,q)
     # sd_y_mat <- matrix(rep(apply(y,2,sd),p),ncol = q,byrow = T)
     sd_y_mat <- crossprod(II,sqrt(colSums((y-crossprod(II,II%*%y)/n )^2/n)))
@@ -119,8 +46,8 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
   # }else{
   #   RSS0 <- sum(RSS0)
   # }
-  RSS0 <- sum(sd_y_mat^2)
-  var_y_init <- sum(y^2)
+  # RSS0 <- sum(sd_y_mat^2)
+  # var_y_init <- sum(y^2)
   U_out = U_star <- matrix(0,p,R)
   score_x <- matrix(0,n,R)
   V_out <- matrix(0,q,R)
@@ -138,21 +65,13 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
   var_expl <- rep(NA,R)
   # covs <- list()
   for(r in 1:R){
-    # if(r==1 & !is.null(COV_init)){
-    #   COV <- COV_init
-    # }else{
-    #   COV <- crossprod(y0,x0)/(n-1)
-    # }
-    # covs[[r]] <- COV
     COV <- crossprod(y0,x0)/(n-1)
     abs_COV <- abs(COV)
     max_COV <- max(na.omit(c(abs_COV)))
     lam_r <- lam
     if(length(lam)>1) lam_r <- lam[r]
     if(lam_r<max_COV){
-
-      c_h <- do_one_component(x0 = x0,y0 = y0,n = n,p = p,q = q,COV = COV,abs_COV = abs_COV,
-                              max_COV=max_COV,lam = lam_r)#,remove_COV=remove_COV)
+      c_h <- do_one_componentCpp(x0 = x0,y0 = y0,COV = COV,lam = lam_r)
       t_r <- c_h$t ; U0  <- c_h$U0 ; V_svd  <- c_h$V_svd ; V0  <- c_h$V0
       ## DEFLAT ##
       if(sum(U0^2)>1e-9){
@@ -178,7 +97,6 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
         B <- B + B_r[[r]]
         y_plus_un <- tcrossprod(t_r,V_out[,r,drop=F])
         x0_plus <- t_r%*%bt
-        # var_y_plus_un <-
         var_expl[r] <- 1-sum((y_init-mu_y-y_plus_un)^2)/sum((y_init-mu_y)^2)
         y0 <- y0 - y_plus_un
         if(deflatX){
@@ -192,10 +110,11 @@ model_PLS <- function(x,y,lam,deflatX=T,R=1,#remove_COV=NULL,
   if(to.scale){
     y_est <- y_est - mu_x%*%B
   }
-  list(no_model=no_model,U_out=U_out,U_star=U_star,
+  list(U_out=U_out,U_star=U_star,
        V_out=V_out,V_optim=V0,
        B=B,B_r=B_r,var_expl=var_expl,#covs=covs,
-       score_x=score_x,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0)
+       score_x=score_x,y_est=y_est,bXr=bXr,bYr=bYr,e_x=x0,e_y=y0,
+       x_init=x_init,y_init=y_init)
 }
 
 #' Title
@@ -257,8 +176,8 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
     test_no_null <- T
     while(test_no_null){
       r <- r + 1
-      m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],
-                           to.scale = F)
+      m_gogo <-  model_PLS(x = X_r,y=Y_r,lam=lambda_prev[r],to.scale = F)
+      # m_gogo <- modelddsPLSCpp(x=X_r,y=Y_r,lam = lambda_prev[r])
       u[,r] <- m_gogo$U_out
       v[,r] <- m_gogo$V_optim
       t_r <- X_r%*%u[,r]
@@ -296,7 +215,8 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
   B_all <- B_youyou
   for(i_l in 1:N_lambdas){
     if(test_previous_ok){
-      m_1 <-  model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
+      m_1 <- model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
+      # m_1 <- modelddsPLSCpp(x=X_r,y=Y_r,lam = lambdas[i_l])
       u_il <- m_1$U_out
       V_il <- m_1$V_optim
       u_out[,i_l] <- u_il
@@ -338,7 +258,6 @@ bootstrap_pls_CT <- function(X_init,Y_init,h=1,lambdas=0,
   }
   list(u_out=u_out,V_optim_phi=V_optim_phi,id_OOB=id_OOB,model_exists=model_exists,
        vars_expl=vars_expl,vars_expl_h=vars_expl_h,Q2=Q2,Q2_all=Q2_all)
-
 }
 
 #' Title
@@ -570,8 +489,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
             best_id_h <- max(best_id_h[which(test_h)])
           }
           best_lambdas_h <- lambdas_in[best_id_h,]
-          m_gogo <-  model_PLS(x = x0,y=y0,lam=best_lambdas_h,
-                               to.scale = F)
+          m_gogo <-  model_PLS(x = x0,y=y0,lam=best_lambdas_h,to.scale = F)
+          # m_gogo <- modelddsPLSCpp(x=x0,y=y0,lam = best_lambdas_h)
           u_sol_boot_h <- m_gogo$U_out
           V_optim_boot_h <- m_gogo$V_optim
           u[,h] <- u_sol_boot_h

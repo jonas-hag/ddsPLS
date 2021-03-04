@@ -17,3 +17,11 @@ mmultC <- function(m1, m2) {
     .Call('_ddsPLS_mmultC', PACKAGE = 'ddsPLS', m1, m2)
 }
 
+do_one_componentCpp <- function(x0, y0, COV, lam, errorMin = 1e-9) {
+    .Call('_ddsPLS_do_one_componentCpp', PACKAGE = 'ddsPLS', x0, y0, COV, lam, errorMin)
+}
+
+modelddsPLSCpp <- function(x, y, lam = 0, R = 1L, errorMin = 1e-9) {
+    .Call('_ddsPLS_modelddsPLSCpp', PACKAGE = 'ddsPLS', x, y, lam, R, errorMin)
+}
+

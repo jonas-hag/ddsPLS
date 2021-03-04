@@ -50,19 +50,44 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
-RcppExport SEXP Rfast_col_max(SEXP);
-RcppExport SEXP Rfast_col_max_indices(SEXP);
-RcppExport SEXP Rfast_col_max_p(SEXP);
+// do_one_componentCpp
+List do_one_componentCpp(const NumericMatrix x0, const NumericMatrix y0, const NumericMatrix COV, double lam, double errorMin);
+RcppExport SEXP _ddsPLS_do_one_componentCpp(SEXP x0SEXP, SEXP y0SEXP, SEXP COVSEXP, SEXP lamSEXP, SEXP errorMinSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type y0(y0SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type COV(COVSEXP);
+    Rcpp::traits::input_parameter< double >::type lam(lamSEXP);
+    Rcpp::traits::input_parameter< double >::type errorMin(errorMinSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_one_componentCpp(x0, y0, COV, lam, errorMin));
+    return rcpp_result_gen;
+END_RCPP
+}
+// modelddsPLSCpp
+List modelddsPLSCpp(const NumericMatrix x, const NumericMatrix y, double lam, int R, double errorMin);
+RcppExport SEXP _ddsPLS_modelddsPLSCpp(SEXP xSEXP, SEXP ySEXP, SEXP lamSEXP, SEXP RSEXP, SEXP errorMinSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type lam(lamSEXP);
+    Rcpp::traits::input_parameter< int >::type R(RSEXP);
+    Rcpp::traits::input_parameter< double >::type errorMin(errorMinSEXP);
+    rcpp_result_gen = Rcpp::wrap(modelddsPLSCpp(x, y, lam, R, errorMin));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ddsPLS_sdRcpp", (DL_FUNC) &_ddsPLS_sdRcpp, 1},
     {"_ddsPLS_get_sd_matrixRcpp", (DL_FUNC) &_ddsPLS_get_sd_matrixRcpp, 1},
     {"_ddsPLS_scaleRcpp", (DL_FUNC) &_ddsPLS_scaleRcpp, 1},
     {"_ddsPLS_mmultC", (DL_FUNC) &_ddsPLS_mmultC, 2},
-    {"Rfast_col_max",         (DL_FUNC) &Rfast_col_max,         1},
-    {"Rfast_col_max_indices", (DL_FUNC) &Rfast_col_max_indices, 1},
-    {"Rfast_col_max_p",       (DL_FUNC) &Rfast_col_max_p,       1},
+    {"_ddsPLS_do_one_componentCpp", (DL_FUNC) &_ddsPLS_do_one_componentCpp, 5},
+    {"_ddsPLS_modelddsPLSCpp", (DL_FUNC) &_ddsPLS_modelddsPLSCpp, 5},
     {NULL, NULL, 0}
 };
 

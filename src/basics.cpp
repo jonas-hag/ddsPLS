@@ -1,8 +1,4 @@
 #include <Rcpp.h>
-#include "mn.h"
-#include <chrono>
-#include <random>
-#include "Rfast.h"
 using namespace Rcpp;
 
 // [[Rcpp::export]]
@@ -63,3 +59,547 @@ NumericMatrix mmultC(NumericMatrix m1, NumericMatrix m2){
   }
   return out;
 }
+
+NumericVector getFirtRightSingular(NumericMatrix m,double errorMin=1.0e-9){
+  int n = m.nrow();
+  int p = m.ncol();
+  double error = 2;
+  NumericVector u0In = rnorm(p);
+  NumericVector v0In(n);
+  u0In = u0In/sqrt(sum(u0In*u0In));
+  while(error>errorMin){
+    for (int i = 0u; i < n; ++i) {
+      v0In(i) = sum(m.row(i)*u0In);
+    }
+    NumericVector u0In2(p);
+    for (int j = 0u; j < p; ++j) {
+      u0In2(j) = sum(m.column(j)*v0In);
+    }
+    u0In2 = u0In2/sqrt(sum(u0In2*u0In2));
+    error = sum((u0In2-u0In)*(u0In2-u0In));
+    u0In = u0In2;
+  }
+  v0In = v0In/sqrt(sum(v0In*v0In));
+  return (u0In);
+}
+
+// [[Rcpp::export]]
+List do_one_componentCpp(const NumericMatrix x0,const NumericMatrix y0,
+                         const NumericMatrix COV,
+                         double lam,double errorMin=1e-9){
+
+  int n = x0.nrow();
+  int p = x0.ncol();
+  int q = y0.ncol();
+  NumericVector max_cov_y(q);
+  NumericVector max_cov_x(p);
+  LogicalVector id_y_high(q);
+  int countNoNullY=0;
+  LogicalVector id_x_high(p);
+  int countNoNullX=0;
+  // NumericVector roro(p);
+  // NumericVector coco(q);
+  // NumericVector::iterator it;
+
+  // Get max values per column and per row
+  for (int i = 0u; i < q; ++i) {
+    // roro = abs(COV.row(i));
+    // it = std::max_element(roro.begin(), roro.end());
+    max_cov_y(i) = max(abs(COV.row(i)));//*it;
+    if (max_cov_y(i)>lam){
+      id_y_high(i) = true;
+      countNoNullY += 1;
+    }else{
+      id_y_high(i) = false;
+    }
+  }
+  for (int j = 0u; j < p; ++j) {
+    // coco = abs(COV.column(j));
+    // it = std::max_element(coco.begin(), coco.end());
+    max_cov_x(j) = max(abs(COV.column(j)));
+    if (max_cov_x(j)>lam){
+      id_x_high(j) = true;
+      countNoNullX += 1;
+    }else{
+      id_x_high(j) = false;
+    }
+  }
+
+  // Rprintf("      ");
+  // Rprintf("%i",countNoNullY);
+
+  // Get reduced covariance matrix
+  NumericMatrix COV_high(countNoNullY,countNoNullX);
+  NumericVector U0(p);
+  NumericVector V0(q);
+  NumericVector V_svd(q);
+  NumericVector t(n);
+  int countY = 0u;
+  int countX = 0u;
+  if (countNoNullY>0){
+    for (int i = 0u; i < q; ++i) {
+      countX = 0u;
+      if (id_y_high(i)==true){
+        countX = 0u;
+        for (int j = 0u; j < p; ++j) {
+          if (id_x_high(j)==true){
+            double coefIJ = COV(i,j);
+            double value = abs(coefIJ)-lam;
+            if (value>0) {
+              if (coefIJ>0){
+                COV_high(countY,countX) = value;
+              } else {
+                COV_high(countY,countX) = value*(-1.0);
+              }
+            }
+            else {
+              COV_high(countY,countX) = 0;
+            }
+            countX += 1;
+          }
+        }
+        countY += 1;
+      }
+    }
+    double error = 2;
+    NumericVector u0In = rnorm(countNoNullX);
+    NumericVector v0In(countNoNullY);
+    u0In = u0In/sqrt(sum(u0In*u0In));
+    while(error>errorMin){
+      for (int i = 0u; i < countNoNullY; ++i) {
+        v0In(i) = sum(COV_high.row(i)*u0In);
+      }
+      NumericVector u0In2(countNoNullX);
+      for (int j = 0u; j < countNoNullX; ++j) {
+        u0In2(j) = sum(COV_high.column(j)*v0In);
+      }
+      u0In2 = u0In2/sqrt(sum(u0In2*u0In2));
+      error = sum((u0In2-u0In)*(u0In2-u0In));
+      u0In = u0In2;
+    }
+    v0In = v0In/sqrt(sum(v0In*v0In));
+    countY = 0u;
+    for (int i = 0u; i < q; ++i) {
+      if (id_y_high(i)==true){
+        V0(i) = v0In(countY);
+        countY += 1;
+      }
+    }
+    countX = 0u;
+    for (int j = 0u; j < p; ++j) {
+      if (id_x_high(j)==true){
+        U0(j) = u0In(countX);
+        countX += 1;
+      }
+    }
+
+    // Build score
+    for (int k = 0u; k < n; ++k) {
+      t(k) = sum(x0.row(k)*U0);
+    }
+
+    // Build y0 masked
+    for (int i = 0u; i < q; ++i) {
+      if (id_y_high(i)==true){
+        V_svd(i) = sum(y0.column(i)*t);
+      }
+    }
+    V_svd = V_svd/sqrt(sum(V_svd*V_svd));
+  }
+
+  // Generate output
+  List out;
+  out["t"] = t;
+  out["U0"] = U0;
+  out["V_svd"] = V_svd;
+  out["V0"] = V0;
+  return(out);
+}
+
+
+
+// [[Rcpp::export]]
+List modelddsPLSCpp(const NumericMatrix x,const NumericMatrix y,
+                    double lam=0,int R=1,
+                    double errorMin=1e-9){
+  bool deflatX = true;
+  int n = x.nrow();
+  int p = x.ncol();
+  int q = y.ncol();
+  NumericMatrix y_init(n,q);
+  NumericMatrix x0(n,p);
+  NumericMatrix y0(n,q);
+  NumericMatrix muX(n,p);
+  NumericMatrix sdXInvMat(p,q);
+  NumericMatrix muY(n,q);
+  NumericMatrix sdYMat(p,q);
+  NumericMatrix sdYXInvMat(p,q);
+  double muCurrent;
+  double RSS0=0;
+  NumericVector vectHere(n);
+  NumericMatrix y_plus_un(n,q);
+  NumericMatrix x_plus_un(n,p);
+  NumericMatrix U_out(p,R);
+  NumericMatrix U_star(p,R);
+  NumericMatrix score_x(n,R);
+  NumericMatrix V_out(q,R);
+  NumericMatrix bXr(R,p);
+  NumericMatrix bYr(R,q);
+  NumericMatrix B(p,q);
+  List B_r;
+  NumericMatrix y_est(n,q);
+  NumericVector var_expl(R);
+  NumericVector t_r(n);
+  NumericVector U0(p);
+  NumericVector V_svd(q);
+  NumericVector V0(q);
+  NumericVector bt(p);
+  NumericMatrix B_r_0(p,q);
+  NumericVector deltaU(p);
+  NumericMatrix B_r_r(p,q);
+  double normU02;
+  double RSSr;
+  NumericMatrix COV(q,p);
+  NumericVector coli(n);
+  NumericVector colj(n);
+  double maxCOV=0.0;
+  double myCOV=0.0;
+
+  for (int k = 0u; k < n; ++k) {
+    for (int i = 0u; i < q; ++i) {
+      muCurrent = mean(y.column(i));
+      muY(k,i) = muCurrent;
+      y_init(k,i) = y(k,i)-muCurrent;
+      y0(k,i) = y_init(k,i);
+    }
+    for (int j = 0u; j < p; ++j) {
+      muCurrent = mean(x.column(j));
+      muX(k,j) = muCurrent;
+      x0(k,j) = x(k,j)-muCurrent;
+    }
+  }
+  // Compute initial residual sum of squares
+  for (int i = 0u; i < q; ++i) {
+    vectHere = y_init.column(i);
+    RSS0 += sum(vectHere*vectHere);
+  }
+
+  // Begin to build subspaces
+  for (int r = 0u; r < R; ++r) {
+    // Build empirical covariance matrix
+    for (int i = 0u; i < q; ++i) {
+      coli = y0.column(i);
+      for (int j = 0u; j < p; ++j) {
+        colj = x0.column(j);
+        myCOV = 0.0;
+        for (int k = 0u; k < n; ++k) {
+          myCOV += (x0(k,j)*y0(k,i))/double(n-1);
+        }
+        COV(i,j) = myCOV;
+        if(abs(myCOV)>maxCOV){
+          maxCOV = abs(myCOV);
+        }
+      }
+    }
+    if(maxCOV>lam){
+      List c_h = do_one_componentCpp(x0,y0,COV,lam,errorMin);
+      t_r = c_h["t"];
+      U0 = c_h["U0"];
+      V_svd = c_h["V_svd"];
+      V0 = c_h["V0"];
+
+      // Build regression matrices
+      normU02 = sum(U0*U0);
+      if(normU02>errorMin){
+        score_x(_,r) = t_r;
+        for (int j = 0u; j < p; ++j){
+          bt(j) = sum(t_r*x0.column(j))/sum(t_r*t_r);
+          x_plus_un(_,j) = t_r*double(bt(j));
+        }
+        U_out(_,r) = U0;
+        U_star(_,r) = U0;
+        V_out(_,r) = V_svd;
+        for (int i = 0u; i < q; ++i){
+          for (int j = 0u; j < p; ++j){
+            B_r_0(j,i) = U0(j)*V_svd(i);
+          }
+          y_plus_un(_,i) = t_r*double(V_svd(i));
+          y_est(_,i) = y_est(_,i) + y_plus_un.column(i);
+        }
+        bXr(r,_) = bt;
+
+        if(r>0){
+          for (int s_r = r-1; s_r > 0; --s_r){
+            // for(s_r in (r-1):1){
+            deltaU = U_star(_,s_r)*sum(bXr(s_r,_)*U_star(_,s_r));
+            U_star(_,r) = U_star(_,r)-deltaU;
+          }
+        }
+        for (int i = 0u; i < q; ++i){
+          for (int j = 0u; j < p; ++j){
+            B_r_r(j,i) = U_star(j,r)*V_svd(i);
+            B(j,i) += B_r_r(j,i);
+          }
+        }
+        // Computation of explained variance
+        RSSr = 0;
+        for (int i = 0u; i < q; ++i){
+          vectHere = y_init.column(i)-y_plus_un.column(i);
+          RSSr += sum(vectHere*vectHere);
+        }
+        var_expl(r) = 1-RSSr/RSS0;
+        for (int k = 0u; k < n; ++k){
+          y0(k,_) = y0.row(k) - y_plus_un.row(k);
+          if(deflatX){
+            x0(k,_) = x0.row(k) - x_plus_un.row(k);
+          }
+        }
+      }
+    }
+  }
+
+  List out;
+  out["U_out"] = U_out;
+  out["U_star"] = U_star;
+  out["V_out"] = V_out;
+  out["V_optim"] = V0;
+  out["B"] = B;
+  out["B_r"] = B_r;
+  out["var_expl"] = var_expl;
+  out["score_x"] = score_x;
+  out["y_est"] = y_est;
+  out["bXr"] = bXr;
+  out["bYr"] = bYr;
+  out["e_x"] = x0;
+  out["e_y"] = y0;
+  return(out);
+}
+
+// [[Rcpp::export]]
+List bootstrap_pls_CT(const NumericMatrix X_init,const NumericMatrix Y_init,
+                      const NumericVector lambda_prev,const NumericVector lambdas,
+                      const NumericMatrix uIN,const NumericMatrix vIN,
+                      int h=1){
+  int N_lambdas = lambdas.length();
+  int R_prev = lambda_prev.length();
+  int n = X_init.nrow();
+  int p = X_init.ncol();
+  int q = Y_init.ncol();
+  NumericVector ids(n);
+  NumericVector idIB(n);
+  NumericVector idOOB;
+  NumericMatrix X_train(n,p);
+  NumericMatrix Y_train(n,q);
+  int countOOB;
+  bool test=true;
+  NumericVector colD(n);
+  NumericVector mu_k(p);
+  NumericVector sd_k(p);
+  NumericVector mu_y(q);
+  NumericVector sd_y(q);
+  NumericMatrix U_reconstruct(p,h);
+  NumericMatrix V_reconstruct(q,h);
+  NumericMatrix t_all(n,h);
+  NumericMatrix X_defla(n,p);
+  NumericMatrix Y_defla(n,q);
+  NumericMatrix X_r(n,p);
+  NumericMatrix Y_r(n,q);
+  NumericMatrix Y_r_mask(n,q);
+  NumericMatrix x_r(n,p);
+  NumericMatrix y_r(n,q);
+  NumericMatrix C(p,h);
+  NumericMatrix D(q,h);
+  NumericMatrix B_youyou(p,q);
+  int r=0;
+
+  // Build bootstrap indexes, IB and OOB
+  for (int k = 0u; k < n; ++k) {
+    ids(k) = k;
+  }
+  while (test){
+    idIB = sample(ids,n,true);
+    for (int k = 0u; k < n; ++k) {
+      if (std::find(idIB.begin(), idIB.end(), k)==idIB.end()){
+        idOOB.push_back( k );
+        countOOB += 1;
+      }
+    }
+    if(countOOB>0) {
+      test = false;
+    }
+  }
+
+  // Build train matrices
+  for (int k = 0u; k < n; ++k) {
+    X_train(k,_) = X_init.row(idIB(k));
+    Y_train(k,_) = Y_init.row(idIB(k));
+  }
+
+  // Build test matrices
+  NumericMatrix X_test_normalize(n,p);
+  NumericMatrix Y_test_normalize(n,q);
+  for (int k = 0u; k < countOOB; ++k) {
+    X_test_normalize(k,_) = X_init.row(idOOB(k));
+    Y_test_normalize(k,_) = Y_init.row(idOOB(k));
+  }
+
+  // Get mean and sd for Y and X on train dataset
+  for (int i = 0u; i < q; ++i) {
+    colD = Y_train.column(i);
+    mu_y(i) = mean(colD);
+    sd_y(i) = sd(colD);
+    for(int k = 0u; k < n; ++k) {
+      Y_train(k,i) -= mu_y(i);
+      if(sd_y(i)>0){
+        Y_train(k,i) /= sd_y(i);
+      }
+    }
+    for(int k = 0u; k < countOOB; ++k) {
+      Y_test_normalize(k,i) -= mu_y(i);
+      if(sd_y(i)>0){
+        Y_test_normalize(k,i) /= sd_y(i);
+      }
+    }
+  }
+  for (int j = 0u; j < p; ++j) {
+    colD = X_train.column(j);
+    mu_k(j) = mean(colD);
+    sd_k(j) = sd(colD);
+    for(int k = 0u; k < n; ++k) {
+      X_train(k,j) -= mu_y(j);
+      if(sd_y(j)>0){
+        X_train(k,j) /= sd_y(j);
+      }
+      X_defla(k,j) = X_train(k,j);
+      X_r(k,j) = X_train(k,j);
+    }
+    for(int k = 0u; k < countOOB; ++k) {
+      X_test_normalize(k,j) -= mu_k(j);
+      if(sd_k(j)>0){
+        X_test_normalize(k,j) /= sd_k(j);
+      }
+      Y_defla(k,j) = X_train(k,j);
+      Y_r(k,j) = X_train(k,j);
+    }
+  }
+
+  // Build model on past components if needed
+  NumericVector u_r(p);
+  NumericVector v_r(q);
+  NumericVector t_r(n);
+  NumericVector bt(p);
+  double norm2t=0;
+  if (h>1){
+    for (int r = 0u; r < h-1; ++r) {
+      U_reconstruct(_,r) = uIN(_,r);
+    }
+    r=0;
+    test=true;
+    while (test){
+      NumericMatrix onlyToInv(p,r);
+      List m_gogo = modelddsPLSCpp(X_r,Y_r,lambda_prev(r));
+      u_r = m_gogo["U_out"];
+      v_r = m_gogo["V_optim"];
+      norm2t = 0;
+      for (int k = 0u; k < n; ++k) {
+        t_r(k) = sum(X_r.row(k)*u_r);
+        norm2t += t_r(k)*t_r(k);
+      }
+      if (norm2t>1e-9) {
+        for (int j = 0u; j < p; ++j){
+          bt(j) = sum(t_r*X_r.column(j))/norm2t;
+          C(j,r) = bt(j);
+          x_r(_,j) = t_r*double(bt(j));
+        }
+        for (int i = 0u; i < q; ++i) {
+          if (v_r(i)<1.0e-9){
+            D(i,r) = 0.0;
+          } else {
+            D(i,r) = sum(Y_r.column(i)*t_r)/norm2t;
+          }
+          y_r(_,i) = t_r*double(D(i,r));
+        }
+      }
+    }
+  }
+
+      // if(norm_2>1e-9){
+      // bt <- crossprod(t_r,X_r)/norm_2
+      // C[,r] <- t(bt)
+      // Y_r_mask <- Y_r;Y_r_mask[,which(abs(v[,r])<1e-9)] <- 0
+      // D[,r] <- crossprod(Y_r_mask,t_r)/norm_2
+      U_star_cl <- u[,1:r,drop=F]%*%solve(crossprod(C[,1:r,drop=F],u[,1:r,drop=F]))
+      B_youyou <- tcrossprod(U_star_cl,D[,1:r,drop=F])
+      y_r <- tcrossprod(t_r,D[,r,drop=F])
+      x_r <- tcrossprod(t_r,C[,r,drop=F])
+      # Do deflation
+      Y_r <- Y_r - y_r
+      X_r <- X_r - x_r
+      X_defla[[r+1]] <- X_r
+      Y_defla[[r+1]] <- Y_r
+      }else{
+      test_no_null <- F
+      }
+      if(r==h-1) test_no_null <- F
+      }
+      }else{
+      norm_2 <- 1
+      }
+      test_previous_ok <- norm_2>1e-9
+      vars_expl_star = vars_expl = vars_expl_h = Q2_star = Q2 = Q2_all = model_exists <- rep(0,N_lambdas)
+      u_out <- matrix(0,p,N_lambdas)
+      V_il <- matrix(0,q,1)
+      V_optim_phi = V_model <- matrix(0,q,N_lambdas)
+      B_next_out <- list()
+      B_all <- B_youyou
+      for(i_l in 1:N_lambdas){
+      if(test_previous_ok){
+      m_1 <- model_PLS(x = X_r,y=Y_r,lam=lambdas[i_l],to.scale = F)
+      # m_1 <- modelddsPLSCpp(x=X_r,y=Y_r,lam = lambdas[i_l])
+      u_il <- m_1$U_out
+      V_il <- m_1$V_optim
+      u_out[,i_l] <- u_il
+      V_optim_phi[,i_l] <- V_il
+      t_r <- X_r%*%u_il
+      norm_2 <- sum(t_r^2)
+      if(norm_2>1e-9){
+      bt <- crossprod(t_r,X_r)/norm_2
+      C[,h] <- t(bt)
+      Y_r_mask <- Y_r;Y_r_mask[,which(abs(V_il)<1e-9)] <- 0
+      D[,h] <- crossprod(Y_r_mask,t_r)/sum(t_r^2)
+      if(h>1){
+        u_cur_il <- cbind(u[,1:(h-1)],u_il)
+      }else{
+        u_cur_il <- u_il
+      }
+      # U_star_cl  <- u_cur_il%*%solve(crossprod(C,u_cur_il))
+      U_star_cl <- u_cur_il%*%solve(crossprod(C,u_cur_il))
+      }else{
+      U_star_cl <- matrix(0,p,h)
+      }
+      B_all <- tcrossprod(U_star_cl,D)
+      y_r <- tcrossprod(t_r,D[,h])
+      x_r <- tcrossprod(t_r,C[,h])
+      }
+
+      y_train_pred <- X_train%*%B_all
+      y_test_pred <- X_test_normalize%*%B_all
+      # Previous components
+      y_train_pred_next <- X_train%*%(B_all-B_youyou)
+      y_test_pred_RSS <- X_test_normalize%*%B_youyou
+      # Compute criterions
+      vars_expl[i_l] <- 1 - sum( (Y_train-y_train_pred)^2 ) / sum( (Y_train)^2 )
+      vars_expl_h[i_l] <- 1 - sum( (Y_train-y_train_pred_next)^2 ) / sum((Y_train)^2)
+      Q2[i_l] <- 1 - sum( (Y_test-y_test_pred)^2 ) / sum((Y_test-y_test_pred_RSS)^2)
+      MU_test <- matrix(rep(mu_y,length(id_OOB)),nrow = length(id_OOB),byrow = T)
+      Q2_all[i_l] <- 1 - sum( (Y_test-y_test_pred)^2 ) / sum((Y_test)^2)
+      if(length(which(abs(V_il)>1e-9))>0) model_exists[i_l] <- 1
+      }
+      list(u_out=u_out,V_optim_phi=V_optim_phi,id_OOB=id_OOB,model_exists=model_exists,
+      vars_expl=vars_expl,vars_expl_h=vars_expl_h,Q2=Q2,Q2_all=Q2_all)
+}
+
+
+
+
+
