@@ -21,7 +21,7 @@ do_one_componentCpp <- function(x0, y0, COV, lam, errorMin = 1e-9) {
     .Call('_ddsPLS_do_one_componentCpp', PACKAGE = 'ddsPLS', x0, y0, COV, lam, errorMin)
 }
 
-modelddsPLSCpp <- function(x, y, lam = 0, R = 1L, errorMin = 1e-9) {
-    .Call('_ddsPLS_modelddsPLSCpp', PACKAGE = 'ddsPLS', x, y, lam, R, errorMin)
+bootstrap_pls_CT_Cpp <- function(X_init, Y_init, lambdas, lambda_prev, uIN, vIN, h = 1L) {
+    .Call('_ddsPLS_bootstrap_pls_CT_Cpp', PACKAGE = 'ddsPLS', X_init, Y_init, lambdas, lambda_prev, uIN, vIN, h)
 }
 

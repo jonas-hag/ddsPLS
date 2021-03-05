@@ -340,7 +340,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
   lambdas_in <- matrix(lambdas,ncol=1) ; lambdas_out <- matrix(NA,n,1)
   N_lambdas <- nrow(lambdas_in)
   # x0_deflated = y0_deflated <- list()
-  prop_models_ok <- list()
+  # prop_models_ok <- list()
   # remove_COV <- matrix(0,q,p)
   V_boot = u_boot = res_measure <- list()
   vars_boot_50 = vars_boot_25 = vars_boot_75 =
@@ -358,18 +358,23 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
     `%my_do%` <- ifelse(NCORES_w!=1,{
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
       registerDoParallel(cl);out},{out <- `%do%`;out})
-    Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",.combine='c',.multicombine=TRUE) %my_do% {
-      out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
-                              u=u,v=V_phi,h=h,lambdas=lambdas_in,
-                              lambda_prev = lambdas_out)
+    Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",
+                                 .noexport=c("bootstrap_pls_CT_Cpp",
+                                             "do_one_componentCpp",
+                                             "detCpp","inverseM",
+                                             "modelddsPLSCpp"),
+                                 .combine='c',.multicombine=TRUE) %my_do% {
+      # out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
+      #                         u=u,v=V_phi,h=h,lambdas=lambdas_in,
+      #                         lambda_prev = lambdas_out)
+      out <- bootstrap_pls_CT_Cpp(X_init,Y_init,lambdas_in,lambdas_out,u,V_phi,h)
       res_measure_boot <- cbind(1:N_lambdas,
                                 out$Q2,
                                 out$Q2_all,
                                 out$vars_expl,
                                 out$vars_expl_h,
-                                length(out$id_OOB),
-                                i_B,
-                                out$model_exists)
+                                length(out$idOOB),#length(out$id_OOB),
+                                i_B)#,out$model_exists)
       list(res=res_measure_boot,V_optim_phi=out$V_optim_phi,u=out$u_out)#list(cov=out$cov,,res=res_measure,V_model=out$V_model,u=out$u_out,V=out$V_out)
     }
     if(NCORES_w!=1)stopCluster(cl)
@@ -385,8 +390,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
       q2_boot_50[[h]] = q2_boot_25[[h]] = q2_boot_75[[h]] =
       q2_all_boot = q2_all_boot_sd_plus = q2_all_boot_sd_moins =
       q2_all_boot_50[[h]] = q2_all_boot_25[[h]] = q2_all_boot_75[[h]] =
-      q2_boot_mean = q2_all_boot_mean =
-      prop_models_ok[[h]] <- rep(0,N_lambdas)
+      q2_boot_mean = q2_all_boot_mean<- rep(0,N_lambdas)# = prop_models_ok[[h]]
     mod_exists <- rep(0,N_lambdas)
     test_batchas <- TRUE
 
@@ -394,7 +398,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
     probabilities <- c(1/4,0.5,1-1/4)#c(aa,0.5,1-aa)
     while(test_batchas){
       pos <- which(res_measure[[h]][,1]==i_l)
-      toto <- na.omit(res_measure[[h]][pos,c(2,3,4,5,8)])
+      toto <- na.omit(res_measure[[h]][pos,c(2,3,4,5)])#,8)])
       if(length(toto)>0){
         m <- 1
         q2_boot[i_l] <- mean(toto[,m])
@@ -426,7 +430,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
         vars_boot_h_50[[h]][i_l] <- quantile(toto[,m],probs = 0.5)
         vars_boot_h_75[[h]][i_l] <- quantile(toto[,m],probs = 0.75)
         vars_boot_h_25[[h]][i_l] <- quantile(toto[,m],probs = 0.25)
-        prop_models_ok[[h]][i_l] <- sum(na.omit(toto[,5]))/length(pos)
+        # prop_models_ok[[h]][i_l] <- sum(na.omit(toto[,5]))/length(pos)
       }
       if(is.na(q2_boot[i_l])|is.nan(q2_boot[i_l])|i_l==N_lambdas){
         test_batchas <- F
@@ -613,7 +617,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
                       vars_h_boot_single=vars_h_boot_single,
                       vars_h_boot_single_sd_plus=vars_h_boot_single_sd_plus,
                       vars_h_boot_single_sd_moins=vars_h_boot_single_sd_moins,
-                      prop_models_ok=prop_models_ok,
+                      # prop_models_ok=prop_models_ok,
                       quartiles = quartiles)
     res <- list(optimal_parameters=optimal_parameters,
                 bootstrap=bootstrap,
