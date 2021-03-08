@@ -66,19 +66,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // bootstrap_pls_CT_Cpp
-List bootstrap_pls_CT_Cpp(NumericMatrix X_init, NumericMatrix Y_init, NumericVector lambdas, NumericVector lambda_prev, NumericMatrix uIN, NumericMatrix vIN, int h);
-RcppExport SEXP _ddsPLS_bootstrap_pls_CT_Cpp(SEXP X_initSEXP, SEXP Y_initSEXP, SEXP lambdasSEXP, SEXP lambda_prevSEXP, SEXP uINSEXP, SEXP vINSEXP, SEXP hSEXP) {
+NumericMatrix bootstrap_pls_CT_Cpp(const NumericMatrix X_init, const NumericMatrix Y_init, const NumericVector lambdas, const NumericVector lambda_prev, NumericMatrix uIN, NumericMatrix vIN, const int h, const double errorMin);
+RcppExport SEXP _ddsPLS_bootstrap_pls_CT_Cpp(SEXP X_initSEXP, SEXP Y_initSEXP, SEXP lambdasSEXP, SEXP lambda_prevSEXP, SEXP uINSEXP, SEXP vINSEXP, SEXP hSEXP, SEXP errorMinSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_init(X_initSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type Y_init(Y_initSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lambdas(lambdasSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lambda_prev(lambda_prevSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type X_init(X_initSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix >::type Y_init(Y_initSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type lambdas(lambdasSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type lambda_prev(lambda_prevSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type uIN(uINSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type vIN(vINSEXP);
-    Rcpp::traits::input_parameter< int >::type h(hSEXP);
-    rcpp_result_gen = Rcpp::wrap(bootstrap_pls_CT_Cpp(X_init, Y_init, lambdas, lambda_prev, uIN, vIN, h));
+    Rcpp::traits::input_parameter< const int >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const double >::type errorMin(errorMinSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrap_pls_CT_Cpp(X_init, Y_init, lambdas, lambda_prev, uIN, vIN, h, errorMin));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -89,7 +90,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ddsPLS_scaleRcpp", (DL_FUNC) &_ddsPLS_scaleRcpp, 1},
     {"_ddsPLS_mmultC", (DL_FUNC) &_ddsPLS_mmultC, 2},
     {"_ddsPLS_do_one_componentCpp", (DL_FUNC) &_ddsPLS_do_one_componentCpp, 5},
-    {"_ddsPLS_bootstrap_pls_CT_Cpp", (DL_FUNC) &_ddsPLS_bootstrap_pls_CT_Cpp, 7},
+    {"_ddsPLS_bootstrap_pls_CT_Cpp", (DL_FUNC) &_ddsPLS_bootstrap_pls_CT_Cpp, 8},
     {NULL, NULL, 0}
 };
 

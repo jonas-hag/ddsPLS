@@ -342,7 +342,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
   # x0_deflated = y0_deflated <- list()
   # prop_models_ok <- list()
   # remove_COV <- matrix(0,q,p)
-  V_boot = u_boot = res_measure <- list()
+  # V_boot = u_boot = res_measure <- list()
+  res_measure <- list()
   vars_boot_50 = vars_boot_25 = vars_boot_75 =
     vars_boot_h_50 = vars_boot_h_25 = vars_boot_h_75 =
     q2_boot_50 = q2_boot_25 = q2_boot_75 =
@@ -359,29 +360,24 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
       out<-`%dopar%`;cl <- makeCluster(NCORES_w)
       registerDoParallel(cl);out},{out <- `%do%`;out})
     Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",
-                                 .noexport=c("bootstrap_pls_CT_Cpp",
-                                             "do_one_componentCpp",
-                                             "detCpp","inverseM",
-                                             "modelddsPLSCpp"),
                                  .combine='c',.multicombine=TRUE) %my_do% {
       # out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
       #                         u=u,v=V_phi,h=h,lambdas=lambdas_in,
       #                         lambda_prev = lambdas_out)
       out <- bootstrap_pls_CT_Cpp(X_init,Y_init,lambdas_in,lambdas_out,u,V_phi,h)
       res_measure_boot <- cbind(1:N_lambdas,
-                                out$Q2,
-                                out$Q2_all,
-                                out$vars_expl,
-                                out$vars_expl_h,
-                                length(out$idOOB),#length(out$id_OOB),
+                                out[4,],#out$Q2,
+                                out[3,],#out$Q2_all,
+                                out[1,],#out$vars_expl,
+                                out[2,],#out$vars_expl_h,#length(out$idOOB),#length(out$id_OOB),
                                 i_B)#,out$model_exists)
-      list(res=res_measure_boot,V_optim_phi=out$V_optim_phi,u=out$u_out)#list(cov=out$cov,,res=res_measure,V_model=out$V_model,u=out$u_out,V=out$V_out)
+      list(res=res_measure_boot)#,V_optim_phi=out$V_optim_phi,u=out$u_out)#list(cov=out$cov,,res=res_measure,V_model=out$V_model,u=out$u_out,V=out$V_out)
     }
     if(NCORES_w!=1)stopCluster(cl)
     KK <- length(Q2_star_bootstrat)/n_B ; id_pos_boot <- (1:n_B)*KK
-    res_measure[[h]] <- do.call(rbind,Q2_star_bootstrat[id_pos_boot-2])
-    V_boot[[h]] <- Q2_star_bootstrat[id_pos_boot-1]
-    u_boot[[h]] <- Q2_star_bootstrat[id_pos_boot]
+    res_measure[[h]] <- do.call(rbind,Q2_star_bootstrat)#[id_pos_boot-2])
+    # V_boot[[h]] <- Q2_star_bootstrat[id_pos_boot-1]
+    # u_boot[[h]] <- Q2_star_bootstrat[id_pos_boot]
     vars_boot = vars_boot_sd_plus = vars_boot_sd_moins =
       vars_boot_50[[h]] = vars_boot_25[[h]] = vars_boot_75[[h]] =
       vars_boot_h = vars_boot_h_sd_plus = vars_boot_h_sd_moins =
@@ -391,7 +387,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
       q2_all_boot = q2_all_boot_sd_plus = q2_all_boot_sd_moins =
       q2_all_boot_50[[h]] = q2_all_boot_25[[h]] = q2_all_boot_75[[h]] =
       q2_boot_mean = q2_all_boot_mean<- rep(0,N_lambdas)# = prop_models_ok[[h]]
-    mod_exists <- rep(0,N_lambdas)
+    # mod_exists <- rep(0,N_lambdas)
     test_batchas <- TRUE
 
     i_l <- 1
@@ -407,7 +403,6 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
         q2_boot_50[[h]][i_l] <- quantile(toto[,m],probs = 0.5)
         q2_boot_75[[h]][i_l] <- quantile(toto[,m],probs = 0.75)
         q2_boot_25[[h]][i_l] <- quantile(toto[,m],probs = 0.25)
-        q2_boot_mean[i_l] <- mean(toto[,m])/(sd(toto[,m]))
         m <- 2
         q2_all_boot[i_l] <- mean(toto[,m])#
         q2_all_boot_sd_plus[i_l] <- mean(toto[,m])+sd(toto[,m])
@@ -415,7 +410,6 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
         q2_all_boot_50[[h]][i_l] <- quantile(toto[,m],probs = 0.5)
         q2_all_boot_75[[h]][i_l] <- quantile(toto[,m],probs = 0.75)
         q2_all_boot_25[[h]][i_l] <- quantile(toto[,m],probs = 0.25)
-        q2_all_boot_mean[i_l] <- mean(toto[,m])/(sd(toto[,m]))
         m <- 3
         vars_boot[i_l] <- mean(toto[,m])
         vars_boot_sd_plus[i_l] <- mean(toto[,m])+sd(toto[,m])
@@ -467,7 +461,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
     vars_h_boot_single[[h]] <- vars_boot_h
     vars_h_boot_single_sd_moins[[h]] <- vars_boot_h_sd_moins
     vars_h_boot_single_sd_plus[[h]] <- vars_boot_h_sd_plus
-    if(length(id_ALL_TEST)>0){
+
+        if(length(id_ALL_TEST)>0){
       # q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
       # id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
       diff_R2_Q2 <- vars_boot-q2_all_boot#abs(vars_boot-q2_all_boot)#abs(q2_boot-vars_boot_h)#vars_boot)
@@ -479,7 +474,7 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
       if(length(id_s_cool)>0){
         best_id_h <- max(1,min(id_s_cool))#id_s_cool#
         if(length(best_id_h)>0){
-          test_h <- q2_boot_mean[best_id_h]>0
+          test_h <- q2_boot[best_id_h]>0
           if(h>1){
             best_id_h_before <- which(
               rowSums(
