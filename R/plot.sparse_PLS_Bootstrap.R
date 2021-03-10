@@ -104,12 +104,12 @@ plot.sparse_PLS_Bootstrap <- function(x,h_opt=NULL,type="p",
         ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},x$bootstrap$R2_h_boxplot)))
         names(ddff) <- c("h","R2")
         bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B,h"]^"2"),xlab="Component",ylab="")
+        points(1:h_opt,x$explained_variance[1:h_opt]/100,col=1,pch=18,cex=2)
         abline(h=0,lty=5,col=1)
       }else if(i==2){
         ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},x$bootstrap$R2_all_boxplot )))
         names(ddff) <- c("h","R2")
         bobo <- boxplot(R2~h,ddff,ylim=c(-0.1,1.15),border=cols,main=expression("R"["B"]^"2"),xlab="Component",ylab="")
-        points(1:h_opt,x$explained_variance[1:h_opt]/100,col=1,pch=18,cex=2)
         abline(h=0,lty=5,col=1)
       }else if(i==3){
         ddff <- data.frame(do.call(rbind,lapply(1:h_opt,function(ii,bb){cbind(ii,bb[[ii]])},x$bootstrap$Q2_h_boxplot )))

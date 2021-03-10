@@ -627,7 +627,7 @@ NumericMatrix bootstrap_pls_CT_Cpp(const NumericMatrix X_init,const NumericMatri
         //   }
         // }
         U_star_cl = NumericMatrix(p,r+1);
-        prodMat(u,InversedMat,U_star_cl,r,p,r+1);
+        prodMat(u,InversedMat,U_star_cl,r+1,p,r+1);
         // for (int s = 0u; s < p; ++s) {
         //   for (int t = 0u; t < q; ++t) {
         //     B_youyou(s,t) = 0.0;

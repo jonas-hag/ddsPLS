@@ -361,18 +361,18 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
       registerDoParallel(cl);out},{out <- `%do%`;out})
     Q2_star_bootstrat <- foreach(i_B=1:n_B,.packages = "ddsPLS",
                                  .combine='c',.multicombine=TRUE) %my_do% {
-      # out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
-      #                         u=u,v=V_phi,h=h,lambdas=lambdas_in,
-      #                         lambda_prev = lambdas_out)
-      out <- bootstrap_pls_CT_Cpp(X_init,Y_init,lambdas_in,lambdas_out,u,V_phi,h)
-      res_measure_boot <- cbind(1:N_lambdas,
-                                out[4,],#out$Q2,
-                                out[3,],#out$Q2_all,
-                                out[1,],#out$vars_expl,
-                                out[2,],#out$vars_expl_h,#length(out$idOOB),#length(out$id_OOB),
-                                i_B)#,out$model_exists)
-      list(res=res_measure_boot)#,V_optim_phi=out$V_optim_phi,u=out$u_out)#list(cov=out$cov,,res=res_measure,V_model=out$V_model,u=out$u_out,V=out$V_out)
-    }
+                                   # out <- bootstrap_pls_CT(X_init=X_init,Y_init=Y_init,
+                                   #                         u=u,v=V_phi,h=h,lambdas=lambdas_in,
+                                   #                         lambda_prev = lambdas_out)
+                                   out <- bootstrap_pls_CT_Cpp(X_init,Y_init,lambdas_in,lambdas_out,u,V_phi,h)
+                                   res_measure_boot <- cbind(1:N_lambdas,
+                                                             out[4,],# Q2 h
+                                                             out[3,],# Q2
+                                                             out[1,],# R2
+                                                             out[2,],# R2 h
+                                                             i_B)#,out$model_exists)
+                                   list(res=res_measure_boot)#,V_optim_phi=out$V_optim_phi,u=out$u_out)#list(cov=out$cov,,res=res_measure,V_model=out$V_model,u=out$u_out,V=out$V_out)
+                                 }
     if(NCORES_w!=1)stopCluster(cl)
     KK <- length(Q2_star_bootstrat)/n_B ; id_pos_boot <- (1:n_B)*KK
     res_measure[[h]] <- do.call(rbind,Q2_star_bootstrat)#[id_pos_boot-2])
@@ -462,10 +462,10 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
     vars_h_boot_single_sd_moins[[h]] <- vars_boot_h_sd_moins
     vars_h_boot_single_sd_plus[[h]] <- vars_boot_h_sd_plus
 
-        if(length(id_ALL_TEST)>0){
+    if(length(id_ALL_TEST)>0){
       # q2_max_h[h] <- max(na.omit(q2_boot[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))#
       # id_s_cool <- which(q2_boot==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])#
-      diff_R2_Q2 <- vars_boot-q2_all_boot#abs(vars_boot-q2_all_boot)#abs(q2_boot-vars_boot_h)#vars_boot)
+      diff_R2_Q2 <- vars_boot-q2_all_boot#vars_boot_h-q2_boot#
       q2_max_h[h] <- min(na.omit(diff_R2_Q2[id_ALL_TEST]))#max(na.omit(q2_boot_mean[id_ALL_TEST]))
       id_s_cool <- which(diff_R2_Q2==q2_max_h[h])#which(q2_boot_mean==q2_max_h[h])
       # oo <- vars_boot_h-q2_boot
@@ -513,8 +513,8 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
             Q2_tot_s[h] <- Q2_all_sum_star[[h]][best_id_h]#c(Q2_tot_s,Q2_all_sum_star[[h]][best_id_h])
             Q2_all_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),3]
             Q2_h_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),2]
-            R2_h_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),4]
-            R2_all_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),5]
+            R2_h_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),5]
+            R2_all_boxplot[[h]] <- res_measure[[h]][which(res_measure[[h]][,1]==best_id_h),4]
             lambdas_out[h,] <- best_lambdas_h
             if(verbose){
               if(h==1){
@@ -522,8 +522,9 @@ sparse_PLS_Bootstrap <- function(Xs,Y,
               }
               cat(paste("\n Component ",h,
                         "   lambdas=",paste(round(best_lambdas_h,3)),
-                        "   var.expl._h=",round(varia_expl*100),"%",
+                        "   var.expl.h=",round(varia_expl*100),"%",
                         "   Q2_h=",round(q2_boot[best_id_h]*100)/100,
+                        "   Q2=",round(q2_all_boot[best_id_h]*100)/100,
                         sep=""))
             }
             B_r_out[[h]] <- B_current
