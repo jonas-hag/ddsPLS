@@ -51,6 +51,12 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
                          weight=FALSE,
                          id_na=NULL,
                          NZV=1e-9){
+  # in R >= 4.0.0 stringsAsFactors is set to FALSE which messes up how the
+  # data.frame that is used to calculate the results is set up
+  # include this options here because an option set in the global environment
+  # is not respected by foreach when parallised
+  options(stringsAsFactors = TRUE)
+
   my_scale <- function(a){
     if(!is.matrix(a)){
       a <- as.matrix(a,ncol=1)
