@@ -437,7 +437,7 @@ MddsPLS_core <- function(Xs,Y,lambda=0,R=1,mode="reg",
     }
   }else{
     if(is.factor(Y_0)) Y_0 <- as.character(Y_0)
-    dataf <- data.frame(cbind(Y_0,T_super));colnames(dataf)[1]<-"Y"
+    dataf <- data.frame(cbind(Y_0,T_super), stringsAsFactors = TRUE);colnames(dataf)[1]<-"Y"
     for( cc in 2:ncol(dataf)){
       if(!is.numeric(dataf[,cc])){
         dataf[,cc] <- as.numeric(levels(dataf[,cc])[dataf[,cc]])
